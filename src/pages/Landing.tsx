@@ -8,11 +8,11 @@ const Landing = () => {
     <div className="min-h-screen bg-background text-foreground">
         {/* Hero Section */}
         <section className="pt-8 pb-20 bg-background relative overflow-hidden">        
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="container-padding text-center relative z-10">
           <div className="mb-8 flex justify-center">
             <Logo size="xl" showText={true} showTagline={true} variant="full" className="animate-float" />
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-black dark:text-white leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient leading-tight">
             Transform Domains into Digital Assets
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
@@ -21,14 +21,14 @@ const Landing = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-10 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+              <Button size="lg" className="text-lg px-10 py-6 btn-primary">
                 <div className="flex items-center gap-2">
                   <span>🚀</span>
                   Start Tokenizing
                 </div>
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="text-lg px-10 py-6 border-2 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
+            <Button variant="outline" size="lg" className="text-lg px-10 py-6 border-2 btn-secondary">
               <div className="flex items-center gap-2">
                 <span>📚</span>
                 Learn More

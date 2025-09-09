@@ -43,11 +43,11 @@ const Navigation: React.FC = () => {
         </div>
       )}
       
-      <header className="fixed top-0 w-full bg-card backdrop-blur-md border-b border-border z-50">
+      <header className="fixed top-0 w-full bg-card/95 backdrop-blur-md border-b border-border/50 shadow-sm z-50">
         <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold text-foreground hover:scale-105 transition-transform duration-300">
+          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold text-gradient hover:scale-105 transition-transform duration-300">
             <span className="text-2xl animate-float">🌐</span>
             DomaLand.AI
             <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
@@ -61,8 +61,8 @@ const Navigation: React.FC = () => {
                 to={item.path}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
                   isActivePath(item.path)
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-sm'
                 }`}
               >
                 <span className="text-lg">{item.icon}</span>
@@ -109,7 +109,7 @@ const Navigation: React.FC = () => {
               <Button
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-2">
                   {isConnecting ? (

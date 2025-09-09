@@ -39,12 +39,12 @@ const Dashboard: React.FC = () => {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse-slow"></div>
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         
-        <Card className="w-full max-w-md bg-card border border-border shadow-lg relative z-10">
+        <Card className="w-full max-w-md card-elevated relative z-10">
           <CardHeader className="text-center pb-6">
             <div className="mb-4 flex justify-center">
               <Logo size="lg" showText={true} showTagline={false} variant="default" className="animate-float" />
@@ -77,13 +77,12 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background">
+      <div className="container-padding py-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-bold text-black dark:text-white">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient">
               DomainFi Analytics Dashboard
             </h1>
             <div className="flex items-center gap-3">

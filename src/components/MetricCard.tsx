@@ -33,7 +33,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+    <Card className="group relative overflow-hidden card-interactive">
       {/* Shimmer effect */}
       <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
       
@@ -52,7 +52,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       </CardHeader>
       
       <CardContent className="relative z-10">
-        <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
+        <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </div>
         

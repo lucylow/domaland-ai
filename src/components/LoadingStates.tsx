@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const MetricCardSkeleton: React.FC = () => (
-  <Card className="bg-background/50 backdrop-blur-sm border-border/50">
+  <Card className="card-elevated">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-6 w-6 rounded-full" />
@@ -50,7 +50,7 @@ export const DashboardSkeleton: React.FC = () => (
       {/* Main Content Grid Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="bg-background/50 backdrop-blur-sm border-border/50">
+          <Card key={i} className="card-elevated">
             <CardHeader>
               <Skeleton className="h-6 w-32" />
             </CardHeader>
