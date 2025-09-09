@@ -42,37 +42,38 @@ const Navigation: React.FC = () => {
         </div>
       )}
       
-      <header className="fixed top-0 w-full bg-gradient-to-r from-card/90 to-card/80 backdrop-blur-md border-b border-border/50 z-50">
+      <header className="fixed top-0 w-full glass-card border-b border-border/50 z-50 shadow-lg">
         <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-            <span className="text-2xl animate-float">🌐</span>
-            DomaLand.AI
-            <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
+          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-gradient-primary hover:scale-105 transition-all duration-300 group">
+            <span className="text-2xl animate-float group-hover:animate-wiggle">🌐</span>
+            <span className="group-hover:text-gradient-secondary transition-all duration-300">DomaLand.AI</span>
+            <span className="text-xs text-muted-foreground ml-2 font-normal hidden sm:block">DYNAMIC DIGITAL ASSETS</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navigationItems.map((item) => (
+            {navigationItems.map((item, index) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 hover:-translate-y-0.5 animate-slide-in-down ${
                   isActivePath(item.path)
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-md'
                 }`}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg hover:scale-110 transition-transform duration-200">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
                  {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge variant="secondary" className="ml-1 text-xs animate-bounce-in">
                     {marketplaceDomains.length}
                   </Badge>
                 )}
                 {item.path === '/dashboard' && userDomains.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge variant="secondary" className="ml-1 text-xs animate-bounce-in">
                     {userDomains.length}
                   </Badge>
                 )}
@@ -84,13 +85,13 @@ const Navigation: React.FC = () => {
           <div className="flex items-center gap-3">
             {isConnected ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 glass-card border-emerald-500/20 animate-slide-in-right">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium text-emerald-600">
                     {isMockMode ? 'Mock' : 'Connected'}: {account?.slice(0, 6)}...{account?.slice(-4)}
                   </span>
                   {isMockMode && (
-                    <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                    <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 animate-bounce-in">
                       DEV
                     </Badge>
                   )}
@@ -99,7 +100,7 @@ const Navigation: React.FC = () => {
                   onClick={disconnectWallet}
                   variant="outline"
                   size="sm"
-                  className="hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-all duration-300"
+                  className="hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-all duration-300 hover:-translate-y-0.5"
                 >
                   Disconnect
                 </Button>
@@ -108,7 +109,9 @@ const Navigation: React.FC = () => {
               <Button
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="gradient"
+                size="sm"
+                className="animate-slide-in-right"
               >
                 <div className="flex items-center gap-2">
                   {isConnecting ? (
@@ -118,7 +121,7 @@ const Navigation: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span>🔗</span>
+                      <span className="hover:animate-wiggle">🔗</span>
                       <span className="hidden sm:inline">Connect Wallet</span>
                     </>
                   )}
@@ -140,28 +143,29 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-border/50 py-4 animate-slide-down">
+          <div className="md:hidden border-t border-border/50 py-4 animate-slide-down glass-card">
             <div className="space-y-2">
-              {navigationItems.map((item) => (
+              {navigationItems.map((item, index) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 hover:-translate-y-0.5 animate-slide-in-left ${
                     isActivePath(item.path)
-                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-md'
                   }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <span className="text-lg">{item.icon}</span>
+                  <span className="text-lg hover:scale-110 transition-transform duration-200">{item.icon}</span>
                   <span className="font-medium">{item.label}</span>
                    {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <Badge variant="secondary" className="ml-auto text-xs animate-bounce-in">
                       {marketplaceDomains.length}
                     </Badge>
                    )}
                    {item.path === '/dashboard' && userDomains.length > 0 && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <Badge variant="secondary" className="ml-auto text-xs animate-bounce-in">
                       {userDomains.length}
                     </Badge>
                    )}

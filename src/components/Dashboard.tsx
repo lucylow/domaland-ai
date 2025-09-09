@@ -11,6 +11,7 @@ import { DashboardSkeleton, MetricCardSkeleton, DomainCardSkeleton } from './Loa
 import MetricCard from './MetricCard';
 import DomainTokenization from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
+import PerformanceOptimizer from './PerformanceOptimizer';
 import Logo from './Logo';
 
 const Dashboard: React.FC = () => {
@@ -87,39 +88,39 @@ const Dashboard: React.FC = () => {
       
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 animate-slide-in-up">
           <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary animate-slide-in-left">
               DomainFi Analytics Dashboard
             </h1>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 <span className="text-sm">Connected: {account?.slice(0, 6)}...{account?.slice(-4)}</span>
               </div>
               {network && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs animate-bounce-in">
                   {network.name}
                 </Badge>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20 text-emerald-600">
+          <div className="flex items-center gap-3 animate-slide-in-right">
+            <Badge variant="outline" className="px-4 py-2 glass-card border-emerald-500/20 text-emerald-600 animate-pulse-glow">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
               Live Protocol Data
             </Badge>
             <Button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              variant="outline"
+              variant="glass"
               size="sm"
               className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"
             >
               {isRefreshing ? (
                 <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
               ) : (
-                <span>🔄</span>
+                <span className="hover:animate-wiggle">🔄</span>
               )}
             </Button>
           </div>
@@ -127,34 +128,46 @@ const Dashboard: React.FC = () => {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            title="Total Transactions"
-            value={metrics.totalTransactions}
-            change={metrics.dailyTransactions}
-            changeLabel="today"
-            icon="📊"
-          />
-          <MetricCard
-            title="Active Users"
-            value={metrics.activeUsers}
-            change={15}
-            changeLabel="% growth"
-            icon="👥"
-          />
-          <MetricCard
-            title="Protocol Revenue"
-            value={`$${Math.floor(metrics.totalRevenue).toLocaleString()}`}
-            change={`$${Math.floor(metrics.projectedRevenue)}`}
-            changeLabel="projected monthly"
-            icon="💰"
-          />
-          <MetricCard
-            title="Domains Tokenized"
-            value={metrics.domainStats.totalTokenized + marketplaceDomains.length}
-            change={metrics.domainStats.totalListed}
-            changeLabel="listed for sale"
-            icon="🌐"
-          />
+          <div className="animate-slide-in-up animate-stagger-1">
+            <MetricCard
+              title="Total Transactions"
+              value={metrics.totalTransactions}
+              change={metrics.dailyTransactions}
+              changeLabel="today"
+              icon="📊"
+              trend="up"
+            />
+          </div>
+          <div className="animate-slide-in-up animate-stagger-2">
+            <MetricCard
+              title="Active Users"
+              value={metrics.activeUsers}
+              change={15}
+              changeLabel="% growth"
+              icon="👥"
+              trend="up"
+            />
+          </div>
+          <div className="animate-slide-in-up animate-stagger-3">
+            <MetricCard
+              title="Protocol Revenue"
+              value={`$${Math.floor(metrics.totalRevenue).toLocaleString()}`}
+              change={`$${Math.floor(metrics.projectedRevenue)}`}
+              changeLabel="projected monthly"
+              icon="💰"
+              trend="up"
+            />
+          </div>
+          <div className="animate-slide-in-up animate-stagger-4">
+            <MetricCard
+              title="Domains Tokenized"
+              value={metrics.domainStats.totalTokenized + marketplaceDomains.length}
+              change={metrics.domainStats.totalListed}
+              changeLabel="listed for sale"
+              icon="🌐"
+              trend="up"
+            />
+          </div>
         </div>
 
         {/* Main Content Grid */}
@@ -262,11 +275,11 @@ const Dashboard: React.FC = () => {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden glass-card hover:glass-card-hover border-gradient-dark transition-all duration-500 hover:-translate-y-1 animate-slide-in-up">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="text-xl animate-float">🔗</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-xl animate-float group-hover:animate-wiggle">🔗</span>
+                <span className="text-gradient-primary">
                   Tokenization
                 </span>
               </CardTitle>
@@ -278,11 +291,11 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden glass-card hover:glass-card-hover border-gradient-dark transition-all duration-500 hover:-translate-y-1 animate-slide-in-up animate-stagger-1">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="text-xl animate-float" style={{animationDelay: '1s'}}>🏪</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-xl animate-float group-hover:animate-wiggle" style={{animationDelay: '1s'}}>🏪</span>
+                <span className="text-gradient-primary">
                   Marketplace
                 </span>
               </CardTitle>
@@ -294,11 +307,11 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden glass-card hover:glass-card-hover border-gradient-dark transition-all duration-500 hover:-translate-y-1 animate-slide-in-up animate-stagger-2">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="text-xl animate-float" style={{animationDelay: '2s'}}>🎯</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-xl animate-float group-hover:animate-wiggle" style={{animationDelay: '2s'}}>🎯</span>
+                <span className="text-gradient-primary">
                   Fractionalization
                 </span>
               </CardTitle>
@@ -309,6 +322,11 @@ const Dashboard: React.FC = () => {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Performance Optimizer */}
+        <div className="animate-slide-in-up animate-stagger-3">
+          <PerformanceOptimizer />
         </div>
       </div>
 

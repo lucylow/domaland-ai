@@ -13,6 +13,8 @@ import Help from "./pages/Help";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
+import EnhancedAccessibility from "./components/EnhancedAccessibility";
+import MobileNavigation from "./components/MobileNavigation";
 import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
@@ -45,6 +47,8 @@ const App = () => (
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
+                  <EnhancedAccessibility />
+                  <MobileNavigation />
                 </div>
               </BrowserRouter>
             </TooltipProvider>

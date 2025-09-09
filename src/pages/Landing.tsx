@@ -13,28 +13,28 @@ const Landing = () => {
         <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="mb-8 flex justify-center">
+          <div className="mb-8 flex justify-center animate-bounce-in">
             <Logo size="xl" showText={true} showTagline={true} variant="full" className="animate-float" />
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient-primary leading-tight animate-slide-in-up">
             Transform Domains into Digital Assets
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
             Tokenize, trade, and leverage your domain portfolio with blockchain technology. 
             Unlock liquidity and new revenue streams from your digital real estate.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
             <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-10 py-6 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-1">
+              <Button size="xl" variant="gradient" className="text-lg px-10 py-6 font-medium animate-pulse-glow">
                 <div className="flex items-center gap-2">
-                  <span>🚀</span>
+                  <span className="hover:animate-wiggle">🚀</span>
                   Start Tokenizing
                 </div>
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="text-lg px-10 py-6 border-2 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
+            <Button variant="glass" size="xl" className="text-lg px-10 py-6 border-2 hover:border-primary/30 transition-all duration-300">
               <div className="flex items-center gap-2">
-                <span>📚</span>
+                <span className="hover:animate-wiggle">📚</span>
                 Learn More
               </div>
             </Button>
@@ -50,10 +50,10 @@ const Landing = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-gradient-primary animate-slide-in-up">
               Powerful DomainFi Features
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
               Discover how our platform revolutionizes domain ownership and investment
             </p>
           </div>
@@ -90,15 +90,20 @@ const Landing = () => {
                 description: "Access your domain tokens across multiple blockchain networks for maximum flexibility."
               }
             ].map((feature, index) => (
-              <div key={index} className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm p-8 rounded-xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-2">
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
+              <div key={index} className={`group relative overflow-hidden glass-card hover:glass-card-hover border-gradient-dark transition-all duration-500 hover:-translate-y-2 animate-slide-in-up`} style={{ animationDelay: `${index * 0.1}s` }}>
+                {/* Enhanced shimmer effect */}
+                <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-shimmer-enhanced"></div>
                 
-                <div className="relative z-10">
-                  <div className="text-5xl mb-6 animate-float" style={{animationDelay: `${index * 0.5}s`}}>
+                {/* Glow effect */}
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 rounded-xl blur-xl bg-primary/10"></div>
+                </div>
+                
+                <div className="relative z-10 p-8">
+                  <div className="text-5xl mb-6 animate-float group-hover:animate-wiggle" style={{animationDelay: `${index * 0.5}s`}}>
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-4 group-hover:text-primary transition-colors duration-300">
+                  <h3 className="text-xl font-semibold mb-4 group-hover:text-gradient-primary transition-all duration-300">
                     {feature.title}
                   </h3>
                   <p className="text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300 leading-relaxed">
