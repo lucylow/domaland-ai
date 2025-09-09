@@ -199,7 +199,7 @@ const Chat: React.FC = () => {
           <CardContent className="space-y-6">
             <Button 
               onClick={connectWallet} 
-              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-3 transition-all duration-300 hover:shadow-lg"
               size="lg"
             >
               <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ const Chat: React.FC = () => {
                 <div className="space-y-3">
                   <Button 
                     onClick={handleMakeOffer}
-                    className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                    className="w-full bg-foreground text-background hover:bg-foreground/90"
                   >
                     <Handshake className="w-4 h-4 mr-2" />
                     Make Offer
@@ -448,7 +448,7 @@ const Chat: React.FC = () => {
                   <Button
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
-                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                    className="bg-foreground text-background hover:bg-foreground/90"
                     size="icon"
                   >
                     <Send className="w-4 h-4" />

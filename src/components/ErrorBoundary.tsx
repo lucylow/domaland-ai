@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="flex gap-3">
                 <Button
                   onClick={() => window.location.reload()}
-                  className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
+                  className="flex-1 bg-foreground text-background hover:bg-foreground/90"
                 >
                   Refresh Page
                 </Button>

@@ -248,7 +248,7 @@ const EnhancedMarketplace: React.FC = () => {
                     
                     <Button 
                       size="sm" 
-                      className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-200 hover:scale-105"
+                      className="bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-200 hover:scale-105"
                     >
                       Buy Now
                     </Button>

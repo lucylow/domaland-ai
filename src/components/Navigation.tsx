@@ -109,7 +109,7 @@ const Navigation: React.FC = () => {
               <Button
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-2">
                   {isConnecting ? (

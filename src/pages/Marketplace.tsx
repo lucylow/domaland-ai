@@ -89,7 +89,7 @@ const Marketplace: React.FC = () => {
           <CardContent className="space-y-6">
             <Button 
               onClick={connectWallet} 
-              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-3 transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-3 transition-all duration-300 hover:shadow-lg"
               size="lg"
             >
               <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ const Marketplace: React.FC = () => {
                 <Button 
                   onClick={() => handleBuyDomain(domain)}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
+                  className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 hover:shadow-lg"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">

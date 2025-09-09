@@ -151,7 +151,7 @@ const Help: React.FC = () => {
                   className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-300"
                 />
               </div>
-              <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90">
+              <Button className="bg-foreground text-background hover:bg-foreground/90">
                 Search
               </Button>
             </div>
@@ -325,7 +325,7 @@ const Help: React.FC = () => {
                   <p className="text-muted-foreground">
                     Chat with our support team in real-time. Available Monday-Friday, 9 AM - 6 PM EST.
                   </p>
-                  <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90">
+                  <Button className="w-full bg-foreground text-background hover:bg-foreground/90">
                     Start Chat
                   </Button>
                 </CardContent>
