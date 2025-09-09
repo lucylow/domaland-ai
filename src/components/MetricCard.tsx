@@ -34,8 +34,14 @@ const MetricCard: FC<MetricCardProps> = ({
 
   return (
     <Card className="group relative overflow-hidden card-interactive">
+      {/* Enhanced background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
       {/* Shimmer effect */}
-      <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
+      <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
+      
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 -z-10"></div>
       
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
         <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-300">
@@ -43,10 +49,11 @@ const MetricCard: FC<MetricCardProps> = ({
         </CardTitle>
         {icon && (
           <div className="relative">
-            <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float">
+            <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float relative z-10">
               {icon}
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-150"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-125"></div>
           </div>
         )}
       </CardHeader>

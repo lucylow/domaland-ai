@@ -2,28 +2,36 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Enhanced skeleton with shimmer effect
+const ShimmerSkeleton: React.FC<{ className?: string }> = ({ className = "" }) => (
+  <div className={`relative overflow-hidden ${className}`}>
+    <Skeleton className="h-full w-full" />
+    <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+  </div>
+);
+
 export const MetricCardSkeleton: React.FC = () => (
-  <Card className="card-elevated">
+  <Card className="card-elevated group">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-6 w-6 rounded-full" />
+      <ShimmerSkeleton className="h-4 w-24" />
+      <ShimmerSkeleton className="h-6 w-6 rounded-full" />
     </CardHeader>
     <CardContent>
-      <Skeleton className="h-8 w-16 mb-2" />
-      <Skeleton className="h-3 w-20" />
+      <ShimmerSkeleton className="h-8 w-16 mb-2" />
+      <ShimmerSkeleton className="h-3 w-20" />
     </CardContent>
   </Card>
 );
 
 export const DomainCardSkeleton: React.FC = () => (
-  <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
-    <div className="space-y-1">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-3 w-16" />
+  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border border-border/50 animate-pulse">
+    <div className="space-y-2">
+      <ShimmerSkeleton className="h-4 w-24" />
+      <ShimmerSkeleton className="h-3 w-16" />
     </div>
-    <div className="space-y-1">
-      <Skeleton className="h-4 w-12" />
-      <Skeleton className="h-6 w-12" />
+    <div className="space-y-2">
+      <ShimmerSkeleton className="h-4 w-12" />
+      <ShimmerSkeleton className="h-6 w-12" />
     </div>
   </div>
 );

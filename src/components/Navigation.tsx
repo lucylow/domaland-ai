@@ -44,14 +44,19 @@ const Navigation: FC = () => {
         </div>
       )}
       
-      <header className="fixed top-0 w-full bg-card/95 backdrop-blur-md border-b border-border/50 shadow-sm z-50">
+      <header className="fixed top-0 w-full bg-card/90 backdrop-blur-xl border-b border-border/30 shadow-lg z-50">
         <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold text-gradient hover:scale-105 transition-transform duration-300">
-            <span className="text-2xl animate-float">🌐</span>
-            DomaLand.AI
-            <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
+          <Link to="/welcome" className="flex items-center gap-3 text-2xl font-bold text-gradient hover:scale-105 transition-all duration-300 group">
+            <div className="relative">
+              <span className="text-2xl animate-float relative z-10">🌐</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-150"></div>
+            </div>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              DomaLand.AI
+            </span>
+            <span className="text-xs text-muted-foreground ml-2 font-normal bg-muted/50 px-2 py-1 rounded-full">DYNAMIC DIGITAL ASSETS</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -60,10 +65,10 @@ const Navigation: FC = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 relative ${
+                className={`group flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 relative ${
                   isActivePath(item.path)
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-sm'
+                    ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:shadow-md hover:-translate-y-0.5'
                 }`}
                 title={item.description}
               >
@@ -114,7 +119,7 @@ const Navigation: FC = () => {
               </div>
             ) : (
               <Button
-                onClick={connectWallet}
+                onClick={() => connectWallet()}
                 disabled={isConnecting}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >

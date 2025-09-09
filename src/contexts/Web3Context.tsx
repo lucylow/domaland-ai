@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
-import { ethers } from 'ethers';
+import { ethers, BrowserProvider, JsonRpcProvider, Network } from 'ethers';
 
 declare global {
   interface Window {
@@ -104,10 +104,10 @@ export const CHAIN_CONFIGS: Record<SupportedChain, ChainConfig> = {
 interface Web3ContextType {
   // EVM chains
   account: string | null;
-  provider: ethers.providers.Web3Provider | null;
+  provider: BrowserProvider | null;
   signer: ethers.Signer | null;
   isConnected: boolean;
-  network: ethers.providers.Network | null;
+  network: Network | null;
   currentChain: SupportedChain;
   
   // Solana
@@ -152,10 +152,10 @@ interface Web3ProviderProps {
 export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   // EVM chains state
   const [account, setAccount] = useState<string | null>(null);
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
+  const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [network, setNetwork] = useState<ethers.providers.Network | null>(null);
+  const [network, setNetwork] = useState<Network | null>(null);
   const [currentChain, setCurrentChain] = useState<SupportedChain>(SupportedChain.POLYGON);
   
   // Solana state
@@ -174,7 +174,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     
     try {
       if (typeof window !== 'undefined' && window.ethereum) {
-        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+        const web3Provider = new BrowserProvider(window.ethereum);
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         
         // Switch to the requested chain if not already on it
@@ -182,7 +182,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         
         const accounts = await web3Provider.listAccounts();
         const network = await web3Provider.getNetwork();
-        const signer = web3Provider.getSigner();
+        const signer = await web3Provider.getSigner();
         
         if (accounts.length === 0) {
           throw new Error('No accounts found. Please unlock your wallet.');
@@ -190,7 +190,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         
         setProvider(web3Provider);
         setSigner(signer);
-        setAccount(accounts[0]);
+        setAccount(accounts[0].address);
         setNetwork(network);
         setCurrentChain(chain);
         setIsConnected(true);
@@ -345,16 +345,10 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     setError(null);
     // Mock wallet for development
     const mockAccount = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
-    const mockNetwork = {
-      name: 'localhost',
-      chainId: 1337,
-      ensAddress: null
-    };
-    
     setAccount(mockAccount);
     setProvider(null); // No real provider in mock mode
     setSigner(null); // No real signer in mock mode
-    setNetwork(mockNetwork as ethers.providers.Network);
+    setNetwork(null); // No real network in mock mode
     setIsConnected(true);
     setIsMockMode(true);
     
