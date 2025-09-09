@@ -24,6 +24,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Ensure light theme is applied by default
+      (function() {
+        const savedTheme = localStorage.getItem('domainfi-theme');
+        if (!savedTheme) {
+          localStorage.setItem('domainfi-theme', 'light');
+        }
+        // Remove any existing dark class to ensure light theme
+        document.documentElement.classList.remove('dark');
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
