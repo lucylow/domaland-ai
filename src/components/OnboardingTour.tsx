@@ -109,7 +109,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({
             </p>
           </div>
           <div className="space-y-3">
-            <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
               <h4 className="font-semibold mb-2">Benefits of Tokenization:</h4>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Immutable proof of ownership</li>
@@ -193,7 +193,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({
           <p className="text-muted-foreground">
             Ready to transform your domains into digital assets?
           </p>
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
             <h4 className="font-semibold text-green-800 mb-2">Next Steps:</h4>
             <ul className="text-sm text-green-700 space-y-1">
               <li>• Connect your wallet if you haven't already</li>

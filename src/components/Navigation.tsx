@@ -43,11 +43,11 @@ const Navigation: React.FC = () => {
         </div>
       )}
       
-      <header className="fixed top-0 w-full bg-gradient-to-r from-card/90 to-card/80 backdrop-blur-md border-b border-border/50 z-50">
+      <header className="fixed top-0 w-full bg-card backdrop-blur-md border-b border-border z-50">
         <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
+          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold text-foreground hover:scale-105 transition-transform duration-300">
             <span className="text-2xl animate-float">🌐</span>
             DomaLand.AI
             <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
@@ -85,7 +85,7 @@ const Navigation: React.FC = () => {
           <div className="flex items-center gap-3">
             {isConnected ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-500/20">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium text-emerald-600">
                     {isMockMode ? 'Mock' : 'Connected'}: {account?.slice(0, 6)}...{account?.slice(-4)}

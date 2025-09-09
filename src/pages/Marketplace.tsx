@@ -79,7 +79,7 @@ const Marketplace: React.FC = () => {
             <div className="mb-4">
               <span className="text-4xl animate-float">🏪</span>
             </div>
-            <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl text-foreground">
               DomainFi Marketplace
             </CardTitle>
             <p className="text-muted-foreground mt-2">
@@ -133,7 +133,7 @@ const Marketplace: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20 text-emerald-600">
+            <Badge variant="outline" className="px-4 py-2 bg-emerald-50 border-emerald-500/20 text-emerald-600">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
               Live Marketplace
             </Badge>

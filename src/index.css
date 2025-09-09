@@ -126,7 +126,7 @@ All colors MUST be HSL.
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+    @apply text-foreground;
   }
   
   .shadow-glow {

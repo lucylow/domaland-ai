@@ -140,7 +140,7 @@ const FractionalOwnership: React.FC = () => {
             <div className="mb-4">
               <span className="text-4xl animate-float">🎯</span>
             </div>
-            <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl text-foreground">
               Fractional Ownership
             </CardTitle>
             <p className="text-muted-foreground mt-2">
@@ -194,7 +194,7 @@ const FractionalOwnership: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20 text-emerald-600">
+            <Badge variant="outline" className="px-4 py-2 bg-emerald-50 border-emerald-500/20 text-emerald-600">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
               Live Trading
             </Badge>
@@ -386,7 +386,7 @@ const FractionalOwnership: React.FC = () => {
                   <CardHeader className="relative z-10">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <span className="text-xl">🏠</span>
-                      <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      <span className="text-foreground">
                         {holding.domainName}
                       </span>
                     </CardTitle>
@@ -430,7 +430,7 @@ const FractionalOwnership: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <span className="text-xl animate-float">🎯</span>
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  <span className="text-foreground">
                     Fractionalize Your Domain
                   </span>
                 </CardTitle>

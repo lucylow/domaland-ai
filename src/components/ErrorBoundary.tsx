@@ -27,13 +27,13 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-6">
-          <Card className="w-full max-w-md bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-md border border-border/50 shadow-2xl shadow-primary/10">
+        <div className="min-h-screen flex items-center justify-center bg-background p-6">
+          <Card className="w-full max-w-md bg-card border border-border shadow-lg">
             <CardHeader className="text-center">
               <div className="mb-4">
                 <span className="text-4xl">⚠️</span>
               </div>
-              <CardTitle className="text-2xl bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl text-red-600">
                 Something went wrong
               </CardTitle>
             </CardHeader>

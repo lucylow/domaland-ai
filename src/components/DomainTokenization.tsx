@@ -63,14 +63,12 @@ const DomainTokenization: React.FC = () => {
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
+    <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
       
       <CardHeader className="relative z-10">
         <CardTitle className="flex items-center gap-2 text-lg">
           <span className="text-2xl animate-float">🌐</span>
-          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <span className="text-foreground">
             Tokenize Domain
           </span>
         </CardTitle>
@@ -108,7 +106,7 @@ const DomainTokenization: React.FC = () => {
                 disabled={isLoading}
                 className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-300 disabled:opacity-50"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-md opacity-0 focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-background/5 rounded-md opacity-0 focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
             </div>
           </div>
           
@@ -131,7 +129,7 @@ const DomainTokenization: React.FC = () => {
           </Button>
         </form>
 
-        <div className="mt-6 p-4 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg border border-border/30 backdrop-blur-sm">
+        <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
           <p className="font-semibold mb-3 text-foreground flex items-center gap-2">
             <span className="text-lg">💡</span>
             Benefits:

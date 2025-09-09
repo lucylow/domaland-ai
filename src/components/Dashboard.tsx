@@ -44,12 +44,12 @@ const Dashboard: React.FC = () => {
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse-slow"></div>
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         
-        <Card className="w-full max-w-md bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-md border border-border/50 shadow-2xl shadow-primary/10 relative z-10">
+        <Card className="w-full max-w-md bg-card border border-border shadow-lg relative z-10">
           <CardHeader className="text-center pb-6">
             <div className="mb-4 flex justify-center">
               <Logo size="lg" showText={true} showTagline={false} variant="default" className="animate-float" />
             </div>
-            <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <CardTitle className="text-2xl text-foreground">
               DomainFi Protocol
             </CardTitle>
             <p className="text-muted-foreground mt-2">
@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20 text-emerald-600">
+            <Badge variant="outline" className="px-4 py-2 bg-emerald-50 border-emerald-500/20 text-emerald-600">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
               Live Protocol Data
             </Badge>
@@ -161,11 +161,11 @@ const Dashboard: React.FC = () => {
 
           {/* User Domains */}
           <div className="lg:col-span-1">
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+            <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
               <CardHeader className="relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <span className="text-xl">🏠</span>
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  <span className="text-foreground">
                     Your Domains ({userDomains.length})
                   </span>
                 </CardTitle>
@@ -184,7 +184,7 @@ const Dashboard: React.FC = () => {
                 ) : (
                   <div className="space-y-3">
                     {userDomains.map((domain) => (
-                      <div key={domain.tokenId} className="group/item flex justify-between items-center p-3 bg-gradient-to-r from-muted/30 to-muted/10 rounded-lg border border-border/30 hover:border-primary/30 transition-all duration-300 hover:shadow-md">
+                      <div key={domain.tokenId} className="group/item flex justify-between items-center p-3 bg-muted rounded-lg border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-md">
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                           <span className="font-medium text-foreground group-hover/item:text-primary transition-colors duration-300">
@@ -212,11 +212,11 @@ const Dashboard: React.FC = () => {
 
           {/* Marketplace */}
           <div className="lg:col-span-1">
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+            <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
               <CardHeader className="relative z-10">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <span className="text-xl">🏪</span>
-                  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  <span className="text-foreground">
                     Marketplace ({marketplaceDomains.length})
                   </span>
                 </CardTitle>
@@ -224,7 +224,7 @@ const Dashboard: React.FC = () => {
               <CardContent className="relative z-10">
                 <div className="space-y-3">
                   {marketplaceDomains.slice(0, 5).map((domain) => (
-                    <div key={domain.tokenId} className="group/item flex justify-between items-center p-3 bg-gradient-to-r from-muted/30 to-muted/10 rounded-lg border border-border/30 hover:border-primary/30 transition-all duration-300 hover:shadow-md">
+                    <div key={domain.tokenId} className="group/item flex justify-between items-center p-3 bg-muted rounded-lg border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-md">
                       <div className="flex-1">
                         <div className="font-medium text-foreground group-hover/item:text-primary transition-colors duration-300">
                           {domain.name}
@@ -256,11 +256,11 @@ const Dashboard: React.FC = () => {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
                 <span className="text-xl animate-float">🔗</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-foreground">
                   Tokenization
                 </span>
               </CardTitle>
@@ -272,11 +272,11 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
                 <span className="text-xl animate-float" style={{animationDelay: '1s'}}>🏪</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-foreground">
                   Marketplace
                 </span>
               </CardTitle>
@@ -288,11 +288,11 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+          <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="relative z-10">
               <CardTitle className="text-lg flex items-center gap-2">
                 <span className="text-xl animate-float" style={{animationDelay: '2s'}}>🎯</span>
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-foreground">
                   Fractionalization
                 </span>
               </CardTitle>

@@ -77,7 +77,7 @@ const Logo: React.FC<LogoProps> = ({
           </div>
         </div>
         {showText && (
-          <span className={cn('font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent', textSizeClasses[size])}>
+          <span className={cn('font-bold text-foreground', textSizeClasses[size])}>
             DomaLand.AI
           </span>
         )}
@@ -99,7 +99,7 @@ const Logo: React.FC<LogoProps> = ({
           </div>
           
           {/* Shield */}
-          <div className="w-full h-full bg-gradient-to-b from-slate-600 to-slate-800 rounded-lg border-2 border-slate-400 shadow-xl relative overflow-hidden">
+          <div className="w-full h-full bg-slate-700 rounded-lg border-2 border-slate-400 shadow-xl relative overflow-hidden">
             {/* Grid background */}
             <div className="absolute inset-0 opacity-20">
               <div className="w-full h-full" style={{
@@ -145,7 +145,7 @@ const Logo: React.FC<LogoProps> = ({
         
         {showText && (
           <div className="text-center">
-            <h1 className={cn('font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2', textSizeClasses[size])}>
+            <h1 className={cn('font-bold text-foreground mb-2', textSizeClasses[size])}>
               DomaLand.AI
             </h1>
             {showTagline && (
@@ -216,7 +216,7 @@ const Logo: React.FC<LogoProps> = ({
       
       {showText && (
         <div className="flex flex-col">
-          <span className={cn('font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent', textSizeClasses[size])}>
+          <span className={cn('font-bold text-foreground', textSizeClasses[size])}>
             DomaLand.AI
           </span>
           {showTagline && (
