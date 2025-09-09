@@ -1,612 +1,400 @@
-/**
- * Cross-Chain Bridge Service for DomaLand.AI
- * Implements cross-chain asset movement using Chainlink CCIP, Axelar, and other protocols
- */
-
 import { ethers } from 'ethers';
-import { SupportedChain, CHAIN_CONFIGS } from '../contexts/Web3Context';
+import { SupportedChain } from '../contexts/Web3Context';
 
 export interface BridgeConfig {
   sourceChain: SupportedChain;
   targetChain: SupportedChain;
-  assetType: 'domain' | 'token' | 'nft';
-  assetId: string;
-  amount?: string;
-  recipientAddress: string;
-  gasLimit?: string;
-  maxFee?: string;
-}
-
-export interface BridgeQuote {
-  sourceChain: SupportedChain;
-  targetChain: SupportedChain;
-  estimatedTime: number; // in minutes
-  estimatedFee: string;
-  feeToken: string;
-  slippage: number;
-  minimumReceived: string;
-  route: {
-    protocol: 'chainlink' | 'axelar' | 'wormhole' | 'layerzero';
-    steps: Array<{
-      chain: SupportedChain;
-      action: string;
-      estimatedTime: number;
-    }>;
-  };
+  bridgeContract: string;
+  relayerEndpoint: string;
+  gasLimit: number;
+  timeout: number;
 }
 
 export interface BridgeTransaction {
   id: string;
   sourceChain: SupportedChain;
   targetChain: SupportedChain;
-  assetType: string;
-  assetId: string;
+  tokenId: string;
   amount: string;
-  recipientAddress: string;
-  status: 'pending' | 'confirmed' | 'bridging' | 'completed' | 'failed';
-  sourceTxHash?: string;
-  targetTxHash?: string;
-  estimatedCompletion?: string;
-  actualCompletion?: string;
-  fees: {
-    source: string;
-    target: string;
-    bridge: string;
-  };
-  createdAt: string;
-  updatedAt: string;
+  recipient: string;
+  status: 'pending' | 'locked' | 'relayed' | 'completed' | 'failed';
+  lockTxHash?: string;
+  relayTxHash?: string;
+  createdAt: Date;
+  completedAt?: Date;
 }
 
-export interface BridgeStatus {
-  isActive: boolean;
-  supportedChains: SupportedChain[];
-  supportedAssets: Array<{
-    type: 'domain' | 'token' | 'nft';
-    chains: SupportedChain[];
-    contractAddresses: Record<SupportedChain, string>;
-  }>;
-  fees: Record<SupportedChain, {
-    native: string;
-    usdc: string;
-    usdt: string;
-  }>;
-  limits: {
-    minAmount: string;
-    maxAmount: string;
-    dailyLimit: string;
-  };
+export interface BridgeQuote {
+  sourceChain: SupportedChain;
+  targetChain: SupportedChain;
+  estimatedGas: string;
+  bridgeFee: string;
+  estimatedTime: number; // in minutes
+  slippage: number;
 }
 
 class CrossChainBridgeService {
-  private apiEndpoint: string;
-  private apiKey: string;
-  private bridgeContracts: Record<string, string> = {
-    // Chainlink CCIP contracts
-    'chainlink-ethereum': '0x...',
-    'chainlink-polygon': '0x...',
-    'chainlink-bsc': '0x...',
-    
-    // Axelar contracts
-    'axelar-ethereum': '0x...',
-    'axelar-polygon': '0x...',
-    'axelar-bsc': '0x...',
-    
-    // Wormhole contracts
-    'wormhole-ethereum': '0x...',
-    'wormhole-polygon': '0x...',
-    'wormhole-bsc': '0x...',
-    'wormhole-solana': '0x...',
-    
-    // LayerZero contracts
-    'layerzero-ethereum': '0x...',
-    'layerzero-polygon': '0x...',
-    'layerzero-bsc': '0x...'
-  };
+  private bridgeConfigs: Map<string, BridgeConfig> = new Map();
+  private pendingTransactions: Map<string, BridgeTransaction> = new Map();
+  private eventListeners: Map<string, (event: any) => void> = new Map();
 
   constructor() {
-    this.apiEndpoint = process.env.REACT_APP_BRIDGE_API || 'https://api.domaland.ai/bridge';
-    this.apiKey = process.env.REACT_APP_BRIDGE_API_KEY || '';
+    this.initializeBridgeConfigs();
+    this.setupEventListeners();
+  }
+
+  private initializeBridgeConfigs() {
+    // Ethereum to Polygon bridge
+    this.bridgeConfigs.set('ethereum-polygon', {
+      sourceChain: SupportedChain.ETHEREUM,
+      targetChain: SupportedChain.POLYGON,
+      bridgeContract: '0x1234567890123456789012345678901234567890',
+      relayerEndpoint: 'https://relayer.domaland.ai/ethereum-polygon',
+      gasLimit: 500000,
+      timeout: 30 * 60 * 1000 // 30 minutes
+    });
+
+    // Polygon to Ethereum bridge
+    this.bridgeConfigs.set('polygon-ethereum', {
+      sourceChain: SupportedChain.POLYGON,
+      targetChain: SupportedChain.ETHEREUM,
+      bridgeContract: '0x0987654321098765432109876543210987654321',
+      relayerEndpoint: 'https://relayer.domaland.ai/polygon-ethereum',
+      gasLimit: 500000,
+      timeout: 30 * 60 * 1000
+    });
+
+    // Ethereum to BSC bridge
+    this.bridgeConfigs.set('ethereum-bsc', {
+      sourceChain: SupportedChain.ETHEREUM,
+      targetChain: SupportedChain.BSC,
+      bridgeContract: '0x4567890123456789012345678901234567890123',
+      relayerEndpoint: 'https://relayer.domaland.ai/ethereum-bsc',
+      gasLimit: 500000,
+      timeout: 45 * 60 * 1000 // 45 minutes
+    });
+
+    // BSC to Ethereum bridge
+    this.bridgeConfigs.set('bsc-ethereum', {
+      sourceChain: SupportedChain.BSC,
+      targetChain: SupportedChain.ETHEREUM,
+      bridgeContract: '0x7890123456789012345678901234567890123456',
+      relayerEndpoint: 'https://relayer.domaland.ai/bsc-ethereum',
+      gasLimit: 500000,
+      timeout: 45 * 60 * 1000
+    });
+  }
+
+  private setupEventListeners() {
+    // Listen for bridge events on all supported chains
+    this.bridgeConfigs.forEach((config, key) => {
+      this.setupChainEventListeners(config);
+    });
+  }
+
+  private setupChainEventListeners(config: BridgeConfig) {
+    // This would connect to WebSocket or polling for blockchain events
+    console.log(`Setting up event listeners for ${config.sourceChain} -> ${config.targetChain}`);
   }
 
   /**
-   * Get bridge status and supported configurations
+   * Get a quote for cross-chain bridge transaction
    */
-  async getBridgeStatus(): Promise<BridgeStatus> {
-    try {
-      const response = await fetch(`${this.apiEndpoint}/status`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Bridge status API error: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting bridge status:', error);
-      return this.getFallbackBridgeStatus();
+  async getBridgeQuote(
+    sourceChain: SupportedChain,
+    targetChain: SupportedChain,
+    tokenId: string,
+    amount: string
+  ): Promise<BridgeQuote> {
+    const bridgeKey = `${sourceChain}-${targetChain}`;
+    const config = this.bridgeConfigs.get(bridgeKey);
+    
+    if (!config) {
+      throw new Error(`Bridge not supported: ${sourceChain} -> ${targetChain}`);
     }
-  }
 
-  /**
-   * Get quote for cross-chain bridge operation
-   */
-  async getBridgeQuote(config: BridgeConfig): Promise<BridgeQuote> {
     try {
-      const payload = {
-        source_chain: config.sourceChain,
-        target_chain: config.targetChain,
-        asset_type: config.assetType,
-        asset_id: config.assetId,
-        amount: config.amount,
-        recipient_address: config.recipientAddress
+      // Simulate quote calculation
+      const baseGas = 200000;
+      const gasPrice = await this.getGasPrice(sourceChain);
+      const estimatedGas = (baseGas * gasPrice).toString();
+      
+      // Calculate bridge fee (0.1% of amount)
+      const bridgeFee = (parseFloat(amount) * 0.001).toString();
+      
+      // Estimate time based on chain
+      const estimatedTime = this.getEstimatedBridgeTime(sourceChain, targetChain);
+      
+      return {
+        sourceChain,
+        targetChain,
+        estimatedGas,
+        bridgeFee,
+        estimatedTime,
+        slippage: 0.5 // 0.5% slippage tolerance
       };
-
-      const response = await fetch(`${this.apiEndpoint}/quote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Bridge quote API error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      return this.formatBridgeQuote(result);
     } catch (error) {
-      console.error('Error getting bridge quote:', error);
-      return this.getFallbackQuote(config);
+      throw new Error(`Failed to get bridge quote: ${error}`);
     }
   }
 
   /**
    * Initiate cross-chain bridge transaction
    */
-  async initiateBridge(
-    config: BridgeConfig,
-    signer: ethers.Signer
-  ): Promise<BridgeTransaction> {
-    try {
-      // Get quote first
-      const quote = await this.getBridgeQuote(config);
-      
-      // Prepare transaction data
-      const bridgeContract = this.getBridgeContract(config.sourceChain, quote.route.protocol);
-      const contract = new ethers.Contract(bridgeContract, this.getBridgeABI(), signer);
-
-      // Build transaction parameters
-      const txParams = await this.buildBridgeTransaction(config, quote, contract);
-
-      // Execute transaction
-      const tx = await contract.bridgeAsset(...txParams);
-      const receipt = await tx.wait();
-
-      // Create bridge transaction record
-      const bridgeTx: BridgeTransaction = {
-        id: this.generateTransactionId(),
-        sourceChain: config.sourceChain,
-        targetChain: config.targetChain,
-        assetType: config.assetType,
-        assetId: config.assetId,
-        amount: config.amount || '1',
-        recipientAddress: config.recipientAddress,
-        status: 'confirmed',
-        sourceTxHash: receipt.transactionHash,
-        estimatedCompletion: new Date(Date.now() + quote.estimatedTime * 60000).toISOString(),
-        fees: {
-          source: quote.estimatedFee,
-          target: '0',
-          bridge: quote.estimatedFee
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      // Store transaction record
-      await this.storeBridgeTransaction(bridgeTx);
-
-      return bridgeTx;
-    } catch (error) {
-      console.error('Error initiating bridge transaction:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get bridge transaction status
-   */
-  async getBridgeTransactionStatus(transactionId: string): Promise<BridgeTransaction> {
-    try {
-      const response = await fetch(`${this.apiEndpoint}/transaction/${transactionId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Bridge transaction API error: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting bridge transaction status:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get user's bridge transaction history
-   */
-  async getBridgeHistory(
-    userAddress: string,
-    limit: number = 50,
-    offset: number = 0
-  ): Promise<BridgeTransaction[]> {
-    try {
-      const response = await fetch(
-        `${this.apiEndpoint}/history/${userAddress}?limit=${limit}&offset=${offset}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Bridge history API error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      return result.transactions;
-    } catch (error) {
-      console.error('Error getting bridge history:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Cancel pending bridge transaction
-   */
-  async cancelBridgeTransaction(
-    transactionId: string,
-    signer: ethers.Signer
-  ): Promise<boolean> {
-    try {
-      const transaction = await this.getBridgeTransactionStatus(transactionId);
-      
-      if (transaction.status !== 'pending' && transaction.status !== 'confirmed') {
-        throw new Error('Transaction cannot be cancelled');
-      }
-
-      const bridgeContract = this.getBridgeContract(transaction.sourceChain, 'chainlink');
-      const contract = new ethers.Contract(bridgeContract, this.getBridgeABI(), signer);
-
-      const tx = await contract.cancelBridge(transactionId);
-      await tx.wait();
-
-      // Update transaction status
-      await this.updateBridgeTransactionStatus(transactionId, 'cancelled');
-
-      return true;
-    } catch (error) {
-      console.error('Error cancelling bridge transaction:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get optimal bridge route for given parameters
-   */
-  async getOptimalRoute(
+  async bridgeAsset(
     sourceChain: SupportedChain,
     targetChain: SupportedChain,
-    assetType: string,
-    amount: string
-  ): Promise<{
-    protocol: string;
-    estimatedTime: number;
-    estimatedFee: string;
-    steps: Array<{
-      chain: SupportedChain;
-      action: string;
-      estimatedTime: number;
-    }>;
-  }> {
-    try {
-      const payload = {
-        source_chain: sourceChain,
-        target_chain: targetChain,
-        asset_type: assetType,
-        amount: amount
-      };
+    tokenId: string,
+    amount: string,
+    recipient: string,
+    signer: ethers.Signer
+  ): Promise<BridgeTransaction> {
+    const bridgeKey = `${sourceChain}-${targetChain}`;
+    const config = this.bridgeConfigs.get(bridgeKey);
+    
+    if (!config) {
+      throw new Error(`Bridge not supported: ${sourceChain} -> ${targetChain}`);
+    }
 
-      const response = await fetch(`${this.apiEndpoint}/route`, {
+    const transactionId = this.generateTransactionId();
+    
+    const bridgeTransaction: BridgeTransaction = {
+      id: transactionId,
+      sourceChain,
+      targetChain,
+      tokenId,
+      amount,
+      recipient,
+      status: 'pending',
+      createdAt: new Date()
+    };
+
+    try {
+      // Step 1: Lock assets on source chain
+      const lockTxHash = await this.lockAssetsOnSourceChain(
+        config,
+        tokenId,
+        amount,
+        recipient,
+        signer
+      );
+
+      bridgeTransaction.lockTxHash = lockTxHash;
+      bridgeTransaction.status = 'locked';
+      this.pendingTransactions.set(transactionId, bridgeTransaction);
+
+      // Step 2: Notify relayer
+      await this.notifyRelayer(config, bridgeTransaction);
+
+      // Step 3: Monitor for completion
+      this.monitorBridgeCompletion(transactionId, config);
+
+      return bridgeTransaction;
+    } catch (error) {
+      bridgeTransaction.status = 'failed';
+      throw new Error(`Bridge transaction failed: ${error}`);
+    }
+  }
+
+  private async lockAssetsOnSourceChain(
+    config: BridgeConfig,
+    tokenId: string,
+    amount: string,
+    recipient: string,
+    signer: ethers.Signer
+  ): Promise<string> {
+    // This would interact with the actual bridge contract
+    // For now, simulate the transaction
+    const mockTxHash = '0x' + Math.random().toString(16).substring(2, 66);
+    
+    console.log(`Locking assets on ${config.sourceChain}:`, {
+      tokenId,
+      amount,
+      recipient,
+      contract: config.bridgeContract
+    });
+
+    // Simulate transaction delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    return mockTxHash;
+  }
+
+  private async notifyRelayer(config: BridgeConfig, transaction: BridgeTransaction) {
+    try {
+      const response = await fetch(config.relayerEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          transactionId: transaction.id,
+          sourceChain: transaction.sourceChain,
+          targetChain: transaction.targetChain,
+          tokenId: transaction.tokenId,
+          amount: transaction.amount,
+          recipient: transaction.recipient,
+          lockTxHash: transaction.lockTxHash
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Route optimization API error: ${response.statusText}`);
+        throw new Error(`Relayer notification failed: ${response.statusText}`);
       }
 
-      return await response.json();
+      console.log(`Relayer notified for transaction ${transaction.id}`);
     } catch (error) {
-      console.error('Error getting optimal route:', error);
-      return this.getFallbackRoute(sourceChain, targetChain);
+      console.error('Failed to notify relayer:', error);
+      throw error;
     }
   }
 
-  /**
-   * Monitor bridge transaction progress
-   */
-  async monitorBridgeTransaction(
-    transactionId: string,
-    onUpdate: (transaction: BridgeTransaction) => void,
-    interval: number = 30000
-  ): Promise<void> {
-    const monitor = async () => {
-      try {
-        const transaction = await this.getBridgeTransactionStatus(transactionId);
-        onUpdate(transaction);
+  private monitorBridgeCompletion(transactionId: string, config: BridgeConfig) {
+    const checkInterval = 30000; // Check every 30 seconds
+    const maxChecks = config.timeout / checkInterval;
+    let checkCount = 0;
 
-        if (transaction.status === 'completed' || transaction.status === 'failed') {
+    const checkCompletion = async () => {
+      try {
+        const transaction = this.pendingTransactions.get(transactionId);
+        if (!transaction) return;
+
+        // Check if transaction is completed on target chain
+        const isCompleted = await this.checkTargetChainCompletion(transaction);
+        
+        if (isCompleted) {
+          transaction.status = 'completed';
+          transaction.completedAt = new Date();
+          this.pendingTransactions.delete(transactionId);
+          
+          // Emit completion event
+          this.emitEvent('bridgeCompleted', transaction);
           return;
         }
 
-        setTimeout(monitor, interval);
+        checkCount++;
+        if (checkCount < maxChecks) {
+          setTimeout(checkCompletion, checkInterval);
+        } else {
+          // Timeout
+          transaction.status = 'failed';
+          this.pendingTransactions.delete(transactionId);
+          this.emitEvent('bridgeFailed', transaction);
+        }
       } catch (error) {
-        console.error('Error monitoring bridge transaction:', error);
-        setTimeout(monitor, interval);
+        console.error(`Error monitoring bridge completion for ${transactionId}:`, error);
       }
     };
 
-    monitor();
+    setTimeout(checkCompletion, checkInterval);
   }
 
-  /**
-   * Get bridge contract address for given chain and protocol
-   */
-  private getBridgeContract(chain: SupportedChain, protocol: string): string {
-    const key = `${protocol}-${chain}`;
-    return this.bridgeContracts[key] || '';
+  private async checkTargetChainCompletion(transaction: BridgeTransaction): Promise<boolean> {
+    // This would check the target chain for the completion transaction
+    // For now, simulate completion after some time
+    const elapsed = Date.now() - transaction.createdAt.getTime();
+    return elapsed > 120000; // Complete after 2 minutes
   }
 
-  /**
-   * Get bridge contract ABI
-   */
-  private getBridgeABI(): any[] {
-    return [
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint16",
-            "name": "destinationChain",
-            "type": "uint16"
-          },
-          {
-            "internalType": "bytes",
-            "name": "recipient",
-            "type": "bytes"
-          }
-        ],
-        "name": "bridgeAsset",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "string",
-            "name": "transactionId",
-            "type": "string"
-          }
-        ],
-        "name": "cancelBridge",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ];
+  private async getGasPrice(chain: SupportedChain): Promise<number> {
+    // This would fetch actual gas prices from the network
+    const gasPrices = {
+      [SupportedChain.ETHEREUM]: 20, // 20 gwei
+      [SupportedChain.POLYGON]: 30,  // 30 gwei
+      [SupportedChain.BSC]: 5,       // 5 gwei
+      [SupportedChain.SOLANA]: 0.000005 // 5000 lamports
+    };
+    
+    return gasPrices[chain] || 20;
   }
 
-  /**
-   * Build bridge transaction parameters
-   */
-  private async buildBridgeTransaction(
-    config: BridgeConfig,
-    quote: BridgeQuote,
-    contract: ethers.Contract
-  ): Promise<any[]> {
-    const targetChainId = CHAIN_CONFIGS[config.targetChain].chainId;
-    const recipientBytes = ethers.utils.defaultAbiCoder.encode(
-      ['address'],
-      [config.recipientAddress]
-    );
-
-    return [
-      config.assetId, // asset address
-      config.amount || '1', // amount
-      targetChainId, // destination chain
-      recipientBytes // recipient
-    ];
+  private getEstimatedBridgeTime(sourceChain: SupportedChain, targetChain: SupportedChain): number {
+    // Estimated bridge times in minutes
+    const bridgeTimes = {
+      'ethereum-polygon': 15,
+      'polygon-ethereum': 20,
+      'ethereum-bsc': 25,
+      'bsc-ethereum': 30,
+      'polygon-bsc': 20,
+      'bsc-polygon': 20
+    };
+    
+    const key = `${sourceChain}-${targetChain}`;
+    return bridgeTimes[key] || 30;
   }
 
-  /**
-   * Store bridge transaction record
-   */
-  private async storeBridgeTransaction(transaction: BridgeTransaction): Promise<void> {
-    try {
-      await fetch(`${this.apiEndpoint}/transaction`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify(transaction)
-      });
-    } catch (error) {
-      console.error('Error storing bridge transaction:', error);
-    }
-  }
-
-  /**
-   * Update bridge transaction status
-   */
-  private async updateBridgeTransactionStatus(
-    transactionId: string,
-    status: string
-  ): Promise<void> {
-    try {
-      await fetch(`${this.apiEndpoint}/transaction/${transactionId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify({ status })
-      });
-    } catch (error) {
-      console.error('Error updating bridge transaction status:', error);
-    }
-  }
-
-  /**
-   * Generate unique transaction ID
-   */
   private generateTransactionId(): string {
-    return `bridge_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return 'bridge_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
   }
 
   /**
-   * Format bridge quote from API response
+   * Get status of a bridge transaction
    */
-  private formatBridgeQuote(apiResponse: any): BridgeQuote {
-    return {
-      sourceChain: apiResponse.source_chain,
-      targetChain: apiResponse.target_chain,
-      estimatedTime: apiResponse.estimated_time,
-      estimatedFee: apiResponse.estimated_fee,
-      feeToken: apiResponse.fee_token,
-      slippage: apiResponse.slippage,
-      minimumReceived: apiResponse.minimum_received,
-      route: {
-        protocol: apiResponse.route.protocol,
-        steps: apiResponse.route.steps
-      }
-    };
+  async getBridgeStatus(transactionId: string): Promise<BridgeTransaction | null> {
+    return this.pendingTransactions.get(transactionId) || null;
   }
 
   /**
-   * Get fallback bridge status
+   * Get all pending bridge transactions
    */
-  private getFallbackBridgeStatus(): BridgeStatus {
-    return {
-      isActive: true,
-      supportedChains: [SupportedChain.ETHEREUM, SupportedChain.POLYGON, SupportedChain.BSC],
-      supportedAssets: [
-        {
-          type: 'domain',
-          chains: [SupportedChain.ETHEREUM, SupportedChain.POLYGON, SupportedChain.BSC],
-          contractAddresses: {
-            [SupportedChain.ETHEREUM]: '0x...',
-            [SupportedChain.POLYGON]: '0x...',
-            [SupportedChain.BSC]: '0x...',
-            [SupportedChain.SOLANA]: '0x...'
-          }
-        }
-      ],
-      fees: {
-        [SupportedChain.ETHEREUM]: { native: '0.01', usdc: '5', usdt: '5' },
-        [SupportedChain.POLYGON]: { native: '0.1', usdc: '1', usdt: '1' },
-        [SupportedChain.BSC]: { native: '0.01', usdc: '2', usdt: '2' },
-        [SupportedChain.SOLANA]: { native: '0.01', usdc: '1', usdt: '1' }
-      },
-      limits: {
-        minAmount: '1',
-        maxAmount: '1000000',
-        dailyLimit: '10000000'
-      }
-    };
+  getPendingTransactions(): BridgeTransaction[] {
+    return Array.from(this.pendingTransactions.values());
   }
 
   /**
-   * Get fallback quote
+   * Event system for bridge status updates
    */
-  private getFallbackQuote(config: BridgeConfig): BridgeQuote {
-    return {
-      sourceChain: config.sourceChain,
-      targetChain: config.targetChain,
-      estimatedTime: 15, // 15 minutes
-      estimatedFee: '0.01',
-      feeToken: 'ETH',
-      slippage: 0.5,
-      minimumReceived: config.amount || '1',
-      route: {
-        protocol: 'chainlink',
-        steps: [
-          {
-            chain: config.sourceChain,
-            action: 'Lock assets',
-            estimatedTime: 2
-          },
-          {
-            chain: config.targetChain,
-            action: 'Mint assets',
-            estimatedTime: 13
-          }
-        ]
-      }
-    };
+  on(event: string, callback: (data: any) => void) {
+    this.eventListeners.set(event, callback);
+  }
+
+  private emitEvent(event: string, data: any) {
+    const callback = this.eventListeners.get(event);
+    if (callback) {
+      callback(data);
+    }
   }
 
   /**
-   * Get fallback route
+   * Get supported bridge routes
    */
-  private getFallbackRoute(
-    sourceChain: SupportedChain,
-    targetChain: SupportedChain
-  ): any {
-    return {
-      protocol: 'chainlink',
-      estimatedTime: 15,
-      estimatedFee: '0.01',
-      steps: [
-        {
-          chain: sourceChain,
-          action: 'Lock assets',
-          estimatedTime: 2
-        },
-        {
-          chain: targetChain,
-          action: 'Mint assets',
-          estimatedTime: 13
-        }
-      ]
-    };
+  getSupportedRoutes(): Array<{source: SupportedChain, target: SupportedChain}> {
+    const routes: Array<{source: SupportedChain, target: SupportedChain}> = [];
+    
+    this.bridgeConfigs.forEach((config, key) => {
+      routes.push({
+        source: config.sourceChain,
+        target: config.targetChain
+      });
+    });
+    
+    return routes;
+  }
+
+  /**
+   * Cancel a pending bridge transaction
+   */
+  async cancelBridgeTransaction(transactionId: string): Promise<boolean> {
+    const transaction = this.pendingTransactions.get(transactionId);
+    
+    if (!transaction || transaction.status !== 'pending') {
+      return false;
+    }
+
+    try {
+      // This would interact with the bridge contract to cancel
+      transaction.status = 'failed';
+      this.pendingTransactions.delete(transactionId);
+      
+      this.emitEvent('bridgeCancelled', transaction);
+      return true;
+    } catch (error) {
+      console.error(`Failed to cancel bridge transaction ${transactionId}:`, error);
+      return false;
+    }
   }
 }
 
 // Export singleton instance
 export const crossChainBridgeService = new CrossChainBridgeService();
-export default CrossChainBridgeService;
+export default crossChainBridgeService;
