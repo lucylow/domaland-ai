@@ -150,7 +150,7 @@ const Marketplace: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float">🌐</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {marketplaceDomains.length}
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -173,7 +173,7 @@ const Marketplace: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '0.5s'}}>💰</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {marketplaceDomains.reduce((sum, domain) => sum + parseFloat(domain.price), 0).toFixed(2)} ETH
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -196,7 +196,7 @@ const Marketplace: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '1s'}}>📊</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {(marketplaceDomains.reduce((sum, domain) => sum + parseFloat(domain.price), 0) / marketplaceDomains.length || 0).toFixed(3)} ETH
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -219,7 +219,7 @@ const Marketplace: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '1.5s'}}>👥</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {new Set(marketplaceDomains.map(d => d.owner)).size}
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">

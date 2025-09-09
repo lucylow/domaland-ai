@@ -33,7 +33,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+    <Card className="group relative overflow-hidden bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
       {/* Shimmer effect */}
       <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
       
@@ -52,7 +52,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       </CardHeader>
       
       <CardContent className="relative z-10">
-        <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+        <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </div>
         
@@ -73,7 +73,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         {/* Progress bar for visual appeal */}
         <div className="mt-3 h-1 bg-muted/30 rounded-full overflow-hidden">
           <div 
-            className={`h-full bg-gradient-to-r ${trend === 'up' ? 'from-emerald-500 to-emerald-400' : trend === 'down' ? 'from-red-500 to-red-400' : 'from-blue-500 to-blue-400'} rounded-full transition-all duration-1000 group-hover:shadow-glow`}
+            className={`h-full bg-gradient-to-r ${trend === 'up' ? 'from-emerald-500 to-emerald-400' : trend === 'down' ? 'from-red-500 to-red-400' : 'from-blue-500 to-blue-400'} rounded-full transition-all duration-1000`}
             style={{ width: `${Math.min(100, Math.max(20, typeof change === 'number' ? Math.abs(change) * 10 : 50))}%` }}
           ></div>
         </div>

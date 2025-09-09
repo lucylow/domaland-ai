@@ -31,7 +31,7 @@ const Navigation: React.FC = () => {
     <>
       {/* Error Toast */}
       {error && (
-        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in">
+        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
           <span>⚠️</span>
           <span className="text-sm">{error}</span>
           <button 
@@ -47,7 +47,7 @@ const Navigation: React.FC = () => {
         <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
+          <Link to="/welcome" className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
             <span className="text-2xl animate-float">🌐</span>
             DomaLand.AI
             <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
@@ -141,7 +141,7 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-border/50 py-4 animate-slide-down">
+          <div className="md:hidden border-t border-border/50 py-4">
             <div className="space-y-2">
               {navigationItems.map((item) => (
                 <Link

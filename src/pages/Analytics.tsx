@@ -140,7 +140,7 @@ const Analytics: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float">💰</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {totalVolume.toFixed(2)} ETH
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -163,7 +163,7 @@ const Analytics: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '0.5s'}}>👥</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {totalUsers}
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -186,7 +186,7 @@ const Analytics: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '1s'}}>📊</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 {avgPrice.toFixed(3)} ETH
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
@@ -209,7 +209,7 @@ const Analytics: React.FC = () => {
               <span className="text-2xl group-hover:scale-110 transition-transform duration-300 animate-float" style={{animationDelay: '1.5s'}}>🏦</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground group-hover:text-gradient transition-all duration-300">
+              <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-all duration-300">
                 ${metrics.totalRevenue.toFixed(0)}
               </div>
               <div className="flex items-center gap-2 text-xs mt-2">
