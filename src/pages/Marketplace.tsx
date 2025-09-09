@@ -119,7 +119,7 @@ const Marketplace: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="space-y-2">
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="text-4xl lg:text-5xl font-bold text-black dark:text-white">
               DomainFi Marketplace
             </h1>
             <div className="flex items-center gap-3">

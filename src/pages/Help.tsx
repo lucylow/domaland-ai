@@ -83,7 +83,7 @@ const Help: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl lg:text-5xl font-bold text-black dark:text-white">
             Help Center
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
