@@ -7,16 +7,12 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
         {/* Hero Section */}
-        <section className="pt-8 pb-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-        
+        <section className="pt-8 pb-20 bg-background relative overflow-hidden">        
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="mb-8 flex justify-center">
             <Logo size="xl" showText={true} showTagline={true} variant="full" className="animate-float" />
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-black dark:text-white leading-tight">
             Transform Domains into Digital Assets
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
@@ -25,7 +21,7 @@ const Landing = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-10 py-6 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-1">
+              <Button size="lg" className="text-lg px-10 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <div className="flex items-center gap-2">
                   <span>🚀</span>
                   Start Tokenizing
@@ -43,11 +39,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-gradient-to-br from-card/30 to-card/10 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-gradient-to-r from-secondary/10 to-accent/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '3s'}}></div>
-        
+      <section id="features" className="py-20 bg-background relative overflow-hidden">        
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
