@@ -274,15 +274,10 @@ const Marketplace: React.FC = () => {
 
         {/* Domain Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedDomains.map((domain, index) => (
-            <Card key={domain.tokenId} className={`group relative overflow-hidden glass-card hover:glass-card-hover border-gradient-dark transition-all duration-500 hover:-translate-y-2 animate-slide-in-up`} style={{ animationDelay: `${index * 0.1}s` }}>
-              {/* Enhanced shimmer effect */}
-              <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-shimmer-enhanced"></div>
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="absolute inset-0 rounded-lg blur-xl bg-primary/10"></div>
-              </div>
+          {sortedDomains.map((domain) => (
+            <Card key={domain.tokenId} className="group relative overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-2">
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -top-2 -left-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
               
               <CardHeader className="relative z-10">
                 <div className="flex justify-between items-start">
@@ -324,8 +319,7 @@ const Marketplace: React.FC = () => {
                 <Button 
                   onClick={() => handleBuyDomain(domain)}
                   disabled={isLoading}
-                  variant="gradient"
-                  className="w-full font-medium animate-pulse-glow"
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
@@ -334,7 +328,7 @@ const Marketplace: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="hover:animate-wiggle">🛒</span>
+                      <span>🛒</span>
                       Buy Domain
                     </div>
                   )}

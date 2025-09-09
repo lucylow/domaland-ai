@@ -10,12 +10,8 @@ import Marketplace from "./pages/Marketplace";
 import Analytics from "./pages/Analytics";
 import FractionalOwnership from "./pages/FractionalOwnership";
 import Help from "./pages/Help";
-import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
-import EnhancedAccessibility from "./components/EnhancedAccessibility";
-import MobileNavigation from "./components/MobileNavigation";
-import ThemeToggle from "./components/ThemeToggle";
 import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
@@ -42,15 +38,11 @@ const App = () => (
                       <Route path="/analytics" element={<Analytics />} />
                       <Route path="/fractional" element={<FractionalOwnership />} />
                       <Route path="/help" element={<Help />} />
-                      <Route path="/chat" element={<Chat />} />
                       <Route path="/welcome" element={<Landing />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
-                  <EnhancedAccessibility />
-                  <MobileNavigation />
-                  <ThemeToggle />
                 </div>
               </BrowserRouter>
             </TooltipProvider>

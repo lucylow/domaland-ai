@@ -3,30 +3,27 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const MetricCardSkeleton: React.FC = () => (
-  <Card className="glass-card border-gradient-dark animate-pulse">
+  <Card className="bg-background/50 backdrop-blur-sm border-border/50">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <Skeleton className="h-4 w-24 bg-gradient-to-r from-muted/50 to-muted/30" />
-      <Skeleton className="h-6 w-6 rounded-full bg-gradient-to-r from-muted/50 to-muted/30" />
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-6 w-6 rounded-full" />
     </CardHeader>
     <CardContent>
-      <Skeleton className="h-8 w-16 mb-2 bg-gradient-to-r from-muted/50 to-muted/30" />
-      <Skeleton className="h-3 w-20 bg-gradient-to-r from-muted/50 to-muted/30" />
-      <div className="mt-3 h-2 bg-muted/20 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full animate-shimmer-enhanced"></div>
-      </div>
+      <Skeleton className="h-8 w-16 mb-2" />
+      <Skeleton className="h-3 w-20" />
     </CardContent>
   </Card>
 );
 
 export const DomainCardSkeleton: React.FC = () => (
-  <div className="flex justify-between items-center p-4 glass-card rounded-lg border-gradient-dark animate-pulse">
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-24 bg-gradient-to-r from-muted/50 to-muted/30" />
-      <Skeleton className="h-3 w-16 bg-gradient-to-r from-muted/50 to-muted/30" />
+  <div className="flex justify-between items-center p-2 bg-muted/50 rounded">
+    <div className="space-y-1">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-3 w-16" />
     </div>
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-12 bg-gradient-to-r from-muted/50 to-muted/30" />
-      <Skeleton className="h-6 w-12 bg-gradient-to-r from-muted/50 to-muted/30" />
+    <div className="space-y-1">
+      <Skeleton className="h-4 w-12" />
+      <Skeleton className="h-6 w-12" />
     </div>
   </div>
 );
