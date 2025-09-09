@@ -34,8 +34,8 @@ export const useDomainOperations = () => {
     try {
       const domainAsset = await domainService.tokenizeDomain(params);
       return domainAsset;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -55,8 +55,8 @@ export const useDomainOperations = () => {
     try {
       const domainAsset = await domainService.fractionalizeDomain(params);
       return domainAsset;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -76,8 +76,8 @@ export const useDomainOperations = () => {
     try {
       const transactionHash = await domainService.buyFractionalShares(domainId, shares);
       return transactionHash;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -97,8 +97,8 @@ export const useDomainOperations = () => {
     try {
       const transactionHash = await domainService.sellFractionalShares(domainId, shares);
       return transactionHash;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -113,8 +113,8 @@ export const useDomainOperations = () => {
     try {
       const results = await domainService.searchDomains(filters);
       return results;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -134,8 +134,8 @@ export const useDomainOperations = () => {
     try {
       const portfolio = await domainService.getUserPortfolio(account);
       return portfolio;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -143,15 +143,15 @@ export const useDomainOperations = () => {
   }, [account]);
 
   // Get domain analytics (Use Case 8.3.1)
-  const getDomainAnalytics = useCallback(async (domainId: string): Promise<any> => {
+  const getDomainAnalytics = useCallback(async (domainId: string): Promise<Record<string, unknown> | null> => {
     setLoading(true);
     setError(null);
 
     try {
       const analytics = await domainService.getDomainAnalytics(domainId);
       return analytics;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -171,8 +171,8 @@ export const useDomainOperations = () => {
     try {
       const distribution = await domainService.distributeRoyalties(domainId, revenue);
       return distribution;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -222,8 +222,8 @@ export const useDomainMarketplace = () => {
         setDomains(results.domains);
       }
       return results;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -258,8 +258,8 @@ export const useDomainMarketplace = () => {
       console.log('Making offer:', offer);
       
       return offer;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -283,8 +283,8 @@ export const useDomainMarketplace = () => {
       console.log('Accepting offer:', offerId, 'Transaction:', transactionHash);
       
       return transactionHash;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     } finally {
       setLoading(false);
@@ -331,8 +331,8 @@ export const usePortfolio = () => {
     try {
       const userPortfolio = await domainService.getUserPortfolio(account);
       setPortfolio(userPortfolio);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }

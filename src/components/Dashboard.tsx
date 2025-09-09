@@ -2,6 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 import { useMetrics } from '@/contexts/MetricsContext';
+import { useXMTP } from '@/contexts/XMTPContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ const Dashboard: FC = () => {
   const { isConnected, connectWallet, account, network } = useWeb3();
   const { userDomains, marketplaceDomains, listDomain, isLoading } = useDoma();
   const { metrics } = useMetrics();
+  const { conversations, getUnreadCount, connectXMTP, isConnected: isXMTPConnected } = useXMTP();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -281,6 +283,99 @@ const Dashboard: FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Messaging Section */}
+        {isConnected && (
+          <div className="mb-8">
+            <Card className="group relative overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 shimmer"></div>
+              
+              <CardHeader className="relative z-10">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-lg">
+                    <span className="text-xl group-hover:scale-110 transition-transform duration-300">💬</span>
+                    <span className="text-foreground group-hover:text-primary transition-colors duration-300">
+                      Domain Negotiations
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!isXMTPConnected && (
+                      <Button
+                        onClick={connectXMTP}
+                        size="sm"
+                        variant="outline"
+                        className="hover:bg-primary/10 hover:border-primary/30 hover:shadow-md hover:scale-105 transition-all duration-300"
+                      >
+                        Connect XMTP
+                      </Button>
+                    )}
+                    {isXMTPConnected && (
+                      <Badge variant="outline" className="px-3 py-1 bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-500/30 text-emerald-700">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
+                        XMTP Connected
+                      </Badge>
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                {conversations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-3 opacity-50 animate-float">💬</div>
+                    <p className="text-muted-foreground font-medium">
+                      No active negotiations
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Start chatting with domain sellers to negotiate deals
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {conversations.slice(0, 3).map((conversation) => (
+                      <div key={conversation.id} className="group/item flex justify-between items-center p-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                          <div>
+                            <span className="font-semibold text-foreground group-hover/item:text-primary transition-colors duration-300">
+                              {conversation.domainName || 'Domain Negotiation'}
+                            </span>
+                            <div className="text-sm text-muted-foreground">
+                              {conversation.lastMessage?.content.slice(0, 50)}...
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {conversation.unreadCount > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {conversation.unreadCount}
+                            </Badge>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="hover:bg-primary/10 hover:border-primary/30 hover:shadow-md hover:scale-105 transition-all duration-300 font-medium"
+                            onClick={() => window.location.href = `/negotiate/${conversation.domainId}`}
+                          >
+                            <span className="mr-1">💬</span>
+                            Chat
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {conversations.length > 3 && (
+                      <div className="text-center pt-2">
+                        <Button variant="ghost" size="sm" className="text-muted-foreground">
+                          View all {conversations.length} conversations
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -265,7 +265,7 @@ export class DomainService {
     }
   }
 
-  async getDomainAnalytics(domainId: string): Promise<any> {
+  async getDomainAnalytics(domainId: string): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(`${this.apiBaseUrl}/domains/${domainId}/analytics`, {
         headers: {
@@ -364,12 +364,12 @@ export class DomainService {
     return `nft_${domain.id}_${Date.now()}`;
   }
 
-  private async deployFractionalVault(params: any): Promise<string> {
+  private async deployFractionalVault(params: Record<string, unknown>): Promise<string> {
     // Mock vault deployment - in production, this would deploy actual smart contracts
     return `vault_${params.domainId}_${Date.now()}`;
   }
 
-  private async executeFractionalTrade(params: any): Promise<string> {
+  private async executeFractionalTrade(params: Record<string, unknown>): Promise<string> {
     // Mock trade execution - in production, this would interact with smart contracts
     return `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -379,7 +379,7 @@ export class DomainService {
     console.log('Executing royalty distribution:', distribution);
   }
 
-  private async storeLandingPageConfig(domainId: string, config: any): Promise<void> {
+  private async storeLandingPageConfig(domainId: string, config: Record<string, unknown>): Promise<void> {
     // Mock storage - in production, this would store in a database
     console.log('Storing landing page config:', domainId, config);
   }

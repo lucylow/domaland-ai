@@ -1,6 +1,6 @@
 // React component for domain marketplace interface
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDomainMarketplace } from '../hooks/useDomainOperations';
 import { DomainAsset, SearchFilters } from '../types/domain';
 
@@ -33,13 +33,13 @@ export const DomainMarketplace: React.FC = () => {
   useEffect(() => {
     // Load initial domains
     handleSearch();
-  }, []);
+  }, [handleSearch]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     await searchDomains(searchFilters);
-  };
+  }, [searchDomains, searchFilters]);
 
-  const handleFilterChange = (key: keyof SearchFilters, value: any) => {
+  const handleFilterChange = (key: keyof SearchFilters, value: unknown) => {
     setSearchFilters(prev => ({
       ...prev,
       [key]: value

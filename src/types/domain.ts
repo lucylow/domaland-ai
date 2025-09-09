@@ -159,7 +159,7 @@ export interface TradeParams {
 export interface DomainEvent {
   type: 'tokenized' | 'fractionalized' | 'traded' | 'offer_made' | 'offer_accepted' | 'valuation_updated';
   domainId: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   transactionHash?: string;
 }

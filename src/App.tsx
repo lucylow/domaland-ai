@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
@@ -15,22 +16,26 @@ import NotFound from "./pages/NotFound";
 import Track5Demo from "./pages/Track5Demo";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DomainLandingPage from "./components/DomainLandingPage";
+import DomainNegotiationPage from "./pages/DomainNegotiationPage";
 import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
+import { XMTPProvider } from "./contexts/XMTPContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <ErrorBoundary>
-    <Web3Provider>
-      <DomaProvider>
-        <MetricsProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+    <HelmetProvider>
+      <Web3Provider>
+        <DomaProvider>
+          <MetricsProvider>
+            <XMTPProvider>
+            <QueryClientProvider client={queryClient}>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
                 <div className="min-h-screen bg-background text-foreground">
                   <Navigation />
                   <main className="pt-20">
@@ -45,17 +50,20 @@ const App = () => (
                       <Route path="/welcome" element={<Landing />} />
                       <Route path="/track5-demo" element={<Track5Demo />} />
                       <Route path="/domain/:domain" element={<DomainLandingPage />} />
+                      <Route path="/negotiate/:domainId" element={<DomainNegotiationPage />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
                 </div>
-              </BrowserRouter>
-            </TooltipProvider>
-          </QueryClientProvider>
-        </MetricsProvider>
-      </DomaProvider>
-    </Web3Provider>
+                </BrowserRouter>
+              </TooltipProvider>
+            </QueryClientProvider>
+            </XMTPProvider>
+          </MetricsProvider>
+        </DomaProvider>
+      </Web3Provider>
+    </HelmetProvider>
   </ErrorBoundary>
 );
 

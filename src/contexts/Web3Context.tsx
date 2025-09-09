@@ -1,10 +1,17 @@
-import { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, FC, useCallback } from 'react';
 import { ethers, BrowserProvider, JsonRpcProvider, Network } from 'ethers';
 
 declare global {
   interface Window {
-    ethereum?: any;
-    solana?: any;
+    ethereum?: {
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      on: (event: string, callback: (...args: unknown[]) => void) => void;
+      removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
+    };
+    solana?: {
+      isPhantom?: boolean;
+      connect: () => Promise<{ publicKey: { toString: () => string } }>;
+    };
   }
 }
 
@@ -112,7 +119,10 @@ interface Web3ContextType {
   
   // Solana
   solanaAccount: string | null;
-  solanaProvider: any;
+  solanaProvider: {
+    isPhantom?: boolean;
+    connect: () => Promise<{ publicKey: { toString: () => string } }>;
+  } | null;
   isSolanaConnected: boolean;
   
   // General state
@@ -160,7 +170,10 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   
   // Solana state
   const [solanaAccount, setSolanaAccount] = useState<string | null>(null);
-  const [solanaProvider, setSolanaProvider] = useState<any>(null);
+  const [solanaProvider, setSolanaProvider] = useState<{
+    isPhantom?: boolean;
+    connect: () => Promise<{ publicKey: { toString: () => string } }>;
+  } | null>(null);
   const [isSolanaConnected, setIsSolanaConnected] = useState(false);
   
   // General state
@@ -168,7 +181,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const connectWallet = async (chain: SupportedChain = SupportedChain.POLYGON): Promise<boolean> => {
+  const connectWallet = useCallback(async (chain: SupportedChain = SupportedChain.POLYGON): Promise<boolean> => {
     setIsConnecting(true);
     setError(null);
     
@@ -212,16 +225,21 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
           return false;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to connect wallet:', error);
       let errorMessage = 'Failed to connect wallet';
       
-      if (error.code === 4001) {
-        errorMessage = 'User rejected the connection request';
-      } else if (error.code === -32002) {
-        errorMessage = 'Connection request already pending';
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as { code: number }).code;
+        if (errorCode === 4001) {
+          errorMessage = 'User rejected the connection request';
+        } else if (errorCode === -32002) {
+          errorMessage = 'Connection request already pending';
+        }
+      }
+      
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = (error as { message: string }).message;
       }
       
       setError(errorMessage);
@@ -229,9 +247,9 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [switchChain]);
 
-  const switchChain = async (chain: SupportedChain): Promise<boolean> => {
+  const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
     if (!window.ethereum) return false;
     
     try {
@@ -255,11 +273,11 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       
       setCurrentChain(chain);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to switch chain:', error);
       
       // If the chain is not added to MetaMask, try to add it
-      if (error.code === 4902) {
+      if (error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 4902) {
         try {
           const chainConfig = CHAIN_CONFIGS[chain];
           await window.ethereum.request({
@@ -284,7 +302,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       setError(`Failed to switch to ${chain}`);
       return false;
     }
-  };
+  }, []);
 
   const connectSolanaWallet = async (): Promise<boolean> => {
     try {
@@ -298,7 +316,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         setError('Phantom wallet not detected. Please install Phantom wallet.');
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to connect Solana wallet:', error);
       setError('Failed to connect Solana wallet');
       return false;
@@ -322,7 +340,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       // For now, just simulate the bridge operation
       setError(null);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Bridge operation failed:', error);
       setError('Bridge operation failed');
       return false;
@@ -381,7 +399,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     };
 
     checkConnection();
-  }, []);
+  }, [connectWallet]);
 
   const value: Web3ContextType = {
     // EVM chains

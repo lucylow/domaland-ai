@@ -8,7 +8,7 @@ interface Domain {
   owner: string;
   price?: string;
   isListed?: boolean;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   category?: string;
   listedAt?: string;
 }
@@ -17,9 +17,9 @@ interface DomaContextType {
   userDomains: Domain[];
   marketplaceDomains: Domain[];
   isLoading: boolean;
-  tokenizeDomain: (domainName: string) => Promise<any>;
-  listDomain: (tokenId: string, price: string) => Promise<any>;
-  buyDomain: (tokenId: string, price: string) => Promise<any>;
+  tokenizeDomain: (domainName: string) => Promise<{ success: boolean; tokenId?: string; error?: string }>;
+  listDomain: (tokenId: string, price: string) => Promise<{ success: boolean; error?: string }>;
+  buyDomain: (tokenId: string, price: string) => Promise<{ success: boolean; error?: string }>;
   refreshData: () => void;
 }
 

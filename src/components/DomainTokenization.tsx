@@ -5,7 +5,7 @@ import { useDomainOperations } from '../hooks/useDomainOperations';
 import { TokenizationParams } from '../types/domain';
 
 interface DomainTokenizationProps {
-  onSuccess?: (domainAsset: any) => void;
+  onSuccess?: (domainAsset: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 

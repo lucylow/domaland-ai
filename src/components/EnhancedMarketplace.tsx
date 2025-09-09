@@ -1,264 +1,609 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import MarketplaceFilters from './MarketplaceFilters';
-import { useDoma } from '@/contexts/DomaContext';
-import { ExternalLink, Eye, Heart, TrendingUp } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { useContractService, Offer } from '../services/contractService';
+import { useNotificationHelpers } from './EnhancedNotificationSystem';
+import { useWeb3 } from '../contexts/Web3Context';
+import { 
+  Search, 
+  Filter, 
+  Clock, 
+  DollarSign, 
+  User, 
+  ExternalLink,
+  TrendingUp,
+  TrendingDown,
+  Star,
+  Eye,
+  Heart,
+  Share2,
+  MoreHorizontal
+} from 'lucide-react';
 
-interface FilterOptions {
-  priceRange: { min: number; max: number };
-  domainLength: { min: number; max: number };
-  tld: string[];
+interface DomainListing {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  currency: string;
+  owner: string;
+  tokenId: string;
+  nftContract: string;
+  createdAt: string;
+  views: number;
+  offers: number;
+  isActive: boolean;
+  metadata: {
+    category: string;
+    tags: string[];
+    rarity: 'common' | 'rare' | 'epic' | 'legendary';
+    stats: {
+      length: number;
+      pronounceability: number;
+      memorability: number;
+      brandability: number;
+    };
+  };
+}
+
+interface MarketplaceFilters {
+  category: string;
+  priceRange: [number, number];
+  currency: string;
+  rarity: string;
+  sortBy: 'price' | 'date' | 'views' | 'offers' | 'rating';
+  sortOrder: 'asc' | 'desc';
+  searchQuery: string;
 }
 
 const EnhancedMarketplace: React.FC = () => {
-  const { marketplaceDomains, isLoading } = useDoma();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [filters, setFilters] = useState<FilterOptions>({
-    priceRange: { min: 0, max: 1000 },
-    domainLength: { min: 1, max: 50 },
-    tld: []
+  const contractService = useContractService();
+  const { showSuccess, showError, showWarning, showTransaction } = useNotificationHelpers();
+  const { account, isConnected } = useWeb3();
+  
+  const [domains, setDomains] = useState<DomainListing[]>([]);
+  const [filteredDomains, setFilteredDomains] = useState<DomainListing[]>([]);
+  const [offers, setOffers] = useState<Map<string, Offer[]>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [selectedDomain, setSelectedDomain] = useState<DomainListing | null>(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerDuration, setOfferDuration] = useState('7');
+  const [offerCurrency, setOfferCurrency] = useState('ETH');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [filters, setFilters] = useState<MarketplaceFilters>({
+    category: 'all',
+    priceRange: [0, 1000],
+    currency: 'all',
+    rarity: 'all',
+    sortBy: 'date',
+    sortOrder: 'desc',
+    searchQuery: ''
   });
 
-  const filteredAndSortedDomains = useMemo(() => {
-    let filtered = marketplaceDomains.filter(domain => {
-      // Search filter
-      if (searchQuery && !domain.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-
-      // Price filter
-      const price = parseFloat(domain.price || '0');
-      if (price < filters.priceRange.min || price > filters.priceRange.max) {
-        return false;
-      }
-
-      // Domain length filter
-      const domainLength = domain.name.length;
-      if (domainLength < filters.domainLength.min || domainLength > filters.domainLength.max) {
-        return false;
-      }
-
-      // TLD filter
-      if (filters.tld.length > 0) {
-        const domainTld = '.' + domain.name.split('.').pop();
-        if (!filters.tld.includes(domainTld)) {
-          return false;
+  // Mock data - in production, this would come from your backend
+  const mockDomains: DomainListing[] = [
+    {
+      id: '1',
+      name: 'cryptoqueen.eth',
+      description: 'Premium crypto domain perfect for DeFi projects',
+      imageUrl: '/api/placeholder/300/200',
+      price: '2.5',
+      currency: 'ETH',
+      owner: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+      tokenId: '1',
+      nftContract: '0x1234567890123456789012345678901234567890',
+      createdAt: '2024-01-15T10:30:00Z',
+      views: 1250,
+      offers: 3,
+      isActive: true,
+      metadata: {
+        category: 'crypto',
+        tags: ['defi', 'crypto', 'premium'],
+        rarity: 'rare',
+        stats: {
+          length: 12,
+          pronounceability: 9,
+          memorability: 8,
+          brandability: 9
         }
       }
+    },
+    {
+      id: '2',
+      name: 'nftmarket.eth',
+      description: 'Perfect domain for NFT marketplace platforms',
+      imageUrl: '/api/placeholder/300/200',
+      price: '1.8',
+      currency: 'ETH',
+      owner: '0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c',
+      tokenId: '2',
+      nftContract: '0x1234567890123456789012345678901234567890',
+      createdAt: '2024-01-14T15:45:00Z',
+      views: 890,
+      offers: 1,
+      isActive: true,
+      metadata: {
+        category: 'nft',
+        tags: ['nft', 'marketplace', 'art'],
+        rarity: 'common',
+        stats: {
+          length: 10,
+          pronounceability: 8,
+          memorability: 7,
+          brandability: 8
+        }
+      }
+    }
+  ];
 
-      return true;
+  // Load domains and offers
+  useEffect(() => {
+    loadDomains();
+  }, []);
+
+  const loadDomains = async () => {
+    setLoading(true);
+    try {
+      // In production, fetch from your backend API
+      setDomains(mockDomains);
+      
+      // Load offers for each domain
+      if (contractService) {
+        const offersMap = new Map<string, Offer[]>();
+        for (const domain of mockDomains) {
+          try {
+            const domainOffers = await contractService.getActiveDomainOffers(
+              domain.nftContract,
+              domain.tokenId
+            );
+            offersMap.set(domain.id, domainOffers);
+          } catch (error) {
+            console.error(`Error loading offers for domain ${domain.id}:`, error);
+          }
+        }
+        setOffers(offersMap);
+      }
+    } catch (error) {
+      showError('Failed to load domains', 'Please try again later');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Apply filters
+  useEffect(() => {
+    let filtered = [...domains];
+
+    // Search filter
+    if (filters.searchQuery) {
+      filtered = filtered.filter(domain =>
+        domain.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        domain.description.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        domain.metadata.tags.some(tag => tag.toLowerCase().includes(filters.searchQuery.toLowerCase()))
+      );
+    }
+
+    // Category filter
+    if (filters.category !== 'all') {
+      filtered = filtered.filter(domain => domain.metadata.category === filters.category);
+    }
+
+    // Currency filter
+    if (filters.currency !== 'all') {
+      filtered = filtered.filter(domain => domain.currency === filters.currency);
+    }
+
+    // Rarity filter
+    if (filters.rarity !== 'all') {
+      filtered = filtered.filter(domain => domain.metadata.rarity === filters.rarity);
+    }
+
+    // Price range filter
+    filtered = filtered.filter(domain => {
+      const price = parseFloat(domain.price);
+      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
     });
 
-    // Sort domains
+    // Sort
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-
-      switch (sortBy) {
-        case 'name':
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-          break;
+      
+      switch (filters.sortBy) {
         case 'price':
-          aValue = parseFloat(a.price || '0');
-          bValue = parseFloat(b.price || '0');
+          aValue = parseFloat(a.price);
+          bValue = parseFloat(b.price);
           break;
-        case 'length':
-          aValue = a.name.length;
-          bValue = b.name.length;
+        case 'date':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
           break;
-        case 'tld':
-          aValue = a.name.split('.').pop()?.toLowerCase() || '';
-          bValue = b.name.split('.').pop()?.toLowerCase() || '';
+        case 'views':
+          aValue = a.views;
+          bValue = b.views;
+          break;
+        case 'offers':
+          aValue = a.offers;
+          bValue = b.offers;
+          break;
+        case 'rating':
+          aValue = (a.metadata.stats.pronounceability + a.metadata.stats.memorability + a.metadata.stats.brandability) / 3;
+          bValue = (b.metadata.stats.pronounceability + b.metadata.stats.memorability + b.metadata.stats.brandability) / 3;
           break;
         default:
           return 0;
       }
 
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
+      if (filters.sortOrder === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
     });
 
-    return filtered;
-  }, [marketplaceDomains, searchQuery, sortBy, sortDirection, filters]);
+    setFilteredDomains(filtered);
+  }, [domains, filters]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
+  const handleCreateOffer = async () => {
+    if (!contractService || !selectedDomain) {
+      showError('Contract not available', 'Please connect your wallet');
+      return;
+    }
+
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+      showError('Invalid amount', 'Please enter a valid offer amount');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      const duration = parseInt(offerDuration) * 24 * 60 * 60; // Convert days to seconds
+      const paymentToken = offerCurrency === 'ETH' 
+        ? '0x0000000000000000000000000000000000000000' 
+        : '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'; // USDC
+
+      const tx = await contractService.createOffer({
+        nftContract: selectedDomain.nftContract,
+        tokenId: selectedDomain.tokenId,
+        paymentToken,
+        amount: offerAmount,
+        duration
+      });
+
+      showTransaction(
+        'Offer Created',
+        `Your offer of ${offerAmount} ${offerCurrency} has been submitted`,
+        tx.hash
+      );
+
+      setShowOfferModal(false);
+      setOfferAmount('');
+      await loadDomains(); // Refresh offers
+    } catch (error: any) {
+      showError('Offer Failed', error.message || 'Failed to create offer');
+    } finally {
+      setSubmittingOffer(false);
+    }
   };
 
-  const handleSort = (newSortBy: string, direction: 'asc' | 'desc') => {
-    setSortBy(newSortBy);
-    setSortDirection(direction);
+  const handleBuyNow = async (domain: DomainListing) => {
+    if (!isConnected) {
+      showWarning('Wallet Required', 'Please connect your wallet to make a purchase');
+      return;
+    }
+
+    // In production, this would trigger the buy now flow
+    showSuccess('Purchase Initiated', `Starting purchase of ${domain.name}`);
   };
 
-  const handleFilter = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
+  const getRarityColor = (rarity: string) => {
+    switch (rarity) {
+      case 'common': return 'bg-gray-100 text-gray-800';
+      case 'rare': return 'bg-blue-100 text-blue-800';
+      case 'epic': return 'bg-purple-100 text-purple-800';
+      case 'legendary': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const getDomainValue = (domainName: string) => {
-    // Simple domain value estimation based on length and TLD
-    const length = domainName.length;
-    const tld = domainName.split('.').pop()?.toLowerCase();
-    
-    let baseValue = 0;
-    if (tld === 'com') baseValue = 100;
-    else if (tld === 'org') baseValue = 50;
-    else if (tld === 'net') baseValue = 30;
-    else if (tld === 'io') baseValue = 80;
-    else baseValue = 20;
-
-    // Shorter domains are generally more valuable
-    const lengthMultiplier = Math.max(0.1, 1 - (length - 3) * 0.1);
-    
-    return Math.round(baseValue * lengthMultiplier);
+  const getRarityIcon = (rarity: string) => {
+    switch (rarity) {
+      case 'common': return '⚪';
+      case 'rare': return '🔵';
+      case 'epic': return '🟣';
+      case 'legendary': return '🟡';
+      default: return '⚪';
+    }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <Card className="bg-background/50 backdrop-blur-sm border-border/50">
-        <CardHeader>
-          <CardTitle>Marketplace</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex justify-between items-center p-2 bg-muted/50 rounded">
-              <div className="space-y-1">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-              <div className="space-y-1">
-                <Skeleton className="h-4 w-12" />
-                <Skeleton className="h-6 w-12" />
-              </div>
-            </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <div className="h-48 bg-muted rounded-t-lg"></div>
+              <CardContent className="p-4 space-y-3">
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
+                <div className="h-6 bg-muted rounded w-1/3"></div>
+              </CardContent>
+            </Card>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <MarketplaceFilters
-        onSearch={handleSearch}
-        onSort={handleSort}
-        onFilter={handleFilter}
-        searchQuery={searchQuery}
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        filters={filters}
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient">Domain Marketplace</h1>
+          <p className="text-muted-foreground mt-1">
+            Discover and trade premium domain names
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="px-3 py-1">
+            {filteredDomains.length} domains
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1">
+            {Array.from(offers.values()).flat().length} active offers
+          </Badge>
+        </div>
+      </div>
 
-      <Card className="bg-background/50 backdrop-blur-sm border-border/50">
+      {/* Filters */}
+      <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-2xl">🏪</span>
-              Marketplace
-              <Badge variant="secondary" className="ml-2">
-                {filteredAndSortedDomains.length} domains
-              </Badge>
-            </CardTitle>
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSearchQuery('')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Clear search
-              </Button>
-            )}
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filters & Search
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          {filteredAndSortedDomains.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <div className="text-4xl mb-2">🔍</div>
-              <p>No domains found matching your criteria</p>
-              <p className="text-sm">Try adjusting your search or filters</p>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="space-y-2">
+              <Label htmlFor="search">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Search domains..."
+                  value={filters.searchQuery}
+                  onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+                  className="pl-10"
+                />
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredAndSortedDomains.map((domain) => (
-                <div
-                  key={domain.tokenId}
-                  className="group flex justify-between items-center p-4 bg-muted/30 rounded-lg border border-border/30 hover:border-primary/30 hover:bg-muted/50 transition-all duration-200"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
-                        {domain.name}
-                      </h3>
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs"
-                      >
-                        {domain.name.length} chars
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Owner: {domain.owner?.slice(0, 6)}...{domain.owner?.slice(-4)}</span>
-                      <span>•</span>
-                      <span>Est. Value: ${getDomainValue(domain.name)}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-primary">
-                        {domain.price} ETH
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        ≈ ${(parseFloat(domain.price || '0') * 2000).toFixed(0)}
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="View details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Add to favorites"
-                      >
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="View on blockchain"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <Button 
-                      size="sm" 
-                      className="bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-200 hover:scale-105"
-                    >
-                      Buy Now
-                    </Button>
-                  </div>
-                </div>
-              ))}
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="crypto">Crypto</SelectItem>
+                  <SelectItem value="nft">NFT</SelectItem>
+                  <SelectItem value="defi">DeFi</SelectItem>
+                  <SelectItem value="gaming">Gaming</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+
+            {/* Currency */}
+            <div className="space-y-2">
+              <Label>Currency</Label>
+              <Select value={filters.currency} onValueChange={(value) => setFilters(prev => ({ ...prev, currency: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All currencies" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Currencies</SelectItem>
+                  <SelectItem value="ETH">ETH</SelectItem>
+                  <SelectItem value="USDC">USDC</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sort */}
+            <div className="space-y-2">
+              <Label>Sort By</Label>
+              <Select value={`${filters.sortBy}-${filters.sortOrder}`} onValueChange={(value) => {
+                const [sortBy, sortOrder] = value.split('-');
+                setFilters(prev => ({ ...prev, sortBy: sortBy as any, sortOrder: sortOrder as any }));
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Newest First</SelectItem>
+                  <SelectItem value="date-asc">Oldest First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="views-desc">Most Views</SelectItem>
+                  <SelectItem value="offers-desc">Most Offers</SelectItem>
+                  <SelectItem value="rating-desc">Highest Rated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Domain Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredDomains.map((domain) => (
+          <Card key={domain.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="relative">
+              <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-t-lg flex items-center justify-center">
+                <span className="text-4xl">🌐</span>
+              </div>
+              <div className="absolute top-3 right-3 flex gap-2">
+                <Badge className={getRarityColor(domain.metadata.rarity)}>
+                  {getRarityIcon(domain.metadata.rarity)} {domain.metadata.rarity}
+                </Badge>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Heart className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                  {domain.name}
+                </h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {domain.description}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                  <span className="font-bold text-lg">{domain.price}</span>
+                  <span className="text-sm text-muted-foreground">{domain.currency}</span>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Eye className="h-4 w-4" />
+                  {domain.views}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  {domain.owner.slice(0, 6)}...{domain.owner.slice(-4)}
+                </div>
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  {new Date(domain.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1" 
+                  onClick={() => handleBuyNow(domain)}
+                  disabled={!isConnected}
+                >
+                  Buy Now
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedDomain(domain);
+                    setShowOfferModal(true);
+                  }}
+                  disabled={!isConnected}
+                >
+                  Make Offer
+                </Button>
+              </div>
+
+              {offers.get(domain.id) && offers.get(domain.id)!.length > 0 && (
+                <div className="pt-2 border-t">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Active Offers:</span>
+                    <Badge variant="secondary">{offers.get(domain.id)!.length}</Badge>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Offer Modal */}
+      {showOfferModal && selectedDomain && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Make an Offer</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Offer for {selectedDomain.name}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Offer Amount</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="0.0"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                  />
+                  <Select value={offerCurrency} onValueChange={setOfferCurrency}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ETH">ETH</SelectItem>
+                      <SelectItem value="USDC">USDC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="duration">Offer Duration (days)</Label>
+                <Select value={offerDuration} onValueChange={setOfferDuration}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 Day</SelectItem>
+                    <SelectItem value="3">3 Days</SelectItem>
+                    <SelectItem value="7">7 Days</SelectItem>
+                    <SelectItem value="14">14 Days</SelectItem>
+                    <SelectItem value="30">30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Alert>
+                <AlertDescription>
+                  Your offer will be locked for {offerDuration} days. You can cancel it anytime before expiration.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowOfferModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1"
+                  onClick={handleCreateOffer}
+                  disabled={submittingOffer || !offerAmount}
+                >
+                  {submittingOffer ? 'Creating...' : 'Create Offer'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

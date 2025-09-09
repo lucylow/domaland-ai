@@ -50,7 +50,7 @@ interface ListingData {
 // AI Valuation Types
 interface AIValuationRequest {
   domain_name: string;
-  additional_data?: Record<string, any>;
+  additional_data?: Record<string, unknown>;
 }
 
 interface AIValuationResponse {
@@ -108,7 +108,7 @@ interface SharePurchaseData {
   share_amount: number;
   payment_details: {
     method: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -119,7 +119,7 @@ interface GovernanceProposal {
   type: string;
   title: string;
   description: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   voting_starts: string;
   voting_ends: string;
   quorum_required: number;
@@ -180,10 +180,10 @@ interface DashboardData {
   trending_domains: Array<{
     domain: Domain;
     trending_score: number;
-    metrics: any;
+    metrics: Record<string, unknown>;
   }>;
-  blockchain_metrics: Record<string, any>;
-  portfolio_metrics: any;
+  blockchain_metrics: Record<string, unknown>;
+  portfolio_metrics: Record<string, unknown>;
   market_trends: Array<{
     trend_type: string;
     strength: number;

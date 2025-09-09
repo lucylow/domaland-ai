@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 
 export interface DeploymentConfig {
-  contractABI: any[];
+  contractABI: ethers.Fragment[];
   contractBytecode: string;
-  constructorArgs?: any[];
+  constructorArgs?: unknown[];
   gasLimit?: number;
 }
 
