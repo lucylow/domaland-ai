@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/Logo';
 
 const Landing = () => {
   return (
@@ -12,8 +13,8 @@ const Landing = () => {
         <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="mb-8">
-            <span className="text-6xl animate-float">🌐</span>
+          <div className="mb-8 flex justify-center">
+            <Logo size="xl" showText={true} showTagline={true} variant="full" className="animate-float" />
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight">
             Transform Domains into Digital Assets
@@ -284,12 +285,7 @@ const Landing = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🌐</span>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  DomainFi
-                </h3>
-              </div>
+              <Logo size="md" showText={true} showTagline={false} variant="default" />
               <p className="text-muted-foreground leading-relaxed">
                 Transforming domain ownership through blockchain technology and decentralized finance.
               </p>

@@ -47,14 +47,14 @@ const DOMA_ABI = [
 ];
 
 export const DomaProvider: React.FC<DomaProviderProps> = ({ children }) => {
-  const { signer, account } = useWeb3();
+  const { signer, account, isMockMode } = useWeb3();
   const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [marketplaceDomains, setMarketplaceDomains] = useState<Domain[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Mock tokenize domain function
   const tokenizeDomain = async (domainName: string) => {
-    if (!signer) throw new Error('Wallet not connected');
+    if (!account) throw new Error('Wallet not connected');
     
     try {
       setIsLoading(true);
@@ -117,7 +117,7 @@ export const DomaProvider: React.FC<DomaProviderProps> = ({ children }) => {
 
   // Mock buy domain function
   const buyDomain = async (tokenId: string, price: string) => {
-    if (!signer) throw new Error('Wallet not connected');
+    if (!account) throw new Error('Wallet not connected');
     
     try {
       setIsLoading(true);

@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Marketplace from "./pages/Marketplace";
 import Analytics from "./pages/Analytics";
 import FractionalOwnership from "./pages/FractionalOwnership";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Web3Provider } from "./contexts/Web3Context";
@@ -31,11 +32,12 @@ const App = () => (
                   <Navigation />
                   <main className="pt-20">
                     <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/" element={<Landing />} />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/analytics" element={<Analytics />} />
                       <Route path="/fractional" element={<FractionalOwnership />} />
+                      <Route path="/help" element={<Help />} />
                       <Route path="/welcome" element={<Landing />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />

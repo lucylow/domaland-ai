@@ -11,6 +11,7 @@ import { DashboardSkeleton, MetricCardSkeleton, DomainCardSkeleton } from './Loa
 import MetricCard from './MetricCard';
 import DomainTokenization from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
+import Logo from './Logo';
 
 const Dashboard: React.FC = () => {
   const { isConnected, connectWallet, account, network } = useWeb3();
@@ -45,8 +46,8 @@ const Dashboard: React.FC = () => {
         
         <Card className="w-full max-w-md bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-md border border-border/50 shadow-2xl shadow-primary/10 relative z-10">
           <CardHeader className="text-center pb-6">
-            <div className="mb-4">
-              <span className="text-4xl animate-float">🌐</span>
+            <div className="mb-4 flex justify-center">
+              <Logo size="lg" showText={true} showTagline={false} variant="default" className="animate-float" />
             </div>
             <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               DomainFi Protocol
