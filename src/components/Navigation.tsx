@@ -16,6 +16,7 @@ const Navigation: React.FC = () => {
     { path: '/marketplace', label: 'Domains', icon: '🌐' },
     { path: '/fractional', label: 'Portfolio', icon: '💼' },
     { path: '/analytics', label: 'Analytics', icon: '📈' },
+    { path: '/chat', label: 'Chat', icon: '💬' },
     { path: '/help', label: 'Help', icon: '❓' },
   ];
 
