@@ -33,7 +33,7 @@ const App = () => (
                   <Navigation />
                   <main className="pt-20">
                     <Routes>
-                      <Route path="/" element={<Landing />} />
+                      <Route path="/" element={<Index />} />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/analytics" element={<Analytics />} />

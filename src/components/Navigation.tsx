@@ -12,10 +12,10 @@ const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
+    { path: '/', label: 'Dashboard', icon: '📊' },
     { path: '/marketplace', label: 'Domains', icon: '🌐' },
     { path: '/fractional', label: 'Portfolio', icon: '💼' },
     { path: '/analytics', label: 'Analytics', icon: '📈' },
-    { path: '/chat', label: 'Chat', icon: '💬' },
     { path: '/help', label: 'Help', icon: '❓' },
   ];
 

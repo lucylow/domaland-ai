@@ -11,7 +11,7 @@ import {
   Globe, 
   Wallet, 
   ExternalLink, 
-  FileContract, 
+  FileText, 
   Coins, 
   History, 
   Handshake, 
@@ -20,7 +20,7 @@ import {
   Clock, 
   MessageCircle, 
   BadgeCheck, 
-  PaperPlane,
+  Send,
   Link as LinkIcon
 } from 'lucide-react';
 
@@ -306,7 +306,7 @@ const Chat: React.FC = () => {
                       View on Etherscan
                     </Button>
                     <Button variant="outline" size="sm" className="w-full justify-start">
-                      <FileContract className="w-4 h-4 mr-2" />
+                      <FileText className="w-4 h-4 mr-2" />
                       Smart Contract
                     </Button>
                     <Button variant="outline" size="sm" className="w-full justify-start">
@@ -450,7 +450,7 @@ const Chat: React.FC = () => {
                     className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
                     size="icon"
                   >
-                    <PaperPlane className="w-4 h-4" />
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
