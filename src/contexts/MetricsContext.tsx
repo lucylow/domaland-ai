@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
 import { useWeb3 } from './Web3Context';
-import { useDoma } from './DomaContext';
 
 interface Metrics {
   totalTransactions: number;
@@ -38,7 +37,6 @@ interface MetricsProviderProps {
 
 export const MetricsProvider: FC<MetricsProviderProps> = ({ children }) => {
   const { account } = useWeb3();
-  const { userDomains, marketplaceDomains } = useDoma();
   
   const [metrics, setMetrics] = useState<Metrics>({
     totalTransactions: 1247,
@@ -54,24 +52,23 @@ export const MetricsProvider: FC<MetricsProviderProps> = ({ children }) => {
     }
   });
 
-  // Update domain statistics
+  // Update domain statistics (mock data for now)
   useEffect(() => {
     setMetrics(prev => ({
       ...prev,
       domainStats: {
-        totalTokenized: userDomains.length,
-        totalListed: marketplaceDomains.length,
-        totalFractionalized: userDomains.filter(d => d.metadata?.fractionalized).length
+        totalTokenized: 15,
+        totalListed: 8,
+        totalFractionalized: 3
       }
     }));
-  }, [userDomains, marketplaceDomains]);
+  }, [account]);
 
-  // Calculate revenue projections
+  // Calculate revenue projections (mock data for now)
   useEffect(() => {
     const calculateRevenue = () => {
-      const listedDomains = marketplaceDomains.length;
-      const avgPrice = marketplaceDomains.reduce((sum, domain) => 
-        sum + parseFloat(domain.price || '0'), 0) / (listedDomains || 1);
+      const listedDomains = 8;
+      const avgPrice = 7.5;
       
       const estimatedRevenue = listedDomains * avgPrice * 0.03; // 3% platform fee
       const projectedMonthly = estimatedRevenue * 30;
@@ -84,7 +81,7 @@ export const MetricsProvider: FC<MetricsProviderProps> = ({ children }) => {
     };
 
     calculateRevenue();
-  }, [marketplaceDomains]);
+  }, [account]);
 
   // Simulate real-time growth
   useEffect(() => {

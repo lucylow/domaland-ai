@@ -106,10 +106,18 @@ const Analytics: React.FC = () => {
               </SelectContent>
             </Select>
             <Button
-              onClick={() => setIsLoading(!isLoading)}
+              onClick={() => {
+                setIsLoading(true);
+                // Simulate data refresh
+                setTimeout(() => {
+                  setIsLoading(false);
+                  // You could add a toast notification here
+                }, 2000);
+              }}
               variant="outline"
               size="sm"
-              className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"
+              className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-105"
+              disabled={isLoading}
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
@@ -245,12 +253,17 @@ const Analytics: React.FC = () => {
                 <CardContent>
                   <div className="h-64 flex items-end justify-between gap-2">
                     {chartData.map((item, index) => (
-                      <div key={index} className="flex flex-col items-center gap-2 flex-1">
+                      <div key={index} className="flex flex-col items-center gap-2 flex-1 group">
                         <div 
-                          className="w-full bg-gradient-to-t from-primary to-secondary rounded-t transition-all duration-500 hover:from-primary/80 hover:to-secondary/80"
+                          className="w-full bg-gradient-to-t from-primary to-secondary rounded-t transition-all duration-500 hover:from-primary/80 hover:to-secondary/80 cursor-pointer hover:scale-105 relative"
                           style={{ height: `${(item.volume / Math.max(...chartData.map(d => d.volume))) * 200}px` }}
-                        ></div>
-                        <div className="text-xs text-muted-foreground">
+                          title={`Volume: ${item.volume} ETH`}
+                        >
+                          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                            {item.volume} ETH
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-300">
                           {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>

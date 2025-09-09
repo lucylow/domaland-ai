@@ -170,12 +170,56 @@ const Chat: React.FC = () => {
   };
 
   const handleMakeOffer = () => {
-    // This would open an offer dialog
-    alert('Offer dialog would open here with transaction preparation');
+    const offerAmount = prompt(`Make an offer for ${domainDetails.name} (Current price: ${domainDetails.price}):`);
+    if (offerAmount && !isNaN(parseFloat(offerAmount)) && parseFloat(offerAmount) > 0) {
+      const message: Message = {
+        id: Date.now().toString(),
+        sender: 'You',
+        content: `I'd like to make an offer of ${offerAmount} ETH for ${domainDetails.name}.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOutgoing: true
+      };
+      setMessages(prev => [...prev, message]);
+      
+      // Simulate seller response
+      setTimeout(() => {
+        const reply: Message = {
+          id: (Date.now() + 1).toString(),
+          sender: 'DomainSeller.eth',
+          content: `Thank you for your offer of ${offerAmount} ETH. I'll consider it and get back to you shortly.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isOutgoing: false
+        };
+        setMessages(prev => [...prev, reply]);
+      }, 1500);
+    } else if (offerAmount) {
+      alert('Please enter a valid offer amount greater than 0');
+    }
   };
 
   const handleWatchlist = () => {
     setIsWatchlisted(!isWatchlisted);
+    if (!isWatchlisted) {
+      // Add to watchlist
+      const message: Message = {
+        id: Date.now().toString(),
+        sender: 'System',
+        content: `Added ${domainDetails.name} to your watchlist`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOutgoing: false
+      };
+      setMessages(prev => [...prev, message]);
+    } else {
+      // Remove from watchlist
+      const message: Message = {
+        id: Date.now().toString(),
+        sender: 'System',
+        content: `Removed ${domainDetails.name} from your watchlist`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isOutgoing: false
+      };
+      setMessages(prev => [...prev, message]);
+    }
   };
 
   if (!isConnected) {

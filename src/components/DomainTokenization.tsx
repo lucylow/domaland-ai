@@ -113,7 +113,7 @@ const DomainTokenization: React.FC = () => {
           <Button 
             type="submit" 
             disabled={isLoading || !domainName.trim()}
-            className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-2.5 transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-2.5 transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
@@ -129,25 +129,51 @@ const DomainTokenization: React.FC = () => {
           </Button>
         </form>
 
-        <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
+        <div className="mt-6 p-4 bg-muted rounded-lg border border-border hover:border-primary/30 transition-all duration-300">
           <p className="font-semibold mb-3 text-foreground flex items-center gap-2">
             <span className="text-lg">💡</span>
             Benefits:
           </p>
           <ul className="text-sm space-y-2 text-muted-foreground">
-            <li className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+            <li className="flex items-center gap-2 hover:text-foreground transition-colors duration-300 cursor-pointer">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
               Prove ownership on blockchain
             </li>
-            <li className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-secondary rounded-full"></div>
+            <li className="flex items-center gap-2 hover:text-foreground transition-colors duration-300 cursor-pointer">
+              <div className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
               Enable domain trading
             </li>
-            <li className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
+            <li className="flex items-center gap-2 hover:text-foreground transition-colors duration-300 cursor-pointer">
+              <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
               Unlock DeFi opportunities
             </li>
           </ul>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-4 flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-105"
+            onClick={() => {
+              const examples = ['example.com', 'mydomain.org', 'crypto.io', 'web3.dev'];
+              const randomExample = examples[Math.floor(Math.random() * examples.length)];
+              setDomainName(randomExample);
+            }}
+          >
+            <span className="mr-1">🎲</span>
+            Try Example
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-105"
+            onClick={() => setDomainName('')}
+          >
+            <span className="mr-1">🗑️</span>
+            Clear
+          </Button>
         </div>
       </CardContent>
     </Card>

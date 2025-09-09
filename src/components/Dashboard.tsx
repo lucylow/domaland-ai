@@ -193,12 +193,17 @@ const Dashboard: FC = () => {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"
+                          className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-105"
                           onClick={() => {
                             const price = prompt('Enter price in ETH:');
-                            if (price) listDomain(domain.tokenId, price);
+                            if (price && !isNaN(parseFloat(price)) && parseFloat(price) > 0) {
+                              listDomain(domain.tokenId, price);
+                            } else if (price) {
+                              alert('Please enter a valid price greater than 0');
+                            }
                           }}
                         >
+                          <span className="mr-1">📝</span>
                           List
                         </Button>
                       </div>
@@ -240,8 +245,15 @@ const Dashboard: FC = () => {
                         <Button 
                           size="sm" 
                           variant="default" 
-                          className="mt-1 bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 hover:shadow-md"
+                          className="mt-1 bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 hover:shadow-md hover:scale-105"
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to buy ${domain.name} for ${domain.price} ETH?`)) {
+                              // This would trigger the buy function
+                              alert('Purchase initiated! Check your wallet for transaction confirmation.');
+                            }
+                          }}
                         >
+                          <span className="mr-1">🛒</span>
                           Buy
                         </Button>
                       </div>

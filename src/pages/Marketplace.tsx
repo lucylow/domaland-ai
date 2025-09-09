@@ -49,12 +49,19 @@ const Marketplace: React.FC = () => {
       return;
     }
 
+    // Show confirmation dialog
+    const confirmed = confirm(
+      `Are you sure you want to buy "${domain.name}" for ${domain.price} ETH?\n\nThis will initiate a blockchain transaction.`
+    );
+    
+    if (!confirmed) return;
+
     setIsLoading(true);
     try {
       await buyDomain(domain.tokenId, domain.price);
       toast({
         title: "Domain Purchased!",
-        description: `Successfully purchased ${domain.name}`,
+        description: `Successfully purchased ${domain.name} for ${domain.price} ETH`,
       });
     } catch (error) {
       toast({
@@ -316,23 +323,36 @@ const Marketplace: React.FC = () => {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={() => handleBuyDomain(domain)}
-                  disabled={isLoading}
-                  className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 hover:shadow-lg"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span>🛒</span>
-                      Buy Domain
-                    </div>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleBuyDomain(domain)}
+                    disabled={isLoading}
+                    className="flex-1 bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 hover:shadow-lg hover:scale-105"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>🛒</span>
+                        Buy Domain
+                      </div>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-105"
+                    onClick={() => {
+                      // Navigate to chat for this domain
+                      window.location.href = `/chat?domain=${domain.name}`;
+                    }}
+                  >
+                    💬
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

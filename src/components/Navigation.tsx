@@ -12,12 +12,12 @@ const Navigation: FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/marketplace', label: 'Domains', icon: '🌐' },
-    { path: '/fractional', label: 'Portfolio', icon: '💼' },
-    { path: '/analytics', label: 'Analytics', icon: '📈' },
-    { path: '/chat', label: 'Chat', icon: '💬' },
-    { path: '/help', label: 'Help', icon: '❓' },
+    { path: '/', label: 'Dashboard', icon: '📊', description: 'Overview & metrics' },
+    { path: '/marketplace', label: 'Domains', icon: '🌐', description: 'Browse & trade' },
+    { path: '/fractional', label: 'Portfolio', icon: '💼', description: 'Your assets' },
+    { path: '/analytics', label: 'Analytics', icon: '📈', description: 'Market insights' },
+    { path: '/chat', label: 'Chat', icon: '💬', description: 'Trade negotiations' },
+    { path: '/help', label: 'Help', icon: '❓', description: 'Support & guides' },
   ];
 
   const isActivePath = (path: string) => {
@@ -59,24 +59,30 @@ const Navigation: FC = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                className={`group flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 relative ${
                   isActivePath(item.path)
                     ? 'bg-primary text-primary-foreground shadow-md'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-sm'
                 }`}
+                title={item.description}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
                  {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge variant="secondary" className="ml-1 text-xs animate-pulse">
                     {marketplaceDomains.length}
                   </Badge>
                 )}
-                {item.path === '/dashboard' && userDomains.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                {item.path === '/' && userDomains.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs animate-pulse">
                     {userDomains.length}
                   </Badge>
                 )}
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
+                  {item.description}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
+                </div>
               </Link>
             ))}
           </div>
@@ -148,21 +154,24 @@ const Navigation: FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
                     isActivePath(item.path)
                       ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.label}</div>
+                    <div className="text-xs opacity-70">{item.description}</div>
+                  </div>
                    {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <Badge variant="secondary" className="ml-auto text-xs animate-pulse">
                       {marketplaceDomains.length}
                     </Badge>
                    )}
-                   {item.path === '/dashboard' && userDomains.length > 0 && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                   {item.path === '/' && userDomains.length > 0 && (
+                    <Badge variant="secondary" className="ml-auto text-xs animate-pulse">
                       {userDomains.length}
                     </Badge>
                    )}
