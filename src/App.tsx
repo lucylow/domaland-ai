@@ -31,12 +31,12 @@ const App = () => (
                   <Navigation />
                   <main className="pt-20">
                     <Routes>
-                      <Route path="/welcome" element={<Landing />} />
                       <Route path="/" element={<Index />} />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/analytics" element={<Analytics />} />
                       <Route path="/fractional" element={<FractionalOwnership />} />
+                      <Route path="/welcome" element={<Landing />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
