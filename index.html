@@ -1,24 +1,1559 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>domaland-ai-dreamscapes</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DomaLand.AI - Where Domains Become Dynamic Digital Assets</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B3FE4;
+            --primary-dark: #5B2DB8;
+            --secondary: #00E0FF;
+            --accent: #FFD700;
+            --dark: #0F1B36;
+            --light: #F8FAFC;
+            --gray: #64748B;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --background: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --incoming-msg: #F1F5F9;
+            --outgoing-msg: #7B3FE4;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
 
-    <meta property="og:title" content="domaland-ai-dreamscapes" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+        body {
+            background: linear-gradient(135deg, #0F1B36 0%, #1E293B 50%, #334155 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(15, 27, 54, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .auth-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn-signin {
+            background: transparent;
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .auth-btn-signin:hover {
+            background: var(--secondary);
+            color: var(--dark);
+            transform: translateY(-1px);
+        }
+
+        .auth-btn-signout {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .auth-btn-signout:hover {
+            background: var(--error);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-role {
+            font-size: 0.7rem;
+            color: var(--secondary);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--glass-bg);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(15, 27, 54, 0.98);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 20px;
+            z-index: 999;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        .mobile-auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-auth-btn {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .logo-icon i {
+            font-size: 1.5rem;
+            color: white;
+            z-index: 1;
+            position: relative;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-main {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--secondary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .wallet-address {
+            color: var(--secondary);
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin: 30px 0;
+            flex: 1;
+            align-items: start;
+        }
+
+        /* Domain Details Panel */
+        .domain-details {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .domain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .domain-name {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: white;
+            word-break: break-word;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .domain-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: right;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .domain-description {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .domain-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .on-chain-links {
+            margin: 25px 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .chain-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chain-link {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chain-link:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(123, 63, 228, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(123, 63, 228, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(123, 63, 228, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .negotiation-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            margin-top: 25px;
+            color: var(--accent);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 700px;
+            max-height: 80vh;
+        }
+
+        .chat-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .chat-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .verified-badge {
+            color: var(--success);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-incoming {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 6px;
+        }
+
+        .message-outgoing {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-top-right-radius: 6px;
+            box-shadow: 0 4px 15px rgba(123, 63, 228, 0.3);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            margin-top: 10px;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        .transaction-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.85rem;
+            transition: background 0.2s ease;
+        }
+
+        .transaction-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-input-container {
+            padding: 25px 30px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 18px 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            resize: none;
+            height: 70px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: white;
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(123, 63, 228, 0.1);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(123, 63, 228, 0.3);
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(123, 63, 228, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            align-self: flex-start;
+            margin-top: 10px;
+            max-width: fit-content;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 27, 54, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .domain-details {
+                position: static;
+                order: 2;
+            }
+            
+            .chat-container {
+                order: 1;
+                min-height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .logo-text {
+                display: none;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .auth-buttons {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .wallet-info span:first-child {
+                display: none;
+            }
+            
+            .wallet-address {
+                font-size: 0.8rem;
+            }
+            
+            .domain-details {
+                padding: 20px;
+            }
+            
+            .domain-meta {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-header {
+                padding: 20px;
+            }
+            
+            .chat-messages {
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 15px;
+            }
+            
+            .chat-input-container {
+                padding: 20px;
+            }
+            
+            .message-input {
+                height: 60px;
+                padding: 15px;
+            }
+            
+            .send-button {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .domain-details {
+                padding: 15px;
+            }
+            
+            .domain-name {
+                font-size: 1.3rem;
+            }
+            
+            .domain-price {
+                font-size: 1.2rem;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+            }
+            
+            .chat-input-container {
+                padding: 15px;
+            }
+            
+            .message-input {
+                height: 50px;
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .send-button {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #0F1B36;
+                --card-bg: #1E293B;
+                --dark: #F8FAFC;
+                --light: #334155;
+                --border: #475569;
+                --incoming-msg: #334155;
+                --gray: #94A3B8;
+            }
+        }
+
+        /* Accessibility Focus Styles */
+        button:focus-visible, a:focus-visible, textarea:focus-visible {
+            outline: 2px solid var(--secondary);
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Touch-friendly interactions */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .chain-link, .send-button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .message-input {
+                min-height: 44px;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary: #0000FF;
+                --secondary: #00FFFF;
+                --accent: #FFFF00;
+                --dark: #000000;
+                --light: #FFFFFF;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="logo-text">
+                        <div class="logo-main">DomaLand.AI</div>
+                        <div class="logo-subtitle">DYNAMIC DIGITAL ASSETS</div>
+                    </div>
+                </a>
+                
+                <div class="nav-menu">
+                    <ul class="nav-links">
+                        <li><a href="#dashboard">Dashboard</a></li>
+                        <li><a href="#domains">Domains</a></li>
+                        <li><a href="#portfolio">Portfolio</a></li>
+                        <li><a href="#analytics">Analytics</a></li>
+                        <li><a href="#help">Help</a></li>
+                    </ul>
+                    
+                    <div class="auth-buttons">
+                        <div class="user-profile" id="userProfile" style="display: none;">
+                            <div class="user-avatar">JD</div>
+                            <div class="user-info">
+                                <div class="user-name">John Doe</div>
+                                <div class="user-role">Premium Trader</div>
+                            </div>
+                        </div>
+                        <button class="auth-btn auth-btn-signin" id="signInBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </button>
+                        <button class="auth-btn auth-btn-signout" id="signOutBtn" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="wallet-info">
+                    <i class="fas fa-wallet"></i>
+                    <span>Connected:</span>
+                    <span class="wallet-address">0x8a17...3c2d</span>
+                </div>
+            </nav>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <ul class="mobile-nav-links">
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#domains">Domains</a></li>
+                    <li><a href="#portfolio">Portfolio</a></li>
+                    <li><a href="#analytics">Analytics</a></li>
+                    <li><a href="#help">Help</a></li>
+                </ul>
+                
+                <div class="mobile-auth-buttons">
+                    <div class="user-profile" id="mobileUserProfile" style="display: none;">
+                        <div class="user-avatar">JD</div>
+                        <div class="user-info">
+                            <div class="user-name">John Doe</div>
+                            <div class="user-role">Premium Trader</div>
+                        </div>
+                    </div>
+                    <button class="mobile-auth-btn auth-btn-signin" id="mobileSignInBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
+                    <button class="mobile-auth-btn auth-btn-signout" id="mobileSignOutBtn" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-layout">
+            <div class="domain-details">
+                <div class="domain-header">
+                    <h1 class="domain-name">cryptoinvestor.eth</h1>
+                    <div class="domain-price">5.2 ETH</div>
+                </div>
+
+                <p class="domain-description">
+                    Premium domain for crypto investment platforms. Short, memorable, and highly brandable. Perfect for DeFi projects, investment funds, or crypto media. AI-powered valuation suggests strong growth potential.
+                </p>
+
+                <div class="domain-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Registration Date</div>
+                        <div class="meta-value">Jan 15, 2022</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Expiration Date</div>
+                        <div class="meta-value">Jan 15, 2024</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">AI Traffic Score</div>
+                        <div class="meta-value">~500 visits/mo</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">AI Value Score</div>
+                        <div class="meta-value">8.5/10</div>
+                    </div>
+                </div>
+
+                <div class="on-chain-links">
+                    <h3 class="section-title">
+                        <i class="fas fa-link"></i>
+                        On-Chain Intelligence
+                    </h3>
+                    <div class="chain-links">
+                        <a href="#" class="chain-link">
+                            <i class="fab fa-ethereum"></i>
+                            View on Etherscan
+                        </a>
+                        <a href="#" class="chain-link">
+                            <i class="fas fa-file-contract"></i>
+                            Smart Contract
+                        </a>
+                        <a href="#" class="chain-link">
+                            <i class="fas fa-robot"></i>
+                            AI Analysis
+                        </a>
+                        <a href="#" class="chain-link">
+                            <i class="fas fa-chart-line"></i>
+                            Price History
+                        </a>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-handshake"></i>
+                        Make AI Offer
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-heart"></i>
+                        Add to Portfolio
+                    </button>
+                </div>
+
+                <div class="negotiation-status">
+                    <i class="fas fa-clock"></i>
+                    <span>AI-powered negotiation active - 2 offers analyzed</span>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3 class="chat-title">
+                        <i class="fas fa-comments"></i>
+                        AI-Powered Trade Negotiation
+                    </h3>
+                    <div class="chat-info">
+                        <span>Connected via XMTP</span>
+                        <i class="fas fa-badge-check verified-badge"></i>
+                    </div>
+                </div>
+
+                <div class="chat-messages">
+                    <div class="message message-incoming">
+                        <div class="message-sender">DomainSeller.eth</div>
+                        <p>Hi there! Thanks for your interest in cryptoinvestor.eth. Our AI has analyzed your profile and suggests you're a serious buyer. Are you looking to make an offer?</p>
+                        <div class="message-time">10:24 AM</div>
+                    </div>
+
+                    <div class="message message-outgoing">
+                        <p>Yes, I'm interested. DomaLand.AI suggests 4.5 ETH based on current market analysis. Would you consider this price?</p>
+                        <div class="message-time">10:27 AM</div>
+                    </div>
+
+                    <div class="message message-incoming">
+                        <div class="message-sender">DomainSeller.eth</div>
+                        <p>That's a bit lower than my asking price. I have another offer for 5 ETH. Our AI negotiation system suggests we could meet at 4.8 ETH. What do you think?</p>
+                        <div class="message-time">10:29 AM</div>
+                    </div>
+
+                    <div class="message message-outgoing">
+                        <p>I could do 4.8 ETH. Here's a smart contract ready to execute with escrow protection:</p>
+                        <a href="#" class="transaction-link">
+                            <i class="fas fa-external-link-alt"></i>
+                            View secure transaction
+                        </a>
+                        <div class="message-time">10:31 AM</div>
+                    </div>
+
+                    <div class="message message-incoming">
+                        <div class="message-sender">DomainSeller.eth</div>
+                        <p>Perfect! The AI escrow system looks good. Would you be interested in partial payment in USDC for better price stability?</p>
+                        <div class="message-time">10:35 AM</div>
+                    </div>
+
+                    <div class="message message-outgoing">
+                        <p>That sounds reasonable. What ratio were you thinking? The AI suggests 60% ETH, 40% USDC for optimal risk distribution.</p>
+                        <div class="message-time">10:36 AM</div>
+                    </div>
+
+                    <div class="typing-indicator">
+                        <span>DomainSeller.eth is typing</span>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <textarea class="message-input" placeholder="Type your message... (AI will help optimize your negotiation)" aria-label="Type your message"></textarea>
+                        <button class="send-button" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">AI Ethics</a>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact Us</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2023 DomaLand.AI. Where Domains Become Dynamic Digital Assets.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.querySelector('.chat-messages');
+            const messageInput = document.querySelector('.message-input');
+            const sendButton = document.querySelector('.send-button');
+            const typingIndicator = document.querySelector('.typing-indicator');
+            
+            // Authentication state
+            let isSignedIn = false;
+            
+            // Mobile menu elements
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            // Authentication elements
+            const signInBtn = document.getElementById('signInBtn');
+            const signOutBtn = document.getElementById('signOutBtn');
+            const userProfile = document.getElementById('userProfile');
+            const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+            const mobileSignOutBtn = document.getElementById('mobileSignOutBtn');
+            const mobileUserProfile = document.getElementById('mobileUserProfile');
+            
+            // Mobile menu toggle
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('active');
+                const icon = mobileMenuToggle.querySelector('i');
+                if (mobileMenu.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.remove('active');
+                    mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+                }
+            });
+            
+            // Sign in functionality
+            function signIn() {
+                isSignedIn = true;
+                updateAuthUI();
+                showNotification('Successfully signed in!', 'success');
+            }
+            
+            // Sign out functionality
+            function signOut() {
+                isSignedIn = false;
+                updateAuthUI();
+                showNotification('Successfully signed out!', 'info');
+            }
+            
+            // Update authentication UI
+            function updateAuthUI() {
+                if (isSignedIn) {
+                    // Desktop
+                    signInBtn.style.display = 'none';
+                    signOutBtn.style.display = 'flex';
+                    userProfile.style.display = 'flex';
+                    
+                    // Mobile
+                    mobileSignInBtn.style.display = 'none';
+                    mobileSignOutBtn.style.display = 'flex';
+                    mobileUserProfile.style.display = 'flex';
+                } else {
+                    // Desktop
+                    signInBtn.style.display = 'flex';
+                    signOutBtn.style.display = 'none';
+                    userProfile.style.display = 'none';
+                    
+                    // Mobile
+                    mobileSignInBtn.style.display = 'flex';
+                    mobileSignOutBtn.style.display = 'none';
+                    mobileUserProfile.style.display = 'none';
+                }
+            }
+            
+            // Show notification
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                `;
+                
+                // Add notification styles
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? 'var(--success)' : 'var(--primary)'};
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+            
+            // Add notification animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Event listeners for authentication
+            signInBtn.addEventListener('click', function() {
+                // Simulate sign in process
+                const email = prompt('Enter your email:');
+                if (email) {
+                    signIn();
+                }
+            });
+            
+            signOutBtn.addEventListener('click', signOut);
+            mobileSignInBtn.addEventListener('click', function() {
+                const email = prompt('Enter your email:');
+                if (email) {
+                    signIn();
+                    mobileMenu.classList.remove('active');
+                    mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+                }
+            });
+            mobileSignOutBtn.addEventListener('click', function() {
+                signOut();
+                mobileMenu.classList.remove('active');
+                mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+            });
+            
+            // Navigation link handlers
+            document.querySelectorAll('.nav-links a, .mobile-nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    showNotification(`Navigating to ${href.substring(1)}...`, 'info');
+                    
+                    // Close mobile menu if open
+                    if (mobileMenu.classList.contains('active')) {
+                        mobileMenu.classList.remove('active');
+                        mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+                    }
+                });
+            });
+            
+            // Scroll to bottom of chat
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Initially hide typing indicator
+            typingIndicator.style.display = 'none';
+            
+            // Send message function
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message message-outgoing';
+                    messageElement.innerHTML = `
+                        <p>${message}</p>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                    
+                    chatMessages.appendChild(messageElement);
+                    messageInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Show typing indicator
+                    typingIndicator.style.display = 'flex';
+                    
+                    // Simulate AI-powered reply after a delay
+                    setTimeout(simulateAIReply, 1000 + Math.random() * 2000);
+                }
+            }
+            
+            // Simulate an AI-powered reply from the domain seller
+            function simulateAIReply() {
+                const replies = [
+                    "Our AI suggests 5 ETH if you're willing to close today with immediate settlement.",
+                    "Would you consider 4.9 ETH with a 50% USDC payment? AI analysis shows this reduces volatility risk.",
+                    "I have another buyer interested at 5.1 ETH. Our AI negotiation system suggests we could meet at 5.05 ETH.",
+                    "I'm willing to negotiate on price if we can close quickly. AI escrow is ready for instant settlement.",
+                    "Would you like to make a counter-offer? Our AI can analyze the optimal price point for both parties."
+                ];
+                
+                const reply = replies[Math.floor(Math.random() * replies.length)];
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message message-incoming';
+                messageElement.innerHTML = `
+                    <div class="message-sender">DomainSeller.eth</div>
+                    <p>${reply}</p>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                
+                // Hide typing indicator
+                typingIndicator.style.display = 'none';
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Get current time in HH:MM AM/PM format
+            function getCurrentTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                return `${hours}:${minutes} ${ampm}`;
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+                
+                // Show typing indicator when user starts typing
+                if (messageInput.value.trim()) {
+                    typingIndicator.style.display = 'flex';
+                }
+            });
+            
+            messageInput.addEventListener('blur', function() {
+                // Hide typing indicator when input loses focus
+                setTimeout(() => {
+                    if (!messageInput.value.trim()) {
+                        typingIndicator.style.display = 'none';
+                    }
+                }, 1000);
+            });
+            
+            // Add click handlers to action buttons
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.classList.contains('btn-primary')) {
+                        alert('AI-powered offer dialog would open here with smart contract preparation');
+                    } else {
+                        this.innerHTML = this.innerHTML.includes('Added') 
+                            ? '<i class="fas fa-heart"></i> Add to Portfolio' 
+                            : '<i class="fas fa-check"></i> Added to Portfolio';
+                    }
+                });
+            });
+            
+            // Add click handlers to chain links
+            document.querySelectorAll('.chain-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('This would open the relevant blockchain explorer or AI analysis page');
+                });
+            });
+
+            // Add responsive behavior for mobile
+            function handleResize() {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    // Mobile-specific adjustments
+                    chatMessages.style.maxHeight = '60vh';
+                } else {
+                    chatMessages.style.maxHeight = 'none';
+                }
+            }
+
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Initial call
+        });
+    </script>
+</body>
 </html>
