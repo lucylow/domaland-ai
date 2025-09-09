@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 import { useMetrics } from '@/contexts/MetricsContext';
@@ -13,12 +13,12 @@ import DomainTokenization from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
 import Logo from './Logo';
 
-const Dashboard: React.FC = () => {
+const Dashboard: FC = () => {
   const { isConnected, connectWallet, account, network } = useWeb3();
   const { userDomains, marketplaceDomains, listDomain, isLoading } = useDoma();
   const { metrics } = useMetrics();
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [showOnboarding, setShowOnboarding] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
   const isNewUser = userDomains.length === 0 && marketplaceDomains.length === 0;
 
   // Show onboarding for new users
-  React.useEffect(() => {
+  useEffect(() => {
     if (isConnected && isNewUser && !localStorage.getItem('domainfi-onboarding-completed')) {
       setShowOnboarding(true);
     }

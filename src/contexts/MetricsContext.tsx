@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
 import { useWeb3 } from './Web3Context';
 import { useDoma } from './DomaContext';
 
@@ -36,7 +36,7 @@ interface MetricsProviderProps {
   children: ReactNode;
 }
 
-export const MetricsProvider: React.FC<MetricsProviderProps> = ({ children }) => {
+export const MetricsProvider: FC<MetricsProviderProps> = ({ children }) => {
   const { account } = useWeb3();
   const { userDomains, marketplaceDomains } = useDoma();
   

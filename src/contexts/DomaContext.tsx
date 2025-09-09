@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
 import { useWeb3 } from './Web3Context';
 import { ethers } from 'ethers';
 
@@ -46,7 +46,7 @@ const DOMA_ABI = [
   'event DomainTokenized(address indexed owner, uint256 indexed tokenId, string domainName)'
 ];
 
-export const DomaProvider: React.FC<DomaProviderProps> = ({ children }) => {
+export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
   const { signer, account, isMockMode } = useWeb3();
   const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [marketplaceDomains, setMarketplaceDomains] = useState<Domain[]>([]);

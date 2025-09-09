@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface MetricCardProps {
@@ -10,7 +10,7 @@ interface MetricCardProps {
   trend?: 'up' | 'down' | 'neutral';
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ 
+const MetricCard: FC<MetricCardProps> = ({ 
   title, 
   value, 
   change, 

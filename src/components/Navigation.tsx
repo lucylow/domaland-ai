@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState, FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 
-const Navigation: React.FC = () => {
+const Navigation: FC = () => {
   const { isConnected, connectWallet, account, disconnectWallet, isMockMode, isConnecting, error, clearError } = useWeb3();
   const { userDomains, marketplaceDomains } = useDoma();
   const location = useLocation();
