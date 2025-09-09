@@ -12,14 +12,17 @@ const Navigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
-    { path: '/', label: 'Home', icon: '🏠' },
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/marketplace', label: 'Marketplace', icon: '🏪' },
+    { path: '/marketplace', label: 'Domains', icon: '🌐' },
+    { path: '/fractional', label: 'Portfolio', icon: '💼' },
     { path: '/analytics', label: 'Analytics', icon: '📈' },
-    { path: '/fractional', label: 'Fractional', icon: '🎯' },
+    { path: '/welcome', label: 'Help', icon: '❓' },
   ];
 
   const isActivePath = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/' || location.pathname === '/dashboard';
+    }
     if (path === '/') {
       return location.pathname === '/';
     }
@@ -33,7 +36,8 @@ const Navigation: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
             <span className="text-2xl animate-float">🌐</span>
-            DomainFi
+            DomaLand.AI
+            <span className="text-xs text-muted-foreground ml-2 font-normal">DYNAMIC DIGITAL ASSETS</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -50,7 +54,7 @@ const Navigation: React.FC = () => {
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
-                {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
+                 {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
                   <Badge variant="secondary" className="ml-1 text-xs">
                     {marketplaceDomains.length}
                   </Badge>
@@ -66,12 +70,21 @@ const Navigation: React.FC = () => {
 
           {/* Wallet Connection */}
           <div className="flex items-center gap-3">
+            {/* Sign In Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30 text-primary hover:bg-primary/20 transition-all duration-300"
+            >
+              Sign In
+            </Button>
+            
             {isConnected ? (
               <div className="flex items-center gap-3">
                 <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium text-emerald-600">
-                    {account?.slice(0, 6)}...{account?.slice(-4)}
+                    Connected: {account?.slice(0, 6)}...{account?.slice(-4)}
                   </span>
                 </div>
                 <Button
@@ -124,16 +137,16 @@ const Navigation: React.FC = () => {
                 >
                   <span className="text-lg">{item.icon}</span>
                   <span className="font-medium">{item.label}</span>
-                  {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
+                   {item.path === '/marketplace' && marketplaceDomains.length > 0 && (
                     <Badge variant="secondary" className="ml-auto text-xs">
                       {marketplaceDomains.length}
                     </Badge>
-                  )}
-                  {item.path === '/dashboard' && userDomains.length > 0 && (
+                   )}
+                   {item.path === '/dashboard' && userDomains.length > 0 && (
                     <Badge variant="secondary" className="ml-auto text-xs">
                       {userDomains.length}
                     </Badge>
-                  )}
+                   )}
                 </Link>
               ))}
             </div>
