@@ -22,7 +22,7 @@ import {
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const [activeTab, setActiveTab] = useState('overview')
-  const [userDomains, setUserDomains] = useState<any[]>([])
+  const [userDomains, setUserDomains] = useState<Record<string, unknown>[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Load user's domains when wallet connects
@@ -61,7 +61,7 @@ export default function DashboardPage() {
     }
   }
 
-  const handleTokenizationComplete = (result: any) => {
+  const handleTokenizationComplete = (result: Record<string, unknown>) => {
     console.log('Tokenization completed:', result)
     // Refresh user domains
     loadUserDomains()

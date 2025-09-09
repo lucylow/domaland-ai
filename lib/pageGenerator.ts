@@ -57,7 +57,7 @@ export class PageGenerator {
     }
   }
 
-  private async processQueueItem(item: any) {
+  private async processQueueItem(item: Record<string, unknown>) {
     console.log(`Processing queue item: ${item.tokenId}`);
 
     // Mark as processing
@@ -208,8 +208,8 @@ export class PageGenerator {
   private async generateStaticPage(
     tokenId: string,
     metadata: DomainMetadata,
-    listing: any,
-    offers: any[]
+    listing: Record<string, unknown>,
+    offers: Record<string, unknown>[]
   ) {
     // In a real implementation, this would generate actual HTML files
     // For now, we'll just log the page data

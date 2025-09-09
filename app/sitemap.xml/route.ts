@@ -16,7 +16,7 @@ export async function GET() {
     })
 
     // Generate sitemap XML
-    const sitemap = generateSitemapData(domains as any)
+    const sitemap = generateSitemapData(domains as Record<string, unknown>[])
 
     return new NextResponse(sitemap, {
       headers: {

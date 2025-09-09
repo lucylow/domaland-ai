@@ -116,7 +116,7 @@ export const XMTPProvider: FC<XMTPProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [account]);
+  }, []);
 
   const cleanupXMTP = () => {
     setXmtpClient(null);

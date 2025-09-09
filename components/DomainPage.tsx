@@ -18,7 +18,7 @@ interface DomainPageProps {
 
 export function DomainPage({ domainData }: DomainPageProps) {
   const [showOfferModal, setShowOfferModal] = useState(false)
-  const [selectedOffer, setSelectedOffer] = useState<any>(null)
+  const [selectedOffer, setSelectedOffer] = useState<Record<string, unknown> | null>(null)
 
   const isListed = domainData.marketplaceData?.isListed || false
   const price = domainData.marketplaceData?.price

@@ -225,7 +225,7 @@ export class DomaClient {
       }
 
       const data = await response.json()
-      return data.domains.map((domain: any) => ({
+      return data.domains.map((domain: Record<string, unknown>) => ({
         tokenId: domain.tokenId,
         owner: domain.owner,
         isTokenized: domain.isTokenized,

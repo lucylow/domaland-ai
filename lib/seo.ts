@@ -6,7 +6,7 @@ export interface SEOData {
   keywords: string[]
   canonicalUrl: string
   ogImage?: string
-  structuredData?: any
+  structuredData?: Record<string, unknown>
   robots?: string
 }
 
@@ -154,7 +154,7 @@ function generateDomainKeywords(domainName: string, domainValue?: number, status
 /**
  * Generate structured data for domain pages
  */
-function generateDomainStructuredData(domainData: DomainData, domainValue?: number, status: string): any {
+function generateDomainStructuredData(domainData: DomainData, domainValue?: number, status: string): Record<string, unknown> {
   const baseStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Product',

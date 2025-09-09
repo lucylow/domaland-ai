@@ -282,21 +282,21 @@ class ApiService {
     return this.request<Domain>(`/domains/${domainId}`);
   }
 
-  async tokenizeDomain(domainId: number, data: TokenizationData): Promise<ApiResponse<any>> {
+  async tokenizeDomain(domainId: number, data: TokenizationData): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/tokenize`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async claimDomainOwnership(domainId: number, data: ClaimData): Promise<ApiResponse<any>> {
+  async claimDomainOwnership(domainId: number, data: ClaimData): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/claim`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async bridgeDomainToken(domainId: number, data: BridgeData): Promise<ApiResponse<any>> {
+  async bridgeDomainToken(domainId: number, data: BridgeData): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/bridge`, {
       method: 'POST',
       body: JSON.stringify(data),

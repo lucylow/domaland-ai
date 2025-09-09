@@ -13,9 +13,10 @@ import MetricCard from './MetricCard';
 import { DomainTokenization } from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
 import Logo from './Logo';
+import WalletConnectionTest from './WalletConnectionTest';
 
 const Dashboard: FC = () => {
-  const { isConnected, connectWallet, account, network } = useWeb3();
+  const { isConnected, connectWallet, account, network, isConnecting, error, clearError } = useWeb3();
   const { userDomains, marketplaceDomains, listDomain, isLoading } = useDoma();
   const { metrics } = useMetrics();
   const { conversations, getUnreadCount, connectXMTP, isConnected: isXMTPConnected } = useXMTP();
@@ -64,14 +65,34 @@ const Dashboard: FC = () => {
             </p>
           </CardHeader>
           <CardContent className="space-y-6 relative z-10">
+            {error && (
+              <Alert className="border-red-200 bg-red-50 text-red-800">
+                <AlertDescription className="flex items-center justify-between">
+                  <span>{error}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearError}
+                    className="text-red-600 hover:text-red-800 hover:bg-red-100"
+                  >
+                    ✕
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             <Button 
               onClick={() => connectWallet()} 
-              className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 font-semibold py-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105"
+              disabled={isConnecting}
+              className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 font-semibold py-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:-translate-y-0"
               size="lg"
             >
               <div className="flex items-center gap-2">
-                <span className="text-lg">🔗</span>
-                Connect Wallet
+                {isConnecting ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                ) : (
+                  <span className="text-lg">🔗</span>
+                )}
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
               </div>
             </Button>
             <div className="text-sm text-muted-foreground text-center bg-gradient-to-r from-muted/30 to-muted/20 rounded-xl p-4 border border-border/30 backdrop-blur-sm">
@@ -374,6 +395,13 @@ const Dashboard: FC = () => {
                 )}
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Development Tools */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-8">
+            <WalletConnectionTest />
           </div>
         )}
 

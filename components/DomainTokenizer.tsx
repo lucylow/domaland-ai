@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
 
 interface DomainTokenizerProps {
-  onTokenizationComplete?: (result: any) => void
+  onTokenizationComplete?: (result: Record<string, unknown>) => void
 }
 
 export function DomainTokenizer({ onTokenizationComplete }: DomainTokenizerProps) {
