@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DomainMessaging from '@/components/DomainMessaging';
 // Fixed lucide-react imports - removed non-existent FileContract
 import { 
   Globe, 
@@ -48,8 +50,12 @@ interface DomainDetails {
 }
 
 const Chat: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const { isConnected, connectWallet, account } = useWeb3();
   const { marketplaceDomains } = useDoma();
+  
+  // Get domain from URL parameters
+  const domainFromUrl = searchParams.get('domain');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -221,6 +227,24 @@ const Chat: React.FC = () => {
       setMessages(prev => [...prev, message]);
     }
   };
+
+  // If a specific domain is requested, show the domain messaging interface
+  if (domainFromUrl) {
+    const domain = marketplaceDomains.find(d => d.name === domainFromUrl);
+    if (domain) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-6">
+          <div className="container mx-auto">
+            <DomainMessaging 
+              domainName={domainFromUrl}
+              domainOwner={domain.owner}
+              currentUser={account || ''}
+            />
+          </div>
+        </div>
+      );
+    }
+  }
 
   if (!isConnected) {
     return (

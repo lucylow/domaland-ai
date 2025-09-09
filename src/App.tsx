@@ -12,7 +12,9 @@ import FractionalOwnership from "./pages/FractionalOwnership";
 import Help from "./pages/Help";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
+import Track5Demo from "./pages/Track5Demo";
 import ErrorBoundary from "./components/ErrorBoundary";
+import DomainLandingPage from "./components/DomainLandingPage";
 import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
@@ -33,7 +35,7 @@ const App = () => (
                   <Navigation />
                   <main className="pt-20">
                     <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/" element={<Landing />} />
                       <Route path="/dashboard" element={<Index />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/analytics" element={<Analytics />} />
@@ -41,6 +43,8 @@ const App = () => (
                       <Route path="/help" element={<Help />} />
                       <Route path="/chat" element={<Chat />} />
                       <Route path="/welcome" element={<Landing />} />
+                      <Route path="/track5-demo" element={<Track5Demo />} />
+                      <Route path="/domain/:domain" element={<DomainLandingPage />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>

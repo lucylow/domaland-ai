@@ -17,6 +17,7 @@ const Navigation: FC = () => {
     { path: '/fractional', label: 'Portfolio', icon: '💼', description: 'Your assets' },
     { path: '/analytics', label: 'Analytics', icon: '📈', description: 'Market insights' },
     { path: '/chat', label: 'Chat', icon: '💬', description: 'Trade negotiations' },
+    { path: '/track5-demo', label: 'Track 5 Demo', icon: '🏆', description: 'Landing pages & messaging' },
     { path: '/help', label: 'Help', icon: '❓', description: 'Support & guides' },
   ];
 
