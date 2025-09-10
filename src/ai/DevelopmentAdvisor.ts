@@ -315,11 +315,11 @@ class AIDevelopmentAdvisor {
     const results = await Promise.allSettled(researchTasks);
     
     return {
-      marketTrends: results[0].status === 'fulfilled' ? results[0].value : this.getDefaultMarketTrends(),
-      competitiveLandscape: results[1].status === 'fulfilled' ? results[1].value : marketContext.competitorAnalysis,
-      consumerInsights: results[2].status === 'fulfilled' ? results[2].value : marketContext.consumerInsights,
-      technicalFeasibility: results[3].status === 'fulfilled' ? results[3].value : this.getDefaultTechnicalData(),
-      regulatoryEnvironment: results[4].status === 'fulfilled' ? results[4].value : this.getDefaultRegulatoryData()
+      marketTrends: results[0].status === 'fulfilled' ? results[0].value as MarketTrendData : this.getDefaultMarketTrends(),
+      competitiveLandscape: results[1].status === 'fulfilled' ? results[1].value as CompetitorData[] : marketContext.competitorAnalysis,
+      consumerInsights: results[2].status === 'fulfilled' ? results[2].value as ConsumerData : marketContext.consumerInsights,
+      technicalFeasibility: results[3].status === 'fulfilled' ? results[3].value as TechnicalData : this.getDefaultTechnicalData(),
+      regulatoryEnvironment: results[4].status === 'fulfilled' ? results[4].value as RegulatoryData : this.getDefaultRegulatoryData()
     };
   }
 
@@ -588,7 +588,7 @@ class AIDevelopmentAdvisor {
       {
         segment: ownerGoals.targetAudience,
         size: researchData.marketTrends.growthProjection * 1000,
-        characteristics: researchData.consumerInsights.demographics,
+        characteristics: [researchData.consumerInsights.demographics.age, researchData.consumerInsights.demographics.income, researchData.consumerInsights.demographics.location],
         needs: researchData.consumerInsights.painPoints,
         channels: this.determineChannels(ownerGoals.primaryObjective)
       }

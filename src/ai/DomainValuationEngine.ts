@@ -376,7 +376,7 @@ class AIValuationEngine {
     if (this.valuationModel) {
       try {
         const inputTensor = this.featuresToTensor(features);
-        const prediction = this.valuationModel.predict(inputTensor) as tf.Tensor;
+        const prediction = this.valuationModel.predict(inputTensor) as any;
         const value = await prediction.data();
         prediction.dispose();
         inputTensor.dispose();
@@ -484,7 +484,7 @@ class AIValuationEngine {
     Object.values(features).forEach(category => {
       Object.values(category).forEach(value => {
         totalFactors++;
-        if (value !== undefined && value !== null && !isNaN(value)) {
+        if (value !== undefined && value !== null && typeof value === 'number' && !isNaN(value)) {
           completeness++;
         }
       });
