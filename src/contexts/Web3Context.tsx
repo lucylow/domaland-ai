@@ -138,7 +138,6 @@ interface Web3ContextType {
   isMockMode: boolean;
   isConnecting: boolean;
   error: string | null;
-  isManualConnection: boolean;
   
   // EVM methods
   connectWallet: (chain?: SupportedChain) => Promise<boolean>;
@@ -200,29 +199,22 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   }>({});
 
   const connectMockWallet = useCallback(() => {
-    if (process.env.NODE_ENV !== 'development') {
-      console.warn('Mock wallet only available in development mode');
-      return;
-    }
-
-    console.log('🔧 Connecting mock wallet for development...');
-    
-    // Mock wallet data
+    setError(null);
+    // Mock wallet for development
     const mockAccount = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
     setAccount(mockAccount);
     setProvider(null); // No real provider in mock mode
     setSigner(null); // No real signer in mock mode
     setNetwork(null); // No real network in mock mode
-    setCurrentChain(SupportedChain.POLYGON);
     setChainId(CHAIN_CONFIGS[SupportedChain.POLYGON].chainId);
     setIsConnected(true);
     setIsMockMode(true);
-    setError(null);
     
-    console.log('✅ Mock wallet connected for development');
+    console.log('Connected to mock wallet for development');
   }, []);
 
   const disconnectWallet = useCallback(() => {
+    console.log('🔌 Disconnecting wallet...');
     // Clean up event listeners
     if (window.ethereum && eventListeners.accountsChanged) {
       window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
@@ -241,7 +233,8 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     setIsMockMode(false);
     setError(null);
     setEventListeners({});
-  }, [eventListeners]);
+    console.log('✅ Wallet disconnected');
+  }, []); // Removed eventListeners dependency to prevent circular deps
 
   const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
     if (!window.ethereum) {
@@ -321,112 +314,193 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const connectWallet = useCallback(async (chain?: SupportedChain): Promise<boolean> => {
+  const connectWallet = useCallback(async (chain: SupportedChain = SupportedChain.POLYGON): Promise<boolean> => {
     console.log('🔄 Starting wallet connection...');
     setIsConnecting(true);
     setIsManualConnection(true);
     setError(null);
-
+    
     try {
-      // Enhanced wallet detection with better error messages
-      if (typeof window === 'undefined' || !window.ethereum) {
-        const errorMsg = 'No Web3 wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet.';
-        setError(errorMsg);
-        console.error('❌ Wallet detection failed:', errorMsg);
-        return false;
-      }
+      if (typeof window !== 'undefined' && window.ethereum) {
+        // Check if any wallet is available (not just MetaMask)
+        const isWalletAvailable = window.ethereum.isMetaMask || 
+                                 window.ethereum.isCoinbaseWallet || 
+                                 window.ethereum.isBraveWallet ||
+                                 window.ethereum.isRabby ||
+                                 window.ethereum.isTrust ||
+                                 window.ethereum.isFrame ||
+                                 window.ethereum.isOpera;
 
-      // Check if any wallet is available (not just MetaMask)
-      const isWalletAvailable = window.ethereum.isMetaMask || 
-                               window.ethereum.isCoinbaseWallet || 
-                               window.ethereum.isBraveWallet || 
-                               window.ethereum.isRabby || 
-                               window.ethereum.isTrust || 
-                               window.ethereum.isFrame || 
-                               window.ethereum.isOpera;
+        if (!isWalletAvailable) {
+          setError('No compatible wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet.');
+          return false;
+        }
 
-      if (!isWalletAvailable) {
-        const errorMsg = 'No compatible wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet.';
-        setError(errorMsg);
-        console.error('❌ No compatible wallet found');
-        return false;
-      }
+        // Check if wallet is already connected
+        const existingAccounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+        if (existingAccounts.length > 0) {
+          // Wallet is already connected, just switch chain if needed
+          const chainSwitched = await switchChain(chain);
+          if (!chainSwitched) {
+            setError('Failed to switch to the requested network');
+            return false;
+          }
+          
+          const web3Provider = new BrowserProvider(window.ethereum);
+          const accounts = await web3Provider.listAccounts();
+          const network = await web3Provider.getNetwork();
+          const signer = await web3Provider.getSigner();
+          
+          setProvider(web3Provider);
+          setSigner(signer);
+          setAccount(accounts[0].address);
+          setNetwork(network);
+          setCurrentChain(chain);
+          setIsConnected(true);
+          setIsMockMode(false);
+          
+          return true;
+        }
 
-      // Check if wallet is already connected
-      const existingAccounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
-      
-      let accounts: string[];
-      if (existingAccounts.length > 0) {
-        // Wallet is already connected, just switch chain if needed
-        accounts = existingAccounts;
-        console.log('✅ Wallet already connected:', accounts[0]);
-      } else {
-        // Request wallet connection
-        console.log('🔗 Requesting wallet connection...');
-        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
-      }
-
-      if (!accounts || accounts.length === 0) {
-        throw new Error('No accounts returned from wallet');
-      }
-
-      // Create provider and signer
-      const web3Provider = new BrowserProvider(window.ethereum);
-      const network = await web3Provider.getNetwork();
-      const signer = await web3Provider.getSigner();
-
-      // Update state
-      setProvider(web3Provider);
-      setSigner(signer);
-      setAccount(accounts[0]);
-      setNetwork(network);
-      setCurrentChain(chain || SupportedChain.POLYGON);
-      setChainId(Number(network.chainId));
-      setIsConnected(true);
-
-      // Switch to requested chain if specified
-      if (chain) {
+        // Request connection
+        const web3Provider = new BrowserProvider(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        
+        // Switch to the requested chain if not already on it
         const chainSwitched = await switchChain(chain);
         if (!chainSwitched) {
-          console.warn('⚠️ Failed to switch to requested chain, but wallet is connected');
+          setError('Failed to switch to the requested network');
+          return false;
+        }
+        
+        const accounts = await web3Provider.listAccounts();
+        const network = await web3Provider.getNetwork();
+        const signer = await web3Provider.getSigner();
+        
+        if (accounts.length === 0) {
+          throw new Error('No accounts found. Please unlock your wallet.');
+        }
+        
+        console.log('✅ Wallet connected successfully!');
+        console.log('📍 Account:', accounts[0].address);
+        console.log('🌐 Network:', network.name);
+        console.log('⛓️ Chain:', chain);
+        
+        setProvider(web3Provider);
+        setSigner(signer);
+        setAccount(accounts[0].address);
+        setNetwork(network);
+        setCurrentChain(chain);
+        setIsConnected(true);
+        setIsMockMode(false);
+        
+        // Set up event listeners with proper cleanup
+        const accountsChangedHandler = (accounts: string[]) => {
+          console.log('👤 Accounts changed:', accounts);
+          if (accounts.length === 0) {
+            console.log('❌ No accounts found, disconnecting...');
+            // Clean up event listeners
+            if (window.ethereum && eventListeners.accountsChanged) {
+              window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
+            }
+            if (window.ethereum && eventListeners.chainChanged) {
+              window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
+            }
+            
+            setAccount(null);
+            setProvider(null);
+            setSigner(null);
+            setIsConnected(false);
+            setNetwork(null);
+            setCurrentChain(SupportedChain.POLYGON);
+            setChainId(null);
+            setIsMockMode(false);
+            setError(null);
+            setEventListeners({});
+          } else {
+            console.log('✅ Account updated:', accounts[0]);
+            setAccount(accounts[0]);
+          }
+        };
+
+        const chainChangedHandler = () => {
+          console.log('🔗 Chain changed, reloading in 1 second...');
+          // Instead of reloading, try to reconnect gracefully
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        };
+
+        // Remove existing listeners first
+        if (eventListeners.accountsChanged) {
+          window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
+        }
+        if (eventListeners.chainChanged) {
+          window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
+        }
+
+        // Add new listeners
+        window.ethereum.on('accountsChanged', accountsChangedHandler);
+        window.ethereum.on('chainChanged', chainChangedHandler);
+
+        // Store references for cleanup
+        setEventListeners({
+          accountsChanged: accountsChangedHandler,
+          chainChanged: chainChangedHandler
+        });
+        
+        return true;
+      } else {
+        // Offer mock mode for development
+        if (process.env.NODE_ENV === 'development') {
+          const useMock = confirm('No wallet detected. Would you like to use mock wallet mode for development?');
+          if (useMock) {
+            connectMockWallet();
+            return true;
+          }
+        }
+        setError('No wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet to continue.');
+        return false;
+      }
+    } catch (error: unknown) {
+      console.error('Failed to connect wallet:', error);
+      let errorMessage = 'Failed to connect wallet';
+      
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as { code: number }).code;
+        if (errorCode === 4001) {
+          errorMessage = 'Connection request was rejected. Please try again and approve the connection.';
+        } else if (errorCode === -32002) {
+          errorMessage = 'Connection request is already pending. Please check your wallet.';
+        } else if (errorCode === -32003) {
+          errorMessage = 'Wallet is locked. Please unlock your wallet and try again.';
+        } else if (errorCode === 4900) {
+          errorMessage = 'Wallet is not connected to any network. Please connect to a network first.';
+        } else if (errorCode === 4901) {
+          errorMessage = 'User rejected the request. Please try again.';
+        } else if (errorCode === 4902) {
+          errorMessage = 'Network not found. Please add the network to your wallet.';
         }
       }
-
-      console.log('✅ Wallet connected successfully:', {
-        account: accounts[0],
-        chainId: Number(network.chainId),
-        network: network.name
-      });
-
-      return true;
-
-    } catch (error: any) {
-      console.error('❌ Wallet connection failed:', error);
       
-      // Handle specific error codes
-      let errorMessage = 'Failed to connect wallet. Please try again.';
-      
-      if (error.code === 4001) {
-        errorMessage = 'Connection rejected. Please approve the connection request in your wallet.';
-      } else if (error.code === -32002) {
-        errorMessage = 'Connection request already pending. Please check your wallet.';
-      } else if (error.code === -32003) {
-        errorMessage = 'Wallet is locked. Please unlock your wallet and try again.';
-      } else if (error.code === 4900) {
-        errorMessage = 'Wallet not connected to any network. Please connect to a network.';
-      } else if (error.code === 4901) {
-        errorMessage = 'Request rejected by user. Please try again.';
-      } else if (error.message?.includes('User rejected')) {
-        errorMessage = 'Connection rejected by user. Please approve the connection request.';
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMsg = (error as { message: string }).message;
+        if (errorMsg.includes('User denied')) {
+          errorMessage = 'Connection request was denied. Please try again and approve the connection.';
+        } else if (errorMsg.includes('already pending')) {
+          errorMessage = 'Connection request is already pending. Please check your wallet.';
+        } else {
+          errorMessage = errorMsg;
+        }
       }
-
+      
       setError(errorMessage);
       return false;
-      
     } finally {
       setIsConnecting(false);
+      setIsManualConnection(false);
     }
-  }, [switchChain]);
+  }, [switchChain, connectMockWallet]); // Removed eventListeners and disconnectWallet to prevent circular deps
 
   const connectSolanaWallet = async (): Promise<boolean> => {
     try {
@@ -478,72 +552,56 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const handleAccountsChanged = (accounts: string[]) => {
-      if (!mounted) return;
-      
-      console.log('👤 Accounts changed:', accounts);
-      if (accounts.length === 0) {
-        // User disconnected wallet
-        disconnectWallet();
-      } else if (accounts[0] !== account) {
-        // Account switched
-        setAccount(accounts[0]);
-      }
-    };
-
-    const handleChainChanged = (chainId: string) => {
-      if (!mounted) return;
-      
-      console.log('🔗 Chain changed:', chainId);
-      const numericChainId = parseInt(chainId, 16);
-      setChainId(numericChainId);
-      
-      // Update current chain based on chainId
-      const chainConfig = Object.values(CHAIN_CONFIGS).find(
-        config => config.chainId === numericChainId
-      );
-      if (chainConfig) {
-        const chainKey = Object.keys(CHAIN_CONFIGS).find(
-          key => CHAIN_CONFIGS[key as SupportedChain].chainId === numericChainId
-        );
-        if (chainKey) {
-          setCurrentChain(chainKey as SupportedChain);
+    const checkConnection = async () => {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        try {
+          console.log('🔍 Checking existing wallet connection...');
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+          console.log('👥 Found accounts:', accounts);
+          
+          if (accounts.length > 0 && !isConnected) {
+            console.log('🔄 Auto-reconnecting to previously connected wallet...');
+            // Auto-reconnect if wallet was previously connected
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const chainIdNumber = parseInt(chainId as string, 16);
+            console.log('⛓️ Current chain ID:', chainIdNumber);
+            
+            // Determine which chain we're on
+            let detectedChain = SupportedChain.POLYGON;
+            if (chainIdNumber === 1) detectedChain = SupportedChain.ETHEREUM;
+            else if (chainIdNumber === 137) detectedChain = SupportedChain.POLYGON;
+            else if (chainIdNumber === 56) detectedChain = SupportedChain.BSC;
+            
+            // Only auto-reconnect if we're on a supported chain
+            const supportedChainIds = Object.values(CHAIN_CONFIGS).map(config => config.chainId);
+            if (supportedChainIds.includes(chainIdNumber)) {
+              console.log('✅ Supported chain detected, auto-reconnecting...');
+              await connectWallet(detectedChain);
+            } else {
+              console.log('❌ Unsupported chain, skipping auto-reconnect');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Failed to check wallet connection:', error);
         }
       }
     };
 
-    const handleConnect = (connectInfo: { chainId: string }) => {
-      if (!mounted) return;
-      console.log('🔗 Wallet connected:', connectInfo);
-    };
-
-    const handleDisconnect = (error: { code: number; message: string }) => {
-      if (!mounted) return;
-      console.log('🔌 Wallet disconnected:', error);
-      disconnectWallet();
-    };
-
-    // Add event listeners
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('connect', handleConnect);
-      window.ethereum.on('disconnect', handleDisconnect);
+    // Only check connection on mount, not on every render and not during manual connection
+    if (!isConnected && !isManualConnection) {
+      checkConnection();
     }
 
     // Cleanup function
     return () => {
-      mounted = false;
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-        window.ethereum.removeListener('connect', handleConnect);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
+      if (window.ethereum && eventListeners.accountsChanged) {
+        window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
+      }
+      if (window.ethereum && eventListeners.chainChanged) {
+        window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
       }
     };
-  }, [account, disconnectWallet]); // Add dependencies
+  }, []); // Remove dependencies to prevent infinite loops
 
   const value: Web3ContextType = {
     // EVM chains
@@ -564,7 +622,6 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     isMockMode,
     isConnecting,
     error,
-    isManualConnection,
     
     // EVM methods
     connectWallet,
