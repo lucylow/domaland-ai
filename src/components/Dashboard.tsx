@@ -25,9 +25,15 @@ import DomainManagement from './Dashboard/DomainManagement';
 import TokenizationWizard from './Domain/TokenizationWizard';
 import VisualDashboard from './Analytics/VisualDashboard';
 import GuidedTourSystem, { ContextualHelp } from './GuidedTour/TourSystem';
+// Advanced Features Components
+import { AIValuationPanel } from './AdvancedFeatures/AIValuationPanel';
+import { FractionalizationPanel } from './AdvancedFeatures/FractionalizationPanel';
+import { AMMPanel } from './AdvancedFeatures/AMMPanel';
+import { AdvancedAnalyticsPanel } from './AdvancedFeatures/AdvancedAnalyticsPanel';
 // Custom hooks
 import { useTour } from '../hooks/useTour';
 import { useAccessibility } from '../hooks/useAccessibility';
+import { useAdvancedFeatures } from '../hooks/useAdvancedFeatures';
 import { initAccessibility } from '../utils/accessibility';
 // Types and constants
 import { Domain, Transaction } from '../types';
@@ -68,6 +74,7 @@ const Dashboard: FC = () => {
   
   // Custom hooks
   const { currentTour, isTourActive, startTour, completeTour } = useTour();
+  const { aiValuation, fractionalization, amm, analytics, overallLoading, overallError } = useAdvancedFeatures();
   
   // Local state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -76,6 +83,13 @@ const Dashboard: FC = () => {
   const [showTokenizationWizard, setShowTokenizationWizard] = useState(false);
   const [selectedDomainForTokenization, setSelectedDomainForTokenization] = useState<Domain | null>(null);
   const [currentView, setCurrentView] = useState<DashboardView>('dashboard');
+  
+  // Advanced Features State
+  const [showAIValuation, setShowAIValuation] = useState(false);
+  const [showFractionalization, setShowFractionalization] = useState(false);
+  const [showAMM, setShowAMM] = useState(false);
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
+  const [selectedDomainForAdvancedFeatures, setSelectedDomainForAdvancedFeatures] = useState<Domain | null>(null);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -102,6 +116,16 @@ const Dashboard: FC = () => {
       refreshPromises.push(
         retryWithBackoff(async () => {
           // The useDomainMarketplace hook will automatically refresh when called
+          return Promise.resolve();
+        }, 2, 500, 5000)
+      );
+      
+      // Refresh advanced features data with retry
+      refreshPromises.push(
+        retryWithBackoff(async () => {
+          await analytics.getAnalyticsDashboard({ user_id: 1 });
+          await analytics.getTrendingDomains({ limit: 10 });
+          await analytics.getMarketTrends();
           return Promise.resolve();
         }, 2, 500, 5000)
       );
@@ -183,6 +207,53 @@ const Dashboard: FC = () => {
     setShowTokenizationWizard(false);
     setSelectedDomainForTokenization(null);
     showSuccess('Domain Tokenized', 'Your domain has been successfully tokenized!');
+  };
+
+  // Helper function to map domain data to expected Domain interface
+  const mapToDomainInterface = (domain: any): Domain => {
+    return {
+      id: domain.id || domain.tokenId,
+      tokenId: domain.tokenId,
+      name: domain.name,
+      currentPrice: domain.currentPrice || domain.price ? parseFloat(domain.price) : 0,
+      registrationDate: domain.registrationDate || new Date().toISOString(),
+      expirationDate: domain.expirationDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      isTokenized: domain.isTokenized || true,
+      isListed: domain.isListed || false,
+      isFractionalized: domain.isFractionalized || false,
+      category: domain.category || 'other',
+      owner: domain.owner,
+      price: domain.price,
+    };
+  };
+
+  // Advanced Features Handlers
+  const handleOpenAIValuation = (domain: any) => {
+    setSelectedDomainForAdvancedFeatures(mapToDomainInterface(domain));
+    setShowAIValuation(true);
+  };
+
+  const handleOpenFractionalization = (domain: any) => {
+    setSelectedDomainForAdvancedFeatures(mapToDomainInterface(domain));
+    setShowFractionalization(true);
+  };
+
+  const handleOpenAMM = (domain: any) => {
+    setSelectedDomainForAdvancedFeatures(mapToDomainInterface(domain));
+    setShowAMM(true);
+  };
+
+  const handleOpenAdvancedAnalytics = (domain?: Domain) => {
+    setSelectedDomainForAdvancedFeatures(domain || null);
+    setShowAdvancedAnalytics(true);
+  };
+
+  const closeAdvancedFeatures = () => {
+    setShowAIValuation(false);
+    setShowFractionalization(false);
+    setShowAMM(false);
+    setShowAdvancedAnalytics(false);
+    setSelectedDomainForAdvancedFeatures(null);
   };
 
   useEffect(() => {
@@ -316,6 +387,15 @@ const Dashboard: FC = () => {
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2 sm:mr-3"></div>
               <span className="font-semibold text-sm sm:text-base">Live Protocol Data</span>
             </Badge>
+            <Button
+              onClick={() => handleOpenAdvancedAnalytics()}
+              variant="outline"
+              size="lg"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 font-medium w-full sm:w-auto"
+            >
+              <span className="mr-2">📊</span>
+              Advanced Analytics
+            </Button>
             <Button
               onClick={handleRefresh}
               disabled={isRefreshing}
@@ -519,36 +599,68 @@ const Dashboard: FC = () => {
                             </div>
                           </div>
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
-                          onClick={async () => {
-                            const price = prompt('Enter price in ETH:');
-                            if (price && !isNaN(parseFloat(price)) && parseFloat(price) > 0) {
-                              try {
-                                const result = await retryWithBackoff(async () => {
-                                  return await listDomain(domain.tokenId, price);
-                                }, 2, 1000, 8000);
-                                
-                                if (result.success) {
-                                  showSuccess('Domain Listed', `${domain.name} has been listed for ${price} ETH`);
-                                } else {
-                                  showError('Listing Failed', result.error || 'Unable to list domain. Please try again.');
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                            onClick={async () => {
+                              const price = prompt('Enter price in ETH:');
+                              if (price && !isNaN(parseFloat(price)) && parseFloat(price) > 0) {
+                                try {
+                                  const result = await retryWithBackoff(async () => {
+                                    return await listDomain(domain.tokenId, price);
+                                  }, 2, 1000, 8000);
+                                  
+                                  if (result.success) {
+                                    showSuccess('Domain Listed', `${domain.name} has been listed for ${price} ETH`);
+                                  } else {
+                                    showError('Listing Failed', result.error || 'Unable to list domain. Please try again.');
+                                  }
+                                } catch (error) {
+                                  console.error('Listing error:', error);
+                                  const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                                  showError('Listing Failed', `Unable to list domain: ${errorMessage}`);
                                 }
-                              } catch (error) {
-                                console.error('Listing error:', error);
-                                const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-                                showError('Listing Failed', `Unable to list domain: ${errorMessage}`);
+                              } else if (price) {
+                                showWarning('Invalid Price', 'Please enter a valid price greater than 0');
                               }
-                            } else if (price) {
-                              showWarning('Invalid Price', 'Please enter a valid price greater than 0');
-                            }
-                          }}
-                        >
-                          <span className="mr-2">📝</span>
-                          List for Sale
-                        </Button>
+                            }}
+                          >
+                            <span className="mr-1">📝</span>
+                            List
+                          </Button>
+                          
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="px-3 py-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                            onClick={() => handleOpenAIValuation(domain)}
+                          >
+                            <span className="mr-1">🤖</span>
+                            AI Value
+                          </Button>
+                          
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="px-3 py-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200/50 dark:border-green-700/50 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-800/30 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                            onClick={() => handleOpenFractionalization(domain)}
+                          >
+                            <span className="mr-1">🔗</span>
+                            Split
+                          </Button>
+                          
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200/50 dark:border-orange-700/50 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-800/30 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                            onClick={() => handleOpenAMM(domain)}
+                          >
+                            <span className="mr-1">💱</span>
+                            Trade
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1310,6 +1422,35 @@ const Dashboard: FC = () => {
         <span className="mr-2">🎯</span>
         Start Tour
       </Button>
+
+      {/* Advanced Features Panels */}
+      {showAIValuation && selectedDomainForAdvancedFeatures && (
+        <AIValuationPanel
+          domain={selectedDomainForAdvancedFeatures}
+          onClose={closeAdvancedFeatures}
+        />
+      )}
+
+      {showFractionalization && selectedDomainForAdvancedFeatures && (
+        <FractionalizationPanel
+          domain={selectedDomainForAdvancedFeatures}
+          onClose={closeAdvancedFeatures}
+        />
+      )}
+
+      {showAMM && selectedDomainForAdvancedFeatures && (
+        <AMMPanel
+          domain={selectedDomainForAdvancedFeatures}
+          onClose={closeAdvancedFeatures}
+        />
+      )}
+
+      {showAdvancedAnalytics && (
+        <AdvancedAnalyticsPanel
+          domain={selectedDomainForAdvancedFeatures || undefined}
+          onClose={closeAdvancedFeatures}
+        />
+      )}
     </div>
   );
 };
