@@ -1,5 +1,5 @@
 // Doma Orderbook Integration Service
-import { ethers } from 'ethers';
+import { ethers, JsonRpcProvider, BrowserProvider, parseEther, formatEther } from 'ethers';
 
 export interface OrderbookListing {
   tokenId: string;
@@ -50,7 +50,7 @@ export interface OrderbookStats {
 }
 
 export class OrderbookIntegration {
-  private provider: ethers.providers.Provider | null = null;
+  private provider: JsonRpcProvider | BrowserProvider | null = null;
   private signer: ethers.Signer | null = null;
   private contractAddress: string;
   private contractABI: any[];
@@ -67,7 +67,7 @@ export class OrderbookIntegration {
   /**
    * Initialize the orderbook integration with provider and signer
    */
-  async initialize(provider: ethers.providers.Provider, signer?: ethers.Signer) {
+  async initialize(provider: JsonRpcProvider | BrowserProvider, signer?: ethers.Signer) {
     this.provider = provider;
     this.signer = signer || null;
     
@@ -167,7 +167,7 @@ export class OrderbookIntegration {
 
     try {
       // In a real implementation, this would call the smart contract
-      const priceWei = ethers.utils.parseEther(price);
+      const priceWei = parseEther(price);
       
       // Simulate transaction
       const transactionHash = '0x' + Math.random().toString(16).substring(2);
@@ -245,7 +245,7 @@ export class OrderbookIntegration {
 
     try {
       // In a real implementation, this would call the smart contract
-      const priceWei = ethers.utils.parseEther(price);
+      const priceWei = parseEther(price);
       
       // Simulate transaction
       const transactionHash = '0x' + Math.random().toString(16).substring(2);
@@ -277,7 +277,7 @@ export class OrderbookIntegration {
 
     try {
       // In a real implementation, this would call the smart contract
-      const offerAmountWei = ethers.utils.parseEther(offerAmount);
+      const offerAmountWei = parseEther(offerAmount);
       
       // Simulate transaction
       const transactionHash = '0x' + Math.random().toString(16).substring(2);

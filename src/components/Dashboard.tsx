@@ -654,7 +654,7 @@ const Dashboard: FC = () => {
               {/* Track 5 Statistics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <div className="text-center p-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200/30 dark:border-blue-700/30 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <div className="text-3xl font-bold text-gradient-premium mb-2">< 2 seconds</div>
+                  <div className="text-3xl font-bold text-gradient-premium mb-2">{"< 2 seconds"}</div>
                   <div className="text-sm font-medium text-muted-foreground">Instant Page Generation</div>
                   <div className="text-xs text-muted-foreground mt-1">Landing pages created automatically</div>
                 </div>

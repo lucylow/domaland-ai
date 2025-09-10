@@ -47,13 +47,14 @@ export const calculateDomainValuation = (domainName: string, metadata: Record<st
   baseValue += brandabilityScore * 800;
 
   // Traffic factor (if available)
-  if (metadata.traffic?.monthlyVisitors) {
-    const trafficScore = Math.min(100, Math.log10(metadata.traffic.monthlyVisitors) * 20);
+  const traffic = (metadata as any)?.traffic;
+  if (traffic?.monthlyVisitors) {
+    const trafficScore = Math.min(100, Math.log10(traffic.monthlyVisitors) * 20);
     factors.push({
       type: 'traffic',
       weight: 0.15,
       score: trafficScore,
-      description: `${metadata.traffic.monthlyVisitors.toLocaleString()} monthly visitors`
+      description: `${traffic.monthlyVisitors.toLocaleString()} monthly visitors`
     });
     baseValue += trafficScore * 200;
   }

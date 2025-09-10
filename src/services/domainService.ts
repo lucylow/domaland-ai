@@ -1,6 +1,6 @@
 // Domain service for handling domain operations, tokenization, and fractional ownership
 
-import { ethers } from 'ethers';
+import { ethers, JsonRpcProvider, BrowserProvider } from 'ethers';
 import { 
   DomainAsset, 
   DomainValuation, 
@@ -15,11 +15,11 @@ import {
 } from '../types/domain';
 
 export class DomainService {
-  private provider: ethers.providers.Web3Provider | null = null;
+  private provider: JsonRpcProvider | BrowserProvider | null = null;
   private signer: ethers.Signer | null = null;
   private apiBaseUrl: string;
 
-  constructor(provider?: ethers.providers.Web3Provider, signer?: ethers.Signer) {
+  constructor(provider?: JsonRpcProvider | BrowserProvider, signer?: ethers.Signer) {
     this.provider = provider || null;
     this.signer = signer || null;
     this.apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'https://api.domaland.ai';
