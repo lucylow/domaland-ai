@@ -21,7 +21,7 @@ import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
 import { XMTPProvider } from "./contexts/XMTPContext";
-import { NotificationProvider } from "./components/NotificationSystem";
+import { NotificationProvider } from "./components/EnhancedNotificationSystem";
 
 const queryClient = new QueryClient();
 

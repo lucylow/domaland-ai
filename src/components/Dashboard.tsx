@@ -14,7 +14,7 @@ import { DomainTokenization } from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
 import Logo from './Logo';
 import WalletConnectionTest from './WalletConnectionTest';
-import { useNotificationHelpers } from './NotificationSystem';
+import { useNotificationHelpers } from './EnhancedNotificationSystem';
 
 const Dashboard: FC = () => {
   const { isConnected, connectWallet, account, network, isConnecting, error, clearError } = useWeb3();

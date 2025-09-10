@@ -663,7 +663,7 @@ const DomaOrderbookIntegration: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="order-type">Order Type</Label>
-                      <Select value={orderType} onValueChange={setOrderType}>
+                      <Select value={orderType} onValueChange={(value: 'bid' | 'ask') => setOrderType(value)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>

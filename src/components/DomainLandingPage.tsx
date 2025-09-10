@@ -63,13 +63,6 @@ const DomainLandingPage: React.FC = () => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (domainId) {
-      fetchDomainData();
-      fetchMarketData();
-    }
-  }, [domainId, fetchDomainData, fetchMarketData]);
-
   const fetchDomainData = useCallback(async () => {
     try {
       // For now, we'll use mock data since we don't have the actual contracts deployed
@@ -138,6 +131,13 @@ const DomainLandingPage: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (domainId) {
+      fetchDomainData();
+      fetchMarketData();
+    }
+  }, [domainId, fetchDomainData, fetchMarketData]);
 
   const makeOffer = async () => {
     if (!isConnected || !userOffer) return;
@@ -225,7 +225,7 @@ const DomainLandingPage: React.FC = () => {
             <div className="text-2xl font-bold text-indigo-600">DomaLand.AI</div>
             {!isConnected && (
               <Button
-                onClick={connectWallet}
+                onClick={() => connectWallet()}
                 className="bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 Connect Wallet

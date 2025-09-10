@@ -118,6 +118,7 @@ interface Web3ContextType {
   isConnected: boolean;
   network: Network | null;
   currentChain: SupportedChain;
+  chainId: number | null;
   
   // Solana
   solanaAccount: string | null;
@@ -169,6 +170,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [network, setNetwork] = useState<Network | null>(null);
   const [currentChain, setCurrentChain] = useState<SupportedChain>(SupportedChain.POLYGON);
+  const [chainId, setChainId] = useState<number | null>(null);
   
   // Solana state
   const [solanaAccount, setSolanaAccount] = useState<string | null>(null);
@@ -197,10 +199,77 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     setProvider(null); // No real provider in mock mode
     setSigner(null); // No real signer in mock mode
     setNetwork(null); // No real network in mock mode
+    setChainId(CHAIN_CONFIGS[SupportedChain.POLYGON].chainId);
     setIsConnected(true);
     setIsMockMode(true);
     
     console.log('Connected to mock wallet for development');
+  }, []);
+
+  const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
+    if (!window.ethereum) {
+      setError('MetaMask not detected');
+      return false;
+    }
+    
+    try {
+      const chainConfig = CHAIN_CONFIGS[chain];
+      if (!chainConfig) {
+        throw new Error(`Unsupported chain: ${chain}`);
+      }
+      
+      // Check if already on the correct chain
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const targetChainId = `0x${chainConfig.chainId.toString(16)}`;
+      
+      if (currentChainId === targetChainId) {
+        setCurrentChain(chain);
+        setChainId(chainConfig.chainId);
+        return true;
+      }
+      
+      // Try to switch to the chain
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: targetChainId }],
+        });
+        setCurrentChain(chain);
+        setChainId(chainConfig.chainId);
+        return true;
+      } catch (switchError: any) {
+        // If the chain is not added to MetaMask, add it
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: `0x${chainConfig.chainId.toString(16)}`,
+                chainName: chainConfig.name,
+                rpcUrls: [chainConfig.rpcUrl],
+                blockExplorerUrls: [chainConfig.blockExplorer],
+                nativeCurrency: chainConfig.nativeCurrency,
+              }],
+            });
+            setCurrentChain(chain);
+            setChainId(chainConfig.chainId);
+            return true;
+          } catch (addError) {
+            console.error('Failed to add chain:', addError);
+            setError(`Failed to add ${CHAIN_CONFIGS[chain].name} to MetaMask`);
+            return false;
+          }
+        }
+        
+        setError(`Failed to switch to ${chain}`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Chain switch error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to switch chain';
+      setError(errorMessage);
+      return false;
+    }
   }, []);
 
   const connectWallet = useCallback(async (chain: SupportedChain = SupportedChain.POLYGON): Promise<boolean> => {
@@ -309,64 +378,6 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       setIsConnecting(false);
     }
   }, [switchChain]);
-
-  const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
-    if (!window.ethereum) {
-      setError('MetaMask not detected');
-      return false;
-    }
-    
-    try {
-      const chainConfig = CHAIN_CONFIGS[chain];
-      if (!chainConfig) {
-        throw new Error(`Unsupported chain: ${chain}`);
-      }
-      
-      // Check if already on the correct chain
-      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      if (parseInt(currentChainId as string, 16) === chainConfig.chainId) {
-        setCurrentChain(chain);
-        return true;
-      }
-      
-      // Switch to the requested chain
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${chainConfig.chainId.toString(16)}` }],
-      });
-      
-      setCurrentChain(chain);
-      return true;
-    } catch (error: unknown) {
-      console.error('Failed to switch chain:', error);
-      
-      // If the chain is not added to MetaMask, try to add it
-      if (error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 4902) {
-        try {
-          const chainConfig = CHAIN_CONFIGS[chain];
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: `0x${chainConfig.chainId.toString(16)}`,
-              chainName: chainConfig.name,
-              rpcUrls: [chainConfig.rpcUrl],
-              blockExplorerUrls: [chainConfig.blockExplorer],
-              nativeCurrency: chainConfig.nativeCurrency,
-            }],
-          });
-          setCurrentChain(chain);
-          return true;
-        } catch (addError) {
-          console.error('Failed to add chain:', addError);
-          setError(`Failed to add ${CHAIN_CONFIGS[chain].name} to MetaMask`);
-          return false;
-        }
-      }
-      
-      setError(`Failed to switch to ${chain}`);
-      return false;
-    }
-  }, []);
 
   const connectSolanaWallet = async (): Promise<boolean> => {
     try {
@@ -482,6 +493,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     isConnected,
     network,
     currentChain,
+    chainId,
     
     // Solana
     solanaAccount,

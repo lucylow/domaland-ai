@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { useWeb3 } from '@/contexts/Web3Context';
+import { useWeb3, CHAIN_CONFIGS } from '@/contexts/Web3Context';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 import { 
   Wallet, 
@@ -13,6 +13,7 @@ import {
   AlertCircle, 
   Loader2,
   ExternalLink,
+  X,
   Copy,
   RefreshCw
 } from 'lucide-react';
@@ -76,6 +77,7 @@ const EnhancedWalletConnection: React.FC = () => {
     account, 
     network, 
     currentChain,
+    chainId,
     isConnecting,
     error,
     clearError,
@@ -214,8 +216,9 @@ const EnhancedWalletConnection: React.FC = () => {
   };
 
   const openExplorer = () => {
-    if (account && network) {
-      const explorerUrl = network.blockExplorerUrl || 'https://etherscan.io';
+    if (account && chainId) {
+      const chainConfig = Object.values(CHAIN_CONFIGS).find(config => config.chainId === chainId);
+      const explorerUrl = chainConfig?.blockExplorer || 'https://etherscan.io';
       window.open(`${explorerUrl}/address/${account}`, '_blank');
     }
   };
