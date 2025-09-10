@@ -16,6 +16,7 @@ import Logo from './Logo';
 import WalletConnectionTest from './WalletConnectionTest';
 import WalletConnectionHelper from './WalletConnectionHelper';
 import ConnectWalletButton from './ConnectWalletButton';
+import AIIntegrationPanel from './AIIntegrationPanel';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 
 const Dashboard: FC = () => {
@@ -495,6 +496,42 @@ const Dashboard: FC = () => {
                     )}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* AI Integration Panel */}
+        {isConnected && (
+          <div className="mb-12 animate-fade-in" style={{animationDelay: '0.8s'}}>
+            <Card className="group relative overflow-hidden card-premium hover:shadow-premium-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-shimmer"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <CardHeader className="relative z-10 pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                  <div className="relative">
+                    <span className="text-3xl group-hover:scale-110 transition-transform duration-300">🤖</span>
+                    <div className="absolute -inset-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <span className="text-gradient-premium group-hover:text-purple-600 transition-colors duration-300">
+                    AI-Powered Domain Analysis
+                  </span>
+                </CardTitle>
+                <p className="text-lg text-muted-foreground mt-4 leading-relaxed">
+                  Leverage artificial intelligence to analyze domain value, linguistic characteristics, development potential, and generate optimized content automatically.
+                </p>
+              </CardHeader>
+              
+              <CardContent className="relative z-10">
+                <AIIntegrationPanel 
+                  domainName="example.com"
+                  onAnalysisComplete={(results) => {
+                    console.log('AI Analysis Complete:', results);
+                    showSuccess('AI Analysis Complete', 'Domain analysis has been completed successfully!');
+                  }}
+                />
               </CardContent>
             </Card>
           </div>
