@@ -42,7 +42,7 @@ const MarketplaceFilters: React.FC<MarketplaceFiltersProps> = ({
     onSort(newSortBy, newDirection);
   };
 
-  const handleFilterChange = (key: keyof FilterOptions, value: string | number | boolean) => {
+  const handleFilterChange = (key: keyof FilterOptions, value: string | number | boolean | { min: number; max: number } | string[]) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     onFilter(newFilters);

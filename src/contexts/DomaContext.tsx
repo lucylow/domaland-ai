@@ -76,8 +76,8 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
       setUserDomains(prev => [...prev, newDomain]);
       
       return { 
-        transactionHash: '0x' + Math.random().toString(16).substring(2),
-        status: 1 
+        success: true,
+        tokenId: '0x' + Math.random().toString(16).substring(2)
       };
     } catch (error) {
       console.error('Tokenization failed:', error);
@@ -104,8 +104,7 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
       }
       
       return { 
-        transactionHash: '0x' + Math.random().toString(16).substring(2),
-        status: 1 
+        success: true
       };
     } catch (error) {
       console.error('Listing failed:', error);
@@ -134,8 +133,7 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
       }
       
       return { 
-        transactionHash: '0x' + Math.random().toString(16).substring(2),
-        status: 1 
+        success: true
       };
     } catch (error) {
       console.error('Purchase failed:', error);

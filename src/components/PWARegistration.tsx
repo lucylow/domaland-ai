@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 
+// PWA types
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 const PWARegistration: React.FC = () => {
   const { showInfo, showSuccess } = useNotificationHelpers();
 
@@ -42,9 +48,9 @@ const PWARegistration: React.FC = () => {
     }
 
     // Handle PWA install prompt
-    let deferredPrompt: Event | null = null;
+    let deferredPrompt: BeforeInstallPromptEvent | null = null;
     
-    const handleBeforeInstallPrompt = (e: Event) => {
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       deferredPrompt = e;
       
@@ -57,7 +63,7 @@ const PWARegistration: React.FC = () => {
               label: 'Install',
               action: async () => {
                 if (deferredPrompt) {
-                  deferredPrompt.prompt();
+                  await deferredPrompt.prompt();
                   const { outcome } = await deferredPrompt.userChoice;
                   
                   if (outcome === 'accepted') {
@@ -75,7 +81,7 @@ const PWARegistration: React.FC = () => {
       );
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
 
     // Handle app installed
     window.addEventListener('appinstalled', () => {
@@ -83,9 +89,9 @@ const PWARegistration: React.FC = () => {
     });
 
     // Cleanup
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+      };
   }, [showInfo, showSuccess]);
 
   return null; // This component doesn't render anything

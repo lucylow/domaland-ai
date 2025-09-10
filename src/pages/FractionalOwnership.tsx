@@ -358,14 +358,14 @@ const FractionalOwnership: React.FC = () => {
                     
                     <div className="flex gap-2">
                       <Button 
-                        onClick={() => handleBuyFractions(domain, 1)}
+                        onClick={() => handleBuyFractions({ id: domain.id.toString(), name: domain.name, price: domain.pricePerFraction }, 1)}
                         disabled={isLoading}
                         className="flex-1 bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 hover:shadow-lg"
                       >
                         Buy 1
                       </Button>
                       <Button 
-                        onClick={() => handleBuyFractions(domain, 10)}
+                        onClick={() => handleBuyFractions({ id: domain.id.toString(), name: domain.name, price: domain.pricePerFraction }, 10)}
                         disabled={isLoading}
                         variant="outline"
                         className="flex-1 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"

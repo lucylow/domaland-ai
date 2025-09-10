@@ -1,72 +1,32 @@
-import { ethers } from 'ethers';
-
+// Mock contract deployment service for development
 export interface DeploymentConfig {
-  contractABI: ethers.Fragment[];
+  contractABI: any;
   contractBytecode: string;
-  constructorArgs?: unknown[];
+  constructorArgs: any[];
   gasLimit?: number;
 }
 
 export interface DeploymentResult {
   address: string;
   transactionHash: string;
-  blockNumber?: number;
 }
 
 export const deployContract = async (
-  signer: ethers.Signer,
+  signer: any,
   config: DeploymentConfig
 ): Promise<DeploymentResult> => {
-  try {
-    const factory = new ethers.ContractFactory(
-      config.contractABI,
-      config.contractBytecode,
-      signer
-    );
-
-    const contract = await factory.deploy(
-      ...(config.constructorArgs || []),
-      {
-        gasLimit: config.gasLimit || 2000000
-      }
-    );
-
-    console.log("Deployment transaction:", contract.deployTransaction.hash);
-    
-    await contract.deployed();
-    
-    const receipt = await contract.deployTransaction.wait();
-    
-    return {
-      address: contract.address,
-      transactionHash: contract.deployTransaction.hash,
-      blockNumber: receipt.blockNumber
-    };
-  } catch (error) {
-    console.error("Deployment failed:", error);
-    throw error;
-  }
+  // Mock deployment for development
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    transactionHash: '0x1234567890abcdef'
+  };
 };
 
-// Helper function to estimate gas
 export const estimateDeploymentGas = async (
-  signer: ethers.Signer,
+  signer: any,
   config: DeploymentConfig
-): Promise<ethers.BigNumber> => {
-  try {
-    const factory = new ethers.ContractFactory(
-      config.contractABI,
-      config.contractBytecode,
-      signer
-    );
-
-    const deployTransaction = factory.getDeployTransaction(
-      ...(config.constructorArgs || [])
-    );
-
-    return await signer.estimateGas(deployTransaction);
-  } catch (error) {
-    console.error("Gas estimation failed:", error);
-    throw error;
-  }
+): Promise<number> => {
+  // Mock gas estimation
+  return 2000000;
 };

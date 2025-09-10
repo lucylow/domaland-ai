@@ -190,7 +190,7 @@ interface DashboardData {
     transaction_count_24h: number;
   };
   trending_domains: Array<{
-    domain: Domain;
+    domain: DomainAsset;
     trending_score: number;
     metrics: Record<string, unknown>;
   }>;
@@ -272,7 +272,7 @@ class ApiService {
     status?: string;
     limit?: number;
     offset?: number;
-  }): Promise<ApiResponse<Domain[]>> {
+  }): Promise<ApiResponse<DomainAsset[]>> {
     const queryParams = new URLSearchParams();
     if (params?.user_id) queryParams.append('user_id', params.user_id.toString());
     if (params?.status) queryParams.append('status', params.status);
@@ -280,18 +280,18 @@ class ApiService {
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
     const endpoint = `/domains${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return this.request<Domain[]>(endpoint);
+    return this.request<DomainAsset[]>(endpoint);
   }
 
-  async registerDomain(data: DomainRegistrationData): Promise<ApiResponse<Domain>> {
-    return this.request<Domain>('/domains', {
+  async registerDomain(data: DomainRegistrationData): Promise<ApiResponse<DomainAsset>> {
+    return this.request<DomainAsset>('/domains', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async getDomainDetails(domainId: number): Promise<ApiResponse<Domain>> {
-    return this.request<Domain>(`/domains/${domainId}`);
+  async getDomainDetails(domainId: number): Promise<ApiResponse<DomainAsset>> {
+    return this.request<DomainAsset>(`/domains/${domainId}`);
   }
 
   async tokenizeDomain(domainId: number, data: TokenizationData): Promise<ApiResponse<Record<string, unknown>>> {
@@ -315,15 +315,15 @@ class ApiService {
     });
   }
 
-  async listDomainForSale(domainId: number, data: ListingData): Promise<ApiResponse<Domain>> {
-    return this.request<Domain>(`/domains/${domainId}/list`, {
+  async listDomainForSale(domainId: number, data: ListingData): Promise<ApiResponse<DomainAsset>> {
+    return this.request<DomainAsset>(`/domains/${domainId}/list`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async unlistDomain(domainId: number): Promise<ApiResponse<Domain>> {
-    return this.request<Domain>(`/domains/${domainId}/unlist`, {
+  async unlistDomain(domainId: number): Promise<ApiResponse<DomainAsset>> {
+    return this.request<DomainAsset>(`/domains/${domainId}/unlist`, {
       method: 'POST',
     });
   }
@@ -334,7 +334,7 @@ class ApiService {
     min_price?: number;
     max_price?: number;
     tld?: string;
-  }): Promise<ApiResponse<Domain[]>> {
+  }): Promise<ApiResponse<DomainAsset[]>> {
     const queryParams = new URLSearchParams();
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
@@ -343,7 +343,7 @@ class ApiService {
     if (params?.tld) queryParams.append('tld', params.tld);
 
     const endpoint = `/marketplace${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return this.request<Domain[]>(endpoint);
+    return this.request<DomainAsset[]>(endpoint);
   }
 
   // Transaction APIs

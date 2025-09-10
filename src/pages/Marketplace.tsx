@@ -58,7 +58,7 @@ const Marketplace: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await buyDomain(domain.tokenId, domain.price);
+      await buyDomain(domain.id, domain.price);
       toast({
         title: "Domain Purchased!",
         description: `Successfully purchased ${domain.name} for ${domain.price} ETH`,
@@ -325,7 +325,7 @@ const Marketplace: React.FC = () => {
                 
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => handleBuyDomain(domain)}
+                    onClick={() => handleBuyDomain({ id: domain.tokenId, name: domain.name, price: domain.price!, owner: domain.owner })}
                     disabled={isLoading}
                     className="flex-1 bg-foreground text-background hover:bg-foreground/90 font-medium transition-all duration-300 hover:shadow-lg hover:scale-105"
                   >
