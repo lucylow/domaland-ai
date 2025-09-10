@@ -15,6 +15,7 @@ import OnboardingTour from './OnboardingTour';
 import Logo from './Logo';
 import WalletConnectionTest from './WalletConnectionTest';
 import WalletConnectionHelper from './WalletConnectionHelper';
+import ConnectWalletButton from './ConnectWalletButton';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 
 const Dashboard: FC = () => {
@@ -97,47 +98,7 @@ const Dashboard: FC = () => {
               </Alert>
             )}
             <div className="space-y-4">
-              <Button 
-                onClick={() => connectWallet()} 
-                disabled={isConnecting}
-                className="w-full btn-premium text-lg py-6 px-8 rounded-2xl font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:-translate-y-0"
-                size="lg"
-              >
-                <div className="flex items-center gap-3">
-                  {isConnecting ? (
-                    <div className="loading-dots">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                  ) : (
-                    <span className="text-2xl">🔗</span>
-                  )}
-                  {isConnecting ? 'Connecting to Wallet...' : 'Connect Your Wallet'}
-                </div>
-              </Button>
-              
-              {/* Wallet Options */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={() => connectWallet(SupportedChain.ETHEREUM)}
-                  disabled={isConnecting}
-                  variant="outline"
-                  className="py-3 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
-                >
-                  <span className="mr-2">🔷</span>
-                  Ethereum
-                </Button>
-                <Button
-                  onClick={() => connectWallet(SupportedChain.POLYGON)}
-                  disabled={isConnecting}
-                  variant="outline"
-                  className="py-3 px-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
-                >
-                  <span className="mr-2">🟣</span>
-                  Polygon
-                </Button>
-              </div>
+              <ConnectWalletButton />
             </div>
             <div className="text-center space-y-4">
               <div className="text-sm text-muted-foreground bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-gray-800/80 dark:to-gray-700/80 rounded-2xl p-6 border border-blue-200/30 dark:border-gray-600/30 backdrop-blur-sm">

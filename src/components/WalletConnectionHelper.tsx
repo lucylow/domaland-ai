@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { detectWallets, hasAnyWallet, getWalletInstallInstructions } from '@/utils/walletDetection';
 
 const WalletConnectionHelper: React.FC = () => {
   const {
@@ -15,10 +16,13 @@ const WalletConnectionHelper: React.FC = () => {
     isConnecting,
     error,
     clearError,
-    isMockMode
+    isMockMode,
+    connectMockWallet
   } = useWeb3();
 
   const [diagnostics, setDiagnostics] = useState<string[]>([]);
+  const wallets = detectWallets();
+  const hasWallet = hasAnyWallet();
 
   const runDiagnostics = () => {
     const results: string[] = [];
@@ -28,14 +32,14 @@ const WalletConnectionHelper: React.FC = () => {
       results.push('✅ Web3 provider detected');
       
       // Check specific wallet types
-      if (window.ethereum.isMetaMask) {
-        results.push('✅ MetaMask detected');
-      } else if (window.ethereum.isCoinbaseWallet) {
-        results.push('✅ Coinbase Wallet detected');
-      } else if (window.ethereum.isBraveWallet) {
-        results.push('✅ Brave Wallet detected');
-      } else {
-        results.push('⚠️ Unknown wallet type detected');
+      wallets.forEach(wallet => {
+        if (wallet.detected) {
+          results.push(`✅ ${wallet.name} detected`);
+        }
+      });
+      
+      if (!wallets.some(w => w.detected)) {
+        results.push('⚠️ No known wallet type detected');
       }
       
       // Check if wallet is locked
@@ -63,6 +67,53 @@ const WalletConnectionHelper: React.FC = () => {
   const clearDiagnostics = () => {
     setDiagnostics([]);
   };
+
+  // Show wallet installation guide if no wallet is detected
+  if (!hasWallet && !isConnected) {
+    return (
+      <div className="max-w-md mx-auto p-6 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="text-lg font-semibold text-blue-900 mb-4">
+          🔗 Connect Your Web3 Wallet
+        </h3>
+        
+        <p className="text-sm text-blue-700 mb-4">
+          To use DomaLand.AI, you need a Web3 wallet. Choose one of these popular options:
+        </p>
+        
+        <div className="space-y-3">
+          {wallets.map((wallet) => (
+            <div key={wallet.name} className="flex items-center justify-between p-3 bg-white rounded border">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{wallet.icon}</span>
+                <div>
+                  <div className="font-medium text-gray-900">{wallet.name}</div>
+                  <div className="text-xs text-gray-500">
+                    {wallet.detected ? '✅ Detected' : '❌ Not installed'}
+                  </div>
+                </div>
+              </div>
+              {!wallet.detected && (
+                <a
+                  href={wallet.installUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                >
+                  Install
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+          <p className="text-xs text-yellow-700">
+            💡 <strong>New to Web3?</strong> We recommend starting with MetaMask - it's beginner-friendly and widely supported.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
