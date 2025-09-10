@@ -186,3 +186,4 @@ export const ANALYTICS_CONFIG = {
   HOTJAR_ID: process.env.REACT_APP_HOTJAR_ID || '',
   SENTRY_DSN: process.env.REACT_APP_SENTRY_DSN || ''
 } as const;
+

@@ -6,7 +6,7 @@ import { DomainAsset, DomainValuation, ValuationFactor } from '../types/domain';
  * Calculate domain valuation based on various factors
  * This is a simplified version - in production, this would use AI/ML models
  */
-export const calculateDomainValuation = (domainName: string, metadata: any): DomainValuation => {
+export const calculateDomainValuation = (domainName: string, metadata: Record<string, unknown>): DomainValuation => {
   const factors: ValuationFactor[] = [];
   let baseValue = 0;
 

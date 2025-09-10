@@ -12,7 +12,7 @@ const MockDataExample: React.FC = () => {
   const [domains, setDomains] = useState([]);
   const [users, setUsers] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [metrics, setMetrics] = useState<any>({});
+  const [metrics, setMetrics] = useState<Record<string, unknown>>({});
   const [trendingDomains, setTrendingDomains] = useState([]);
 
   useEffect(() => {

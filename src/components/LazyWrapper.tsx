@@ -21,7 +21,7 @@ const DefaultFallback = () => (
 );
 
 // Higher-order component for lazy loading
-export const withLazyLoading = <P extends Record<string, any>>(
+export const withLazyLoading = <P extends Record<string, unknown>>(
   Component: ComponentType<P>,
   fallback?: React.ReactNode
 ) => {
@@ -29,7 +29,7 @@ export const withLazyLoading = <P extends Record<string, any>>(
   
   return (props: P) => (
     <Suspense fallback={fallback || <DefaultFallback />}>
-      <LazyComponent {...(props as any)} />
+      <LazyComponent {...props} />
     </Suspense>
   );
 };

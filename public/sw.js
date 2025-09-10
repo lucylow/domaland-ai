@@ -265,3 +265,4 @@ async function syncContent() {
   // Implement periodic sync logic here
   // For example, update cached domain data, sync analytics, etc.
 }
+

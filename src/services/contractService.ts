@@ -145,7 +145,7 @@ export class ContractService {
     }
 
     const offers = await this.offerManagerContract.getDomainOffers(nftContract, tokenId);
-    return offers.map((offer: any) => ({
+    return offers.map((offer: Record<string, unknown>) => ({
       buyer: offer.buyer,
       paymentToken: offer.paymentToken,
       amount: offer.amount.toString(),
@@ -163,7 +163,7 @@ export class ContractService {
     }
 
     const offers = await this.offerManagerContract.getActiveDomainOffers(nftContract, tokenId);
-    return offers.map((offer: any) => ({
+    return offers.map((offer: Record<string, unknown>) => ({
       buyer: offer.buyer,
       paymentToken: offer.paymentToken,
       amount: offer.amount.toString(),

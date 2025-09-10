@@ -262,3 +262,4 @@ contract OfferFactory is ReentrancyGuard, Pausable, Ownable {
         IERC20(_token).safeTransfer(owner(), _amount);
     }
 }
+

@@ -13,7 +13,7 @@ export interface Notification {
   duration?: number;
   persistent?: boolean;
   actions?: NotificationAction[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface NotificationAction {

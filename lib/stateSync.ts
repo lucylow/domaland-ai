@@ -267,3 +267,4 @@ export const domainStateSynchronizer = new DomainStateSynchronizer({
   enableBlockchainMonitoring: true,
   enableMetadataSync: true
 })
+

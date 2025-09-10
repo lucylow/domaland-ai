@@ -152,3 +152,4 @@ export function OfferModal({ isOpen, onClose, domainData }: OfferModalProps) {
     </Dialog>
   )
 }
+

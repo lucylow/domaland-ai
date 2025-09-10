@@ -42,7 +42,7 @@ const PWARegistration: React.FC = () => {
     }
 
     // Handle PWA install prompt
-    let deferredPrompt: any;
+    let deferredPrompt: Event | null = null;
     
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();

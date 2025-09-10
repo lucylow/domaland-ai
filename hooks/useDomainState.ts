@@ -59,3 +59,4 @@ export function useDomainState(domainName: string): UseDomainStateReturn {
     refresh
   }
 }
+

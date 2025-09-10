@@ -308,7 +308,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     } finally {
       setIsConnecting(false);
     }
-  }, [eventListeners]);
+  }, [switchChain]);
 
   const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
     if (!window.ethereum) {

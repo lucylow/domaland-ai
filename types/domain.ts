@@ -48,3 +48,4 @@ export interface DomainMetadata {
     value: string
   }>
 }
+

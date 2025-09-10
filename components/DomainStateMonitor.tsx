@@ -266,3 +266,4 @@ export function DomainStateMonitor({ domainName, showDetails = true }: DomainSta
     </Card>
   )
 }
+

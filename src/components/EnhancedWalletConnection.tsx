@@ -187,8 +187,9 @@ const EnhancedWalletConnection: React.FC = () => {
       } else {
         throw new Error('Failed to connect wallet');
       }
-    } catch (error: any) {
-      showError('Connection Failed', error.message || 'Failed to connect wallet');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
+      showError('Connection Failed', errorMessage);
       
       setConnectionSteps(prev => 
         prev.map(step => 

@@ -296,8 +296,9 @@ const DomaOrderbookIntegration: React.FC = () => {
       setOrderPrice('');
       setOrderAmount('');
       await loadData();
-    } catch (error: any) {
-      showError('Order Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Order failed';
+      showError('Order Failed', errorMessage);
     }
   };
 
@@ -312,8 +313,9 @@ const DomaOrderbookIntegration: React.FC = () => {
       showSuccess('Listing Created', `${domainName} listed for ${price} ${currency}`);
       setShowCreateListing(false);
       await loadData();
-    } catch (error: any) {
-      showError('Listing Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Listing failed';
+      showError('Listing Failed', errorMessage);
     }
   };
 
@@ -327,8 +329,9 @@ const DomaOrderbookIntegration: React.FC = () => {
       // In production, this would interact with Doma Protocol orderbook contracts
       showSuccess('Order Cancelled', 'Order has been successfully cancelled');
       await loadData();
-    } catch (error: any) {
-      showError('Cancel Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Cancel failed';
+      showError('Cancel Failed', errorMessage);
     }
   };
 

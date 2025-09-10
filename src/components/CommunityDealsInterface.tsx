@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -197,9 +197,9 @@ const CommunityDealsInterface: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       // In production, fetch from your backend/contracts
@@ -210,7 +210,7 @@ const CommunityDealsInterface: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleJoinDeal = async (dealId: string, amount: string) => {
     if (!contractService || !isConnected) {
@@ -222,8 +222,8 @@ const CommunityDealsInterface: React.FC = () => {
       // In production, this would interact with your smart contracts
       showSuccess('Deal Joined', `Successfully joined deal with ${amount} ETH investment`);
       await loadData();
-    } catch (error: any) {
-      showError('Failed to Join Deal', error.message);
+    } catch (error: unknown) {
+      showError('Failed to Join Deal', error instanceof Error ? error.message : 'An error occurred');
     }
   };
 
@@ -237,8 +237,8 @@ const CommunityDealsInterface: React.FC = () => {
       // In production, this would interact with your fractionalization contracts
       showSuccess('Fractions Purchased', `Successfully purchased ${fractionCount} fractions`);
       await loadData();
-    } catch (error: any) {
-      showError('Failed to Buy Fractions', error.message);
+    } catch (error: unknown) {
+      showError('Failed to Buy Fractions', error instanceof Error ? error.message : 'An error occurred');
     }
   };
 

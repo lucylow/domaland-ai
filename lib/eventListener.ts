@@ -242,3 +242,4 @@ export const domainEventListener = new DomainEventListener(
   process.env.DOMA_RPC_URL || 'https://rpc.doma-testnet.xyz',
   process.env.DOMA_DOMAIN_NFT_CONTRACT || '0x...'
 );
+

@@ -362,11 +362,11 @@ class ApiService {
   }
 
   // Statistics APIs
-  async getDomainStats(): Promise<ApiResponse<any>> {
+  async getDomainStats(): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request('/stats');
   }
 
-  async getSupportedChains(): Promise<ApiResponse<any[]>> {
+  async getSupportedChains(): Promise<ApiResponse<Record<string, unknown>[]>> {
     return this.request('/chains');
   }
 
@@ -386,7 +386,7 @@ class ApiService {
   }
 
   // Fractionalization APIs
-  async createFractionalizationProposal(domainId: number, data: Partial<FractionalizationProposal>): Promise<ApiResponse<any>> {
+  async createFractionalizationProposal(domainId: number, data: Partial<FractionalizationProposal>): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/fractionalize/propose`, {
       method: 'POST',
       body: JSON.stringify(data),

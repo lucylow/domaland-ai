@@ -73,3 +73,4 @@ export function AnalyticsChart({ data }: AnalyticsChartProps) {
     </div>
   )
 }
+

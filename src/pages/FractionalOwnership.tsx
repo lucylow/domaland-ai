@@ -108,7 +108,7 @@ const FractionalOwnership: React.FC = () => {
     }
   };
 
-  const handleBuyFractions = async (domain: any, amount: number) => {
+  const handleBuyFractions = async (domain: { id: string; name: string; price: number }, amount: number) => {
     setIsLoading(true);
     try {
       // Simulate buying fractions

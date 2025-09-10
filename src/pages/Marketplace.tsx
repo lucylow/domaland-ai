@@ -39,7 +39,7 @@ const Marketplace: React.FC = () => {
     }
   });
 
-  const handleBuyDomain = async (domain: any) => {
+  const handleBuyDomain = async (domain: { id: string; name: string; price: string; owner: string }) => {
     if (!isConnected) {
       toast({
         title: "Wallet Not Connected",

@@ -458,3 +458,4 @@ contract DomaLandOfferManager is ReentrancyGuard, Ownable {
         address attemptedOwner
     );
 }
+

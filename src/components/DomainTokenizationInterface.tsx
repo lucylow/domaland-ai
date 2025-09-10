@@ -362,8 +362,9 @@ const DomainTokenizationInterface: React.FC = () => {
       // In production, this would interact with Doma Protocol smart contracts
       showSuccess('Domain Tokenized', `${domainName} has been successfully tokenized on the blockchain`);
       await loadTokenizedDomains();
-    } catch (error: any) {
-      showError('Tokenization Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Tokenization failed';
+      showError('Tokenization Failed', errorMessage);
     }
   };
 
@@ -377,8 +378,9 @@ const DomainTokenizationInterface: React.FC = () => {
       // In production, this would interact with Doma Protocol fractionalization contracts
       showSuccess('Domain Fractionalized', `Domain has been split into ${fractionCount} fractions`);
       await loadTokenizedDomains();
-    } catch (error: any) {
-      showError('Fractionalization Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Fractionalization failed';
+      showError('Fractionalization Failed', errorMessage);
     }
   };
 
@@ -392,8 +394,9 @@ const DomainTokenizationInterface: React.FC = () => {
       // In production, this would interact with Doma Protocol marketplace
       showSuccess('Fractions Purchased', `Successfully purchased ${fractionCount} fractions`);
       await loadTokenizedDomains();
-    } catch (error: any) {
-      showError('Purchase Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Purchase failed';
+      showError('Purchase Failed', errorMessage);
     }
   };
 
@@ -407,8 +410,9 @@ const DomainTokenizationInterface: React.FC = () => {
       // In production, this would interact with Doma Protocol bridging contracts
       showSuccess('Domain Bridged', `Domain successfully bridged to chain ${targetChainId}`);
       await loadTokenizedDomains();
-    } catch (error: any) {
-      showError('Bridge Failed', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Bridge failed';
+      showError('Bridge Failed', errorMessage);
     }
   };
 

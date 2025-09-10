@@ -21,6 +21,7 @@ import { Web3Provider } from "./contexts/Web3Context";
 import { DomaProvider } from "./contexts/DomaContext";
 import { MetricsProvider } from "./contexts/MetricsContext";
 import { XMTPProvider } from "./contexts/XMTPContext";
+import { NotificationProvider } from "./components/NotificationSystem";
 
 const queryClient = new QueryClient();
 
@@ -31,34 +32,36 @@ const App = () => (
         <DomaProvider>
           <MetricsProvider>
             <XMTPProvider>
-            <QueryClientProvider client={queryClient}>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                <div className="min-h-screen bg-background text-foreground">
-                  <Navigation />
-                  <main className="pt-20">
-                    <Routes>
-                      <Route path="/" element={<Landing />} />
-                      <Route path="/dashboard" element={<Index />} />
-                      <Route path="/marketplace" element={<Marketplace />} />
-                      <Route path="/analytics" element={<Analytics />} />
-                      <Route path="/fractional" element={<FractionalOwnership />} />
-                      <Route path="/help" element={<Help />} />
-                      <Route path="/chat" element={<Chat />} />
-                      <Route path="/welcome" element={<Landing />} />
-                      <Route path="/track5-demo" element={<Track5Demo />} />
-                      <Route path="/domain/:domain" element={<DomainLandingPage />} />
-                      <Route path="/negotiate/:domainId" element={<DomainNegotiationPage />} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                </div>
-                </BrowserRouter>
-              </TooltipProvider>
-            </QueryClientProvider>
+              <NotificationProvider>
+                <QueryClientProvider client={queryClient}>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                    <div className="min-h-screen bg-background text-foreground">
+                      <Navigation />
+                      <main className="pt-20">
+                        <Routes>
+                          <Route path="/" element={<Landing />} />
+                          <Route path="/dashboard" element={<Index />} />
+                          <Route path="/marketplace" element={<Marketplace />} />
+                          <Route path="/analytics" element={<Analytics />} />
+                          <Route path="/fractional" element={<FractionalOwnership />} />
+                          <Route path="/help" element={<Help />} />
+                          <Route path="/chat" element={<Chat />} />
+                          <Route path="/welcome" element={<Landing />} />
+                          <Route path="/track5-demo" element={<Track5Demo />} />
+                          <Route path="/domain/:domain" element={<DomainLandingPage />} />
+                          <Route path="/negotiate/:domainId" element={<DomainNegotiationPage />} />
+                          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </main>
+                    </div>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </QueryClientProvider>
+              </NotificationProvider>
             </XMTPProvider>
           </MetricsProvider>
         </DomaProvider>

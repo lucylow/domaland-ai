@@ -43,10 +43,10 @@ export const ContractDeployment: React.FC = () => {
         estimatedGas: gasEstimate.toString(),
         isEstimating: false
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       setDeploymentState(prev => ({
         ...prev,
-        error: error.message || 'Gas estimation failed',
+        error: error instanceof Error ? error.message : 'Gas estimation failed',
         isEstimating: false
       }));
     }
@@ -73,10 +73,10 @@ export const ContractDeployment: React.FC = () => {
         transactionHash: result.transactionHash,
         isDeploying: false
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       setDeploymentState(prev => ({
         ...prev,
-        error: error.message || 'Deployment failed',
+        error: error instanceof Error ? error.message : 'Deployment failed',
         isDeploying: false
       }));
     }
