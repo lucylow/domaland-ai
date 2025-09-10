@@ -195,10 +195,6 @@ const CommunityDealsInterface: React.FC = () => {
     }
   ];
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -211,6 +207,10 @@ const CommunityDealsInterface: React.FC = () => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleJoinDeal = async (dealId: string, amount: string) => {
     if (!contractService || !isConnected) {

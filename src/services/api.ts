@@ -1,4 +1,16 @@
-import { Domain, DomainTransaction, User } from '../types/domain';
+import { DomainAsset, DomainOffer, TradingRecord } from '../types/domain';
+
+export interface User {
+  id: string;
+  address: string;
+  email?: string;
+}
+
+export interface DomainTransaction {
+  id: string;
+  type: string;
+  amount: number;
+}
 
 // API Configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';

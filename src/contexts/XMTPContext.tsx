@@ -83,16 +83,6 @@ export const XMTPProvider: FC<XMTPProviderProps> = ({ children }) => {
   // Mock XMTP client (in production, use actual XMTP SDK)
   const [xmtpClient, setXmtpClient] = useState<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    if (isConnected && account) {
-      // Initialize XMTP when wallet connects
-      initializeXMTP();
-    } else {
-      // Cleanup when wallet disconnects
-      cleanupXMTP();
-    }
-  }, [isConnected, account, initializeXMTP]);
-
   const initializeXMTP = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -117,6 +107,16 @@ export const XMTPProvider: FC<XMTPProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (isConnected && account) {
+      // Initialize XMTP when wallet connects
+      initializeXMTP();
+    } else {
+      // Cleanup when wallet disconnects
+      cleanupXMTP();
+    }
+  }, [isConnected, account, initializeXMTP]);
 
   const cleanupXMTP = () => {
     setXmtpClient(null);

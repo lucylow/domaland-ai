@@ -280,7 +280,7 @@ const EnhancedMarketplace: React.FC = () => {
       showTransaction(
         'Offer Created',
         `Your offer of ${offerAmount} ${offerCurrency} has been submitted`,
-        tx.hash
+        'Transaction sent'
       );
 
       setShowOfferModal(false);

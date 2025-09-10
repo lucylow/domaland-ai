@@ -95,7 +95,7 @@ const Marketplace: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <Button 
-              onClick={connectWallet} 
+              onClick={() => connectWallet()} 
               className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-3 transition-all duration-300 hover:shadow-lg"
               size="lg"
             >

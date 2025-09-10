@@ -30,14 +30,14 @@ export const DomainMarketplace: React.FC = () => {
   const [offerAmount, setOfferAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
 
+  const handleSearch = useCallback(async () => {
+    await searchDomains(searchFilters);
+  }, [searchDomains, searchFilters]);
+
   useEffect(() => {
     // Load initial domains
     handleSearch();
   }, [handleSearch]);
-
-  const handleSearch = useCallback(async () => {
-    await searchDomains(searchFilters);
-  }, [searchDomains, searchFilters]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: unknown) => {
     setSearchFilters(prev => ({

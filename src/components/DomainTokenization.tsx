@@ -108,7 +108,7 @@ export const DomainTokenization: React.FC<DomainTokenizationProps> = ({
     const result = await tokenizeDomain(tokenizationParams);
     
     if (result) {
-      onSuccess?.(result);
+      onSuccess?.(result as unknown as Record<string, unknown>);
     }
   };
 

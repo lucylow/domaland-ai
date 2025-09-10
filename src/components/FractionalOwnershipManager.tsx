@@ -16,10 +16,11 @@ import {
   Shield,
   Zap,
   BarChart3,
-  Activity
+  Activity,
+  User
 } from 'lucide-react';
 import { useWeb3 } from '../contexts/Web3Context';
-import { Domain } from '../types/domain';
+import { DomainAsset } from '../types/domain';
 
 interface FractionalOwnershipData {
   domainTokenId: number;
@@ -28,253 +29,279 @@ interface FractionalOwnershipData {
   minimumInvestment: number;
   buyoutPrice: number;
   buyoutDeadline: string;
-  isBuyoutTriggered: boolean;
-  isBuyoutCompleted: boolean;
-  buyoutInitiator?: string;
-  buyoutAmount?: number;
-  currentPrice: number;
-  domainTokenReserve: number;
-  baseTokenReserve: number;
-  totalLiquidity: number;
-  userShares: number;
-  userLiquidity: number;
-  claimableRevenue: number;
+  sharesSold: number;
+  monthlyRevenue: number;
   totalRevenue: number;
+  owner: string;
+  fractionalVaultAddress: string;
+  isActive: boolean;
 }
 
 interface GovernanceProposal {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  type: 'buyout' | 'revenue_distribution' | 'domain_management' | 'other';
   proposer: string;
+  votingDeadline: string;
   votesFor: number;
   votesAgainst: number;
-  totalVotingPower: number;
+  totalVotes: number;
   status: 'active' | 'passed' | 'failed' | 'executed';
-  deadline: string;
-  userVote?: 'for' | 'against' | null;
+  proposalType: 'sale' | 'development' | 'governance' | 'revenue';
 }
 
-interface TradeQuote {
-  inputToken: string;
-  outputToken: string;
-  inputAmount: number;
-  outputAmount: number;
-  priceImpact: number;
+interface TradeOrder {
+  id: number;
+  type: 'buy' | 'sell';
+  shares: number;
+  pricePerShare: number;
+  totalValue: number;
+  trader: string;
+  status: 'active' | 'filled' | 'cancelled';
+  timestamp: string;
+}
+
+interface SwapOrder {
+  id: number;
+  fromToken: string;
+  toToken: string;
+  amountIn: number;
+  expectedOutput: number;
   feeAmount: number;
   minimumOutput: number;
   validUntil: string;
 }
 
-const FractionalOwnershipManager: React.FC<{ domain: Domain }> = ({ domain }) => {
-  const { account, signer, isConnected } = useWeb3();
+const FractionalOwnershipManager: React.FC<{ domain: DomainAsset }> = ({ domain }) => {
+  const { account, isConnected } = useWeb3();
   const [fractionalData, setFractionalData] = useState<FractionalOwnershipData | null>(null);
   const [governanceProposals, setGovernanceProposals] = useState<GovernanceProposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  
-  // Trade state
-  const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [tradeAmount, setTradeAmount] = useState('');
-  const [tradeQuote, setTradeQuote] = useState<TradeQuote | null>(null);
-  const [isTrading, setIsTrading] = useState(false);
-  
-  // Liquidity state
-  const [liquidityAmount, setLiquidityAmount] = useState('');
-  const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
-  
-  // Buyout state
-  const [buyoutAmount, setBuyoutAmount] = useState('');
-  const [isInitiatingBuyout, setIsInitiatingBuyout] = useState(false);
+  const [tradeOrders, setTradeOrders] = useState<TradeOrder[]>([]);
+  const [swapOrders, setSwapOrders] = useState<SwapOrder[]>([]);
+  const [userShares, setUserShares] = useState(0);
+  const [userRevenue, setUserRevenue] = useState(0);
+
+  // Form states
+  const [buyShares, setBuyShares] = useState('');
+  const [sellShares, setSellShares] = useState('');
+  const [proposalTitle, setProposalTitle] = useState('');
+  const [proposalDescription, setProposalDescription] = useState('');
+  const [swapAmount, setSwapAmount] = useState('');
+  const [swapToken, setSwapToken] = useState('ETH');
 
   useEffect(() => {
-    if (domain.is_fractionalized && domain.fraction_contract_address) {
-      fetchFractionalData();
-      fetchGovernanceProposals();
-    }
-  }, [domain]);
+    loadFractionalData();
+    loadGovernanceData();
+    loadTradeData();
+  }, [domain.id]);
 
-  const fetchFractionalData = async () => {
+  const loadFractionalData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/fractional/${domain.fraction_contract_address}`);
-      const data = await response.json();
-      setFractionalData(data);
+      
+      // Mock data - in production, this would come from smart contracts
+      const mockData: FractionalOwnershipData = {
+        domainTokenId: parseInt(domain.id),
+        totalShares: 1000,
+        sharePrice: 0.05,
+        minimumInvestment: 0.01,
+        buyoutPrice: 75,
+        buyoutDeadline: '2024-06-15',
+        sharesSold: 650,
+        monthlyRevenue: 2.5,
+        totalRevenue: 18.75,
+        owner: domain.owner,
+        fractionalVaultAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+        isActive: true
+      };
+
+      setFractionalData(mockData);
+
+      // Mock user shares
+      if (account) {
+        setUserShares(25);
+        setUserRevenue(0.625);
+      }
+
     } catch (error) {
-      console.error('Error fetching fractional data:', error);
+      console.error('Error loading fractional data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchGovernanceProposals = async () => {
-    try {
-      const response = await fetch(`/api/governance/${domain.fraction_contract_address}/proposals`);
-      const data = await response.json();
-      setGovernanceProposals(data.proposals);
-    } catch (error) {
-      console.error('Error fetching governance proposals:', error);
-    }
-  };
-
-  const getTradeQuote = async (amount: string, type: 'buy' | 'sell') => {
-    if (!amount || !fractionalData) return;
-
-    try {
-      const response = await fetch('/api/fractional/quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contractAddress: domain.fraction_contract_address,
-          amount: amount,
-          type: type
-        })
-      });
-
-      const quote = await response.json();
-      setTradeQuote(quote);
-    } catch (error) {
-      console.error('Error getting trade quote:', error);
-    }
-  };
-
-  const executeTrade = async () => {
-    if (!tradeQuote || !signer || !fractionalData) return;
-
-    try {
-      setIsTrading(true);
-      
-      // This would interact with the actual smart contract
-      const contract = new ethers.Contract(
-        domain.fraction_contract_address!,
-        fractionalOwnershipABI,
-        signer
-      );
-
-      let tx;
-      if (tradeType === 'buy') {
-        tx = await contract.purchaseShares(
-          tradeQuote.inputAmount,
-          tradeQuote.minimumOutput,
-          { value: tradeQuote.inputAmount }
-        );
-      } else {
-        tx = await contract.sellShares(
-          tradeQuote.inputAmount,
-          tradeQuote.minimumOutput
-        );
+  const loadGovernanceData = async () => {
+    const mockProposals: GovernanceProposal[] = [
+      {
+        id: 1,
+        title: 'Increase Marketing Budget',
+        description: 'Allocate 2 ETH from revenue for domain marketing and SEO optimization',
+        proposer: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+        votingDeadline: '2024-02-20',
+        votesFor: 450,
+        votesAgainst: 120,
+        totalVotes: 570,
+        status: 'active',
+        proposalType: 'development'
+      },
+      {
+        id: 2,
+        title: 'Domain Sale Offer - 100 ETH',
+        description: 'Accept offer of 100 ETH for the domain from buyer 0x5A0b...',
+        proposer: '0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c',
+        votingDeadline: '2024-02-25',
+        votesFor: 200,
+        votesAgainst: 350,
+        totalVotes: 550,
+        status: 'active',
+        proposalType: 'sale'
       }
+    ];
 
-      await tx.wait();
+    setGovernanceProposals(mockProposals);
+  };
+
+  const loadTradeData = async () => {
+    const mockTradeOrders: TradeOrder[] = [
+      {
+        id: 1,
+        type: 'buy',
+        shares: 10,
+        pricePerShare: 0.052,
+        totalValue: 0.52,
+        trader: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+        status: 'active',
+        timestamp: '2024-01-15T10:30:00Z'
+      },
+      {
+        id: 2,
+        type: 'sell',
+        shares: 5,
+        pricePerShare: 0.048,
+        totalValue: 0.24,
+        trader: '0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c',
+        status: 'active',
+        timestamp: '2024-01-15T09:20:00Z'
+      }
+    ];
+
+    setTradeOrders(mockTradeOrders);
+
+    const mockSwapOrders: SwapOrder[] = [
+      {
+        id: 1,
+        fromToken: 'DOMAIN_SHARES',
+        toToken: 'ETH',
+        amountIn: 10,
+        expectedOutput: 0.48,
+        feeAmount: 0.02,
+        minimumOutput: 0.46,
+        validUntil: '2024-02-15'
+      }
+    ];
+
+    setSwapOrders(mockSwapOrders);
+  };
+
+  const handleBuyShares = async () => {
+    if (!isConnected || !fractionalData) return;
+
+    try {
+      const sharesToBuy = parseInt(buyShares);
+      const totalCost = sharesToBuy * fractionalData.sharePrice;
+
+      console.log(`Buying ${sharesToBuy} shares for ${totalCost} ETH`);
       
-      // Refresh data
-      await fetchFractionalData();
-      setTradeAmount('');
-      setTradeQuote(null);
+      // Mock contract interaction
+      setUserShares(prev => prev + sharesToBuy);
+      setBuyShares('');
+      
     } catch (error) {
-      console.error('Error executing trade:', error);
-    } finally {
-      setIsTrading(false);
+      console.error('Error buying shares:', error);
     }
   };
 
-  const addLiquidity = async () => {
-    if (!liquidityAmount || !signer || !fractionalData) return;
+  const handleSellShares = async () => {
+    if (!isConnected || !fractionalData) return;
 
     try {
-      setIsAddingLiquidity(true);
+      const sharesToSell = parseInt(sellShares);
+      const totalValue = sharesToSell * fractionalData.sharePrice * 0.97; // 3% fee
       
-      const contract = new ethers.Contract(
-        domain.fraction_contract_address!,
-        fractionalOwnershipABI,
-        signer
-      );
-
-      const tx = await contract.addLiquidity(
-        liquidityAmount,
-        liquidityAmount * fractionalData.currentPrice,
-        { value: liquidityAmount }
-      );
-
-      await tx.wait();
+      console.log(`Selling ${sharesToSell} shares for ${totalValue} ETH`);
       
-      // Refresh data
-      await fetchFractionalData();
-      setLiquidityAmount('');
+      // Mock contract interaction
+      setUserShares(prev => prev - sharesToSell);
+      setSellShares('');
+      
     } catch (error) {
-      console.error('Error adding liquidity:', error);
-    } finally {
-      setIsAddingLiquidity(false);
+      console.error('Error selling shares:', error);
     }
   };
 
-  const initiateBuyout = async () => {
-    if (!buyoutAmount || !signer || !fractionalData) return;
+  const handleVote = async (proposalId: number, vote: 'for' | 'against') => {
+    if (!isConnected) return;
 
     try {
-      setIsInitiatingBuyout(true);
+      console.log(`Voting ${vote} on proposal ${proposalId}`);
       
-      const contract = new ethers.Contract(
-        domain.fraction_contract_address!,
-        fractionalOwnershipABI,
-        signer
-      );
-
-      const tx = await contract.initiateBuyout(
-        buyoutAmount,
-        { value: buyoutAmount }
-      );
-
-      await tx.wait();
+      // Mock contract interaction - update proposal votes
+      setGovernanceProposals(prev => prev.map(proposal => 
+        proposal.id === proposalId 
+          ? {
+              ...proposal,
+              votesFor: vote === 'for' ? proposal.votesFor + userShares : proposal.votesFor,
+              votesAgainst: vote === 'against' ? proposal.votesAgainst + userShares : proposal.votesAgainst,
+              totalVotes: proposal.totalVotes + userShares
+            }
+          : proposal
+      ));
       
-      // Refresh data
-      await fetchFractionalData();
-      setBuyoutAmount('');
     } catch (error) {
-      console.error('Error initiating buyout:', error);
-    } finally {
-      setIsInitiatingBuyout(false);
+      console.error('Error voting:', error);
     }
   };
 
-  const voteOnProposal = async (proposalId: string, vote: 'for' | 'against') => {
-    if (!signer) return;
+  const handleCreateProposal = async () => {
+    if (!isConnected || !proposalTitle.trim() || !proposalDescription.trim()) return;
 
     try {
-      const contract = new ethers.Contract(
-        domain.fraction_contract_address!,
-        fractionalOwnershipABI,
-        signer
-      );
+      const newProposal: GovernanceProposal = {
+        id: governanceProposals.length + 1,
+        title: proposalTitle,
+        description: proposalDescription,
+        proposer: account!,
+        votingDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        votesFor: 0,
+        votesAgainst: 0,
+        totalVotes: 0,
+        status: 'active',
+        proposalType: 'governance'
+      };
 
-      const tx = await contract.vote(proposalId, vote === 'for');
-      await tx.wait();
+      setGovernanceProposals(prev => [...prev, newProposal]);
+      setProposalTitle('');
+      setProposalDescription('');
       
-      // Refresh proposals
-      await fetchGovernanceProposals();
     } catch (error) {
-      console.error('Error voting on proposal:', error);
+      console.error('Error creating proposal:', error);
     }
   };
 
-  const claimRevenue = async () => {
-    if (!signer || !fractionalData) return;
+  const handleSwap = async () => {
+    if (!isConnected || !swapAmount) return;
 
     try {
-      const contract = new ethers.Contract(
-        domain.fraction_contract_address!,
-        fractionalOwnershipABI,
-        signer
-      );
-
-      const tx = await contract.claimRevenue();
-      await tx.wait();
+      const amount = parseFloat(swapAmount);
+      console.log(`Swapping ${amount} shares for ${swapToken}`);
       
-      // Refresh data
-      await fetchFractionalData();
+      // Mock swap logic
+      setSwapAmount('');
+      
     } catch (error) {
-      console.error('Error claiming revenue:', error);
+      console.error('Error swapping:', error);
     }
   };
 
@@ -283,9 +310,9 @@ const FractionalOwnershipManager: React.FC<{ domain: Domain }> = ({ domain }) =>
       <Card>
         <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+            <div className="h-8 bg-muted rounded w-1/4"></div>
           </div>
         </CardContent>
       </Card>
@@ -295,428 +322,460 @@ const FractionalOwnershipManager: React.FC<{ domain: Domain }> = ({ domain }) =>
   if (!fractionalData) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-gray-600">This domain is not fractionalized yet.</p>
-          <Button className="mt-4" onClick={() => setActiveTab('fractionalize')}>
-            Fractionalize Domain
-          </Button>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">This domain is not available for fractional ownership.</p>
         </CardContent>
       </Card>
     );
   }
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
-  const formatPercent = (value: number) => {
-    return `${value.toFixed(2)}%`;
-  };
-
-  const getVotingPower = () => {
-    if (!fractionalData) return 0;
-    return (fractionalData.userShares / fractionalData.totalShares) * 100;
-  };
-
-  const getBuyoutProgress = () => {
-    if (!fractionalData || !fractionalData.isBuyoutTriggered) return 0;
-    const timeRemaining = new Date(fractionalData.buyoutDeadline).getTime() - Date.now();
-    const totalTime = 7 * 24 * 60 * 60 * 1000; // 7 days
-    return Math.max(0, (totalTime - timeRemaining) / totalTime * 100);
-  };
+  const ownershipPercentage = fractionalData.sharesSold / fractionalData.totalShares * 100;
+  const userOwnershipPercentage = userShares / fractionalData.totalShares * 100;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                <PieChart className="w-5 h-5 mr-2" />
-                Fractional Ownership: {domain.name}
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                {fractionalData.totalShares.toLocaleString()} shares • {formatCurrency(fractionalData.sharePrice)} per share
-              </p>
+          <CardTitle className="flex items-center gap-2">
+            <PieChart className="h-5 w-5" />
+            Fractional Ownership: {domain.fullName}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {fractionalData.sharePrice} ETH
+              </div>
+              <div className="text-sm text-muted-foreground">Price per Share</div>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold">{formatCurrency(fractionalData.currentPrice)}</p>
-              <p className="text-sm text-gray-600">Current Price</p>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {fractionalData.sharesSold}/{fractionalData.totalShares}
+              </div>
+              <div className="text-sm text-muted-foreground">Shares Sold</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {fractionalData.monthlyRevenue} ETH
+              </div>
+              <div className="text-sm text-muted-foreground">Monthly Revenue</div>
             </div>
           </div>
-        </CardHeader>
+          
+          <div className="mt-6">
+            <div className="flex justify-between text-sm mb-2">
+              <span>Ownership Progress</span>
+              <span>{ownershipPercentage.toFixed(1)}% Sold</span>
+            </div>
+            <Progress value={ownershipPercentage} className="h-2" />
+          </div>
+        </CardContent>
       </Card>
 
-      {/* Tabs */}
+      {/* User Portfolio */}
+      {isConnected && userShares > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Your Portfolio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-lg font-bold text-blue-600">{userShares}</div>
+                <div className="text-xs text-muted-foreground">Shares Owned</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-600">
+                  {userOwnershipPercentage.toFixed(2)}%
+                </div>
+                <div className="text-xs text-muted-foreground">Ownership</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-600">
+                  {userRevenue} ETH
+                </div>
+                <div className="text-xs text-muted-foreground">Monthly Revenue</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-orange-600">
+                  {(userShares * fractionalData.sharePrice).toFixed(3)} ETH
+                </div>
+                <div className="text-xs text-muted-foreground">Portfolio Value</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="trade">Trade</TabsTrigger>
-          <TabsTrigger value="liquidity">Liquidity</TabsTrigger>
+          <TabsTrigger value="trading">Trading</TabsTrigger>
           <TabsTrigger value="governance">Governance</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Your Shares</p>
-                    <p className="text-xl font-bold">{fractionalData.userShares.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">{formatPercent(getVotingPower())} voting power</p>
-                  </div>
-                  <Users className="w-8 h-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Portfolio Value</p>
-                    <p className="text-xl font-bold">{formatCurrency(fractionalData.userShares * fractionalData.sharePrice)}</p>
-                    <p className="text-sm text-green-600">+5.2% today</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Liquidity Pool</p>
-                    <p className="text-xl font-bold">{formatCurrency(fractionalData.totalLiquidity)}</p>
-                    <p className="text-sm text-gray-600">Your share: {formatCurrency(fractionalData.userLiquidity)}</p>
-                  </div>
-                  <BarChart3 className="w-8 h-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Claimable Revenue</p>
-                    <p className="text-xl font-bold">{formatCurrency(fractionalData.claimableRevenue)}</p>
-                    <Button size="sm" onClick={claimRevenue} disabled={fractionalData.claimableRevenue === 0}>
-                      Claim
-                    </Button>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Buyout Status */}
-          {fractionalData.isBuyoutTriggered && (
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Buy Shares */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Shield className="w-5 h-5 mr-2" />
-                  Buyout in Progress
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Buy Shares
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Buyout Progress</span>
-                    <span>{formatPercent(getBuyoutProgress())}</span>
-                  </div>
-                  <Progress value={getBuyoutProgress()} className="w-full" />
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Initiator</p>
-                      <p className="font-medium">{fractionalData.buyoutInitiator}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Amount</p>
-                      <p className="font-medium">{formatCurrency(fractionalData.buyoutAmount || 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Deadline</p>
-                      <p className="font-medium">{new Date(fractionalData.buyoutDeadline).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Status</p>
-                      <Badge variant={fractionalData.isBuyoutCompleted ? 'default' : 'secondary'}>
-                        {fractionalData.isBuyoutCompleted ? 'Completed' : 'Active'}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        {/* Trade Tab */}
-        <TabsContent value="trade" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Trade Shares</CardTitle>
-              </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex space-x-2">
-                  <Button
-                    variant={tradeType === 'buy' ? 'default' : 'outline'}
-                    onClick={() => setTradeType('buy')}
-                  >
-                    Buy
-                  </Button>
-                  <Button
-                    variant={tradeType === 'sell' ? 'default' : 'outline'}
-                    onClick={() => setTradeType('sell')}
-                  >
-                    Sell
-                  </Button>
-                </div>
-
                 <div>
-                  <Label htmlFor="tradeAmount">
-                    {tradeType === 'buy' ? 'ETH Amount' : 'Shares to Sell'}
-                  </Label>
+                  <Label htmlFor="buy-shares">Number of Shares</Label>
                   <Input
-                    id="tradeAmount"
+                    id="buy-shares"
                     type="number"
-                    value={tradeAmount}
-                    onChange={(e) => {
-                      setTradeAmount(e.target.value);
-                      getTradeQuote(e.target.value, tradeType);
-                    }}
-                    placeholder={tradeType === 'buy' ? '0.1' : '100'}
+                    placeholder="Enter shares to buy"
+                    value={buyShares}
+                    onChange={(e) => setBuyShares(e.target.value)}
                   />
                 </div>
-
-                {tradeQuote && (
-                  <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                    <div className="flex justify-between">
-                      <span>You {tradeType === 'buy' ? 'receive' : 'pay'}</span>
-                      <span className="font-medium">
-                        {tradeType === 'buy' ? tradeQuote.outputAmount.toLocaleString() : formatCurrency(tradeQuote.outputAmount)} shares
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Price Impact</span>
-                      <span className={tradeQuote.priceImpact > 5 ? 'text-red-600' : 'text-green-600'}>
-                        {formatPercent(tradeQuote.priceImpact)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Fee</span>
-                      <span>{formatCurrency(tradeQuote.feeAmount)}</span>
-                    </div>
+                {buyShares && (
+                  <div className="text-sm text-muted-foreground">
+                    Total Cost: {(parseInt(buyShares) * fractionalData.sharePrice).toFixed(3)} ETH
                   </div>
                 )}
-
                 <Button
-                  onClick={executeTrade}
-                  disabled={!tradeQuote || isTrading}
+                  onClick={handleBuyShares}
+                  disabled={!isConnected || !buyShares}
                   className="w-full"
                 >
-                  {isTrading ? 'Trading...' : `${tradeType === 'buy' ? 'Buy' : 'Sell'} Shares`}
+                  Buy Shares
                 </Button>
               </CardContent>
             </Card>
 
+            {/* Sell Shares */}
             <Card>
               <CardHeader>
-                <CardTitle>Market Data</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4" />
+                  Sell Shares
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Current Price</span>
-                    <span className="font-medium">{formatCurrency(fractionalData.currentPrice)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>24h Volume</span>
-                    <span className="font-medium">{formatCurrency(125000)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total Supply</span>
-                    <span className="font-medium">{fractionalData.totalShares.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Market Cap</span>
-                    <span className="font-medium">{formatCurrency(fractionalData.totalShares * fractionalData.sharePrice)}</span>
-                  </div>
+                <div>
+                  <Label htmlFor="sell-shares">Number of Shares</Label>
+                  <Input
+                    id="sell-shares"
+                    type="number"
+                    placeholder="Enter shares to sell"
+                    value={sellShares}
+                    onChange={(e) => setSellShares(e.target.value)}
+                    max={userShares}
+                  />
                 </div>
-
-                <div className="pt-4 border-t">
-                  <h4 className="font-medium mb-2">Price Chart</h4>
-                  <div className="h-32 bg-gray-100 rounded flex items-center justify-center">
-                    <span className="text-gray-500">Price chart would go here</span>
+                {sellShares && (
+                  <div className="text-sm text-muted-foreground">
+                    You'll receive: {(parseInt(sellShares) * fractionalData.sharePrice * 0.97).toFixed(3)} ETH
+                    <div className="text-xs">3% platform fee included</div>
                   </div>
-                </div>
+                )}
+                <Button
+                  onClick={handleSellShares}
+                  disabled={!isConnected || !sellShares || parseInt(sellShares) > userShares}
+                  className="w-full"
+                  variant="outline"
+                >
+                  Sell Shares
+                </Button>
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        {/* Liquidity Tab */}
-        <TabsContent value="liquidity" className="space-y-4">
+          {/* Domain Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Add Liquidity</CardTitle>
+              <CardTitle>Domain Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="liquidityAmount">ETH Amount</Label>
-                <Input
-                  id="liquidityAmount"
-                  type="number"
-                  value={liquidityAmount}
-                  onChange={(e) => setLiquidityAmount(e.target.value)}
-                  placeholder="1.0"
-                />
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">You will provide:</p>
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <span>ETH</span>
-                    <span>{liquidityAmount || '0'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Domain Shares</span>
-                    <span>{liquidityAmount ? (parseFloat(liquidityAmount) * fractionalData.currentPrice).toLocaleString() : '0'}</span>
-                  </div>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">Domain Name</div>
+                  <div className="font-medium">{domain.fullName}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Owner</div>
+                  <div className="font-mono text-sm">{fractionalData.owner}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Fractional Vault</div>
+                  <div className="font-mono text-sm">{fractionalData.fractionalVaultAddress}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Total Revenue</div>
+                  <div className="font-medium">{fractionalData.totalRevenue} ETH</div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <Button
-                onClick={addLiquidity}
-                disabled={!liquidityAmount || isAddingLiquidity}
-                className="w-full"
-              >
-                {isAddingLiquidity ? 'Adding Liquidity...' : 'Add Liquidity'}
-              </Button>
+        {/* Trading Tab */}
+        <TabsContent value="trading" className="space-y-6">
+          {/* Active Orders */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {tradeOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <Badge variant={order.type === 'buy' ? 'default' : 'secondary'}>
+                        {order.type.toUpperCase()}
+                      </Badge>
+                      <div>
+                        <div className="font-medium">{order.shares} shares @ {order.pricePerShare} ETH</div>
+                        <div className="text-sm text-muted-foreground">
+                          Total: {order.totalValue} ETH
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(order.timestamp).toLocaleString()}
+                      </div>
+                      <Badge variant="outline">{order.status}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cross-Chain Swaps */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Cross-Chain Swaps
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="swap-amount">Amount</Label>
+                  <Input
+                    id="swap-amount"
+                    type="number"
+                    placeholder="Enter amount"
+                    value={swapAmount}
+                    onChange={(e) => setSwapAmount(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="swap-token">To Token</Label>
+                  <select
+                    id="swap-token"
+                    value={swapToken}
+                    onChange={(e) => setSwapToken(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md"
+                  >
+                    <option value="ETH">ETH</option>
+                    <option value="USDC">USDC</option>
+                    <option value="DAI">DAI</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={handleSwap} disabled={!isConnected || !swapAmount} className="w-full">
+                    Swap
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Swap Orders */}
+              <div className="space-y-2">
+                {swapOrders.map((order) => (
+                  <div key={order.id} className="p-3 border rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">
+                          {order.amountIn} Shares → {order.expectedOutput} {order.toToken}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Min Output: {order.minimumOutput} {order.toToken}
+                        </div>
+                      </div>
+                      <div className="text-right text-sm text-muted-foreground">
+                        Valid until {order.validUntil}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Governance Tab */}
-        <TabsContent value="governance" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Governance Proposals</h3>
-            <Button>Create Proposal</Button>
-          </div>
+        <TabsContent value="governance" className="space-y-6">
+          {/* Create Proposal */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Proposal</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="proposal-title">Title</Label>
+                <Input
+                  id="proposal-title"
+                  placeholder="Enter proposal title"
+                  value={proposalTitle}
+                  onChange={(e) => setProposalTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="proposal-description">Description</Label>
+                <textarea
+                  id="proposal-description"
+                  className="w-full px-3 py-2 border rounded-md"
+                  rows={3}
+                  placeholder="Describe your proposal"
+                  value={proposalDescription}
+                  onChange={(e) => setProposalDescription(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={handleCreateProposal}
+                disabled={!isConnected || !proposalTitle.trim() || !proposalDescription.trim()}
+              >
+                Create Proposal
+              </Button>
+            </CardContent>
+          </Card>
 
+          {/* Active Proposals */}
           <div className="space-y-4">
             {governanceProposals.map((proposal) => (
               <Card key={proposal.id}>
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{proposal.title}</h4>
-                      <Badge variant={proposal.status === 'active' ? 'default' : 'secondary'}>
-                        {proposal.status}
-                      </Badge>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{proposal.title}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={proposal.status === 'active' ? 'default' : 'secondary'}>
+                          {proposal.status}
+                        </Badge>
+                        <Badge variant="outline">{proposal.proposalType}</Badge>
+                      </div>
                     </div>
-                    
-                    <p className="text-sm text-gray-600">{proposal.description}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex space-x-4 text-sm">
-                        <span className="text-green-600">For: {proposal.votesFor}</span>
-                        <span className="text-red-600">Against: {proposal.votesAgainst}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        {proposal.status === 'active' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant={proposal.userVote === 'for' ? 'default' : 'outline'}
-                              onClick={() => voteOnProposal(proposal.id, 'for')}
-                            >
-                              For
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={proposal.userVote === 'against' ? 'default' : 'outline'}
-                              onClick={() => voteOnProposal(proposal.id, 'against')}
-                            >
-                              Against
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                    <div className="text-right text-sm text-muted-foreground">
+                      Deadline: {proposal.votingDeadline}
                     </div>
                   </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">{proposal.description}</p>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span>For: {proposal.votesFor}</span>
+                      <span>Against: {proposal.votesAgainst}</span>
+                    </div>
+                    <Progress 
+                      value={(proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100} 
+                      className="h-2" 
+                    />
+                  </div>
+                  
+                  {proposal.status === 'active' && isConnected && userShares > 0 && (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleVote(proposal.id, 'for')}
+                        size="sm"
+                        className="flex-1"
+                      >
+                        Vote For ({userShares} shares)
+                      </Button>
+                      <Button
+                        onClick={() => handleVote(proposal.id, 'against')}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        Vote Against
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
         </TabsContent>
 
-        {/* Revenue Tab */}
-        <TabsContent value="revenue" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Revenue Overview</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Total Revenue</span>
-                    <span className="font-medium">{formatCurrency(fractionalData.totalRevenue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Your Claimable</span>
-                    <span className="font-medium text-green-600">{formatCurrency(fractionalData.claimableRevenue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Your Share</span>
-                    <span className="font-medium">{formatPercent(getVotingPower())}</span>
-                  </div>
-                </div>
-
-                <Button onClick={claimRevenue} disabled={fractionalData.claimableRevenue === 0} className="w-full">
-                  Claim Revenue
-                </Button>
+              <CardContent className="p-4 text-center">
+                <DollarSign className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                <div className="text-2xl font-bold">{fractionalData.totalRevenue} ETH</div>
+                <div className="text-sm text-muted-foreground">Total Revenue</div>
               </CardContent>
             </Card>
-
+            
             <Card>
-              <CardHeader>
-                <CardTitle>Revenue History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {[
-                    { date: '2024-01-15', amount: 1250, type: 'Advertising' },
-                    { date: '2024-01-10', amount: 800, type: 'Leasing' },
-                    { date: '2024-01-05', amount: 2100, type: 'Partnership' }
-                  ].map((revenue, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <div>
-                        <p className="text-sm font-medium">{revenue.type}</p>
-                        <p className="text-xs text-gray-600">{revenue.date}</p>
-                      </div>
-                      <span className="font-medium">{formatCurrency(revenue.amount)}</span>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-4 text-center">
+                <Users className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                <div className="text-2xl font-bold">{Math.floor(fractionalData.sharesSold / 10)}</div>
+                <div className="text-sm text-muted-foreground">Shareholders</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4 text-center">
+                <Activity className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                <div className="text-2xl font-bold">12%</div>
+                <div className="text-sm text-muted-foreground">Annual Yield</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4 text-center">
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                <div className="text-2xl font-bold">+8.5%</div>
+                <div className="text-sm text-muted-foreground">Price Change (30d)</div>
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Shareholders (80%)</span>
+                  <span>{(fractionalData.monthlyRevenue * 0.8).toFixed(2)} ETH</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Domain Owner (15%)</span>
+                  <span>{(fractionalData.monthlyRevenue * 0.15).toFixed(2)} ETH</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Platform Fee (5%)</span>
+                  <span>{(fractionalData.monthlyRevenue * 0.05).toFixed(2)} ETH</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
