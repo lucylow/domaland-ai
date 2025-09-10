@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import WalletConnectionTest from '@/components/WalletConnectionTest';
+import WalletConnectionHelper from '@/components/WalletConnectionHelper';
+import EnhancedWalletConnection from '@/components/EnhancedWalletConnection';
 
 const Help: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -160,9 +163,12 @@ const Help: React.FC = () => {
 
         {/* FAQ Section */}
         <Tabs defaultValue="faq" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-background/50 backdrop-blur-sm border border-border/50">
+          <TabsList className="grid w-full grid-cols-4 bg-background/50 backdrop-blur-sm border border-border/50">
             <TabsTrigger value="faq" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               FAQ
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              Wallet Tools
             </TabsTrigger>
             <TabsTrigger value="guides" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Guides
@@ -210,6 +216,109 @@ const Help: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="wallet" className="space-y-6">
+            <div className="space-y-6">
+              <Card className="bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-2xl">🔧</span>
+                    Wallet Connection Tools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-6">
+                    Use these tools to diagnose and fix wallet connection issues. Perfect for troubleshooting MetaMask, 
+                    WalletConnect, and other Web3 wallet problems.
+                  </p>
+                  
+                  <Tabs defaultValue="connect" className="space-y-4">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="connect">Connect Wallet</TabsTrigger>
+                      <TabsTrigger value="test">Connection Test</TabsTrigger>
+                      <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="connect" className="space-y-4">
+                      <EnhancedWalletConnection />
+                    </TabsContent>
+                    
+                    <TabsContent value="test" className="space-y-4">
+                      <WalletConnectionTest />
+                    </TabsContent>
+                    
+                    <TabsContent value="diagnostics" className="space-y-4">
+                      <WalletConnectionHelper />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm border border-border/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-2xl">💡</span>
+                    Common Wallet Issues & Solutions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>Wallet not detected</AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        <p>If your wallet is not being detected:</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          <li>Make sure MetaMask or your preferred wallet extension is installed and enabled</li>
+                          <li>Refresh the page and try connecting again</li>
+                          <li>Check that the wallet extension is not disabled by your browser</li>
+                          <li>Try using incognito/private mode to rule out extension conflicts</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Connection rejected or failed</AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        <p>If wallet connection is being rejected:</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          <li>Make sure to click "Connect" when prompted by your wallet</li>
+                          <li>Check that your wallet is unlocked and not busy with another transaction</li>
+                          <li>Try disconnecting from other dApps and connecting again</li>
+                          <li>Clear your browser cache and try again</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>Wrong network or chain issues</AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        <p>If you're having network-related issues:</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          <li>Our platform supports Ethereum, Polygon, and BSC networks</li>
+                          <li>Click "Connect" and approve the network switch when prompted</li>
+                          <li>Manually switch networks in your wallet if auto-switch fails</li>
+                          <li>Check that you have sufficient native tokens for gas fees</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="item-4">
+                      <AccordionTrigger>Development and testing</AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        <p>For developers and testing:</p>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          <li>Use the "Mock Wallet" option in development mode</li>
+                          <li>Run the connection test to verify wallet functionality</li>
+                          <li>Use the diagnostics tool to check wallet capabilities</li>
+                          <li>Check browser console for detailed error messages</li>
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="guides" className="space-y-6">
