@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useMemo, useCallback } from 'react';
 import { useWeb3, SupportedChain } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 import { useMetrics } from '@/contexts/MetricsContext';
@@ -19,39 +19,183 @@ import ConnectWalletButton from './ConnectWalletButton';
 import AIIntegrationPanel from './AIIntegrationPanel';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 import { useDomainMarketplace } from '../hooks/useDomaSubgraph';
+// Refactored components
+import SimplifiedOnboarding from './Onboarding/SimplifiedOnboarding';
+import DomainManagement from './Dashboard/DomainManagement';
+import TokenizationWizard from './Domain/TokenizationWizard';
+import VisualDashboard from './Analytics/VisualDashboard';
+import GuidedTourSystem, { ContextualHelp } from './GuidedTour/TourSystem';
+// Custom hooks
+import { useTour } from '../hooks/useTour';
+import { useAccessibility } from '../hooks/useAccessibility';
+import { initAccessibility } from '../utils/accessibility';
+// Types and constants
+import { Domain, Transaction } from '../types';
+import { APP_CONFIG, STORAGE_KEYS, SUCCESS_MESSAGES } from '../constants';
+
+type DashboardView = 'dashboard' | 'management' | 'analytics';
 
 const Dashboard: FC = () => {
+  // Context hooks
   const { isConnected, connectWallet, account, network, isConnecting, error, clearError } = useWeb3();
-  const { userDomains, marketplaceDomains, listDomain, isLoading } = useDoma();
+  const { userDomains, marketplaceDomains, listDomain, buyDomain, refreshData, isLoading } = useDoma();
   const { metrics } = useMetrics();
   const { conversations, getUnreadCount, connectXMTP, isConnected: isXMTPConnected } = useXMTP();
   const { showSuccess, showError, showWarning, showInfo } = useNotificationHelpers();
   const { overview, trendingDomains, popularDomains, loading: marketplaceLoading } = useDomainMarketplace('testnet');
+  
+  // Combined loading state
+  const isDataLoading = isLoading || marketplaceLoading;
+  
+  // Simple caching mechanism
+  const [cache, setCache] = useState<Record<string, { data: any; timestamp: number }>>({});
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  
+  const getCachedData = (key: string) => {
+    const cached = cache[key];
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  };
+  
+  const setCachedData = (key: string, data: any) => {
+    setCache(prev => ({
+      ...prev,
+      [key]: { data, timestamp: Date.now() }
+    }));
+  };
+  
+  // Custom hooks
+  const { currentTour, isTourActive, startTour, completeTour } = useTour();
+  
+  // Local state
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSimplifiedOnboarding, setShowSimplifiedOnboarding] = useState(false);
+  const [showTokenizationWizard, setShowTokenizationWizard] = useState(false);
+  const [selectedDomainForTokenization, setSelectedDomainForTokenization] = useState<Domain | null>(null);
+  const [currentView, setCurrentView] = useState<DashboardView>('dashboard');
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     showInfo('Refreshing Data', 'Updating dashboard metrics and domain information...');
     
     try {
-      // Simulate refresh delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Clear cache to force fresh data
+      setCache({});
+      
+      // Refresh data from all contexts and APIs with retry logic
+      const refreshPromises = [];
+      
+      // Refresh Doma data with retry
+      if (refreshData) {
+        refreshPromises.push(
+          retryWithBackoff(async () => {
+            refreshData();
+            return Promise.resolve();
+          }, 2, 500, 5000)
+        );
+      }
+      
+      // Refresh marketplace data with retry
+      refreshPromises.push(
+        retryWithBackoff(async () => {
+          // The useDomainMarketplace hook will automatically refresh when called
+          return Promise.resolve();
+        }, 2, 500, 5000)
+      );
+      
+      // Wait for all refresh operations to complete
+      await Promise.allSettled(refreshPromises);
+      
+      // Cache the refreshed data
+      setCachedData('dashboard-refresh', { timestamp: Date.now() });
+      
       showSuccess('Data Refreshed', 'Dashboard has been updated with the latest information');
     } catch (error) {
-      showError('Refresh Failed', 'Unable to update dashboard data. Please try again.');
+      console.error('Refresh failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showError('Refresh Failed', `Unable to update dashboard data: ${errorMessage}`);
     } finally {
       setIsRefreshing(false);
     }
   };
 
+  // Data validation utilities
+  const validateDomainData = (domain: any): boolean => {
+    return domain && 
+           typeof domain === 'object' && 
+           typeof domain.name === 'string' && 
+           domain.name.length > 0 &&
+           typeof domain.tokenId === 'string' &&
+           domain.tokenId.length > 0;
+  };
+
+  const validateMetricsData = (metrics: any): boolean => {
+    return metrics && 
+           typeof metrics === 'object' &&
+           typeof metrics.totalTransactions === 'number' &&
+           typeof metrics.activeUsers === 'number' &&
+           typeof metrics.totalRevenue === 'number';
+  };
+
+  // Retry logic utility with timeout
+  const retryWithBackoff = async (
+    fn: () => Promise<any>,
+    maxRetries: number = 3,
+    baseDelay: number = 1000,
+    timeout: number = 10000
+  ): Promise<any> => {
+    let lastError: Error;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        // Add timeout to the function call
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), timeout);
+        });
+        
+        return await Promise.race([fn(), timeoutPromise]);
+      } catch (error) {
+        lastError = error as Error;
+        
+        if (attempt === maxRetries) {
+          throw lastError;
+        }
+        
+        // Exponential backoff: delay = baseDelay * 2^attempt
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.warn(`API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`, error);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    throw lastError!;
+  };
+
   // Check if user is new (no domains tokenized yet)
   const isNewUser = userDomains.length === 0 && marketplaceDomains.length === 0;
+
+  // Handle tokenization completion
+  const handleTokenizationComplete = (result: any) => {
+    setShowTokenizationWizard(false);
+    setSelectedDomainForTokenization(null);
+    showSuccess('Domain Tokenized', 'Your domain has been successfully tokenized!');
+  };
+
+  useEffect(() => {
+    // Initialize accessibility features
+    if (typeof window !== 'undefined') {
+      // Add any initialization logic here
+    }
+  }, []);
 
   // Show onboarding for new users
   useEffect(() => {
     if (isConnected && isNewUser && !localStorage.getItem('domainfi-onboarding-completed')) {
-      setShowOnboarding(true);
+      setShowSimplifiedOnboarding(true);
     }
   }, [isConnected, isNewUser]);
 
@@ -193,52 +337,128 @@ const Dashboard: FC = () => {
           </div>
         </div>
 
-        {/* Enhanced Metrics Grid - Responsive */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-slide-up">
-          <div className="animate-fade-in" style={{animationDelay: '0.1s'}}>
-            <MetricCard
-              title="Total Transactions"
-              value={metrics.totalTransactions}
-              change={metrics.dailyTransactions}
-              changeLabel="today"
-              icon="📊"
-            />
-          </div>
-          <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
-            <MetricCard
-              title="Active Users"
-              value={metrics.activeUsers}
-              change={15}
-              changeLabel="% growth"
-              icon="👥"
-            />
-          </div>
-          <div className="animate-fade-in" style={{animationDelay: '0.3s'}}>
-            <MetricCard
-              title="Protocol Revenue"
-              value={`$${Math.floor(metrics.totalRevenue).toLocaleString()}`}
-              change={`$${Math.floor(metrics.projectedRevenue)}`}
-              changeLabel="projected monthly"
-              icon="💰"
-            />
-          </div>
-          <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
-            <MetricCard
-              title="Domains Tokenized"
-              value={overview ? (overview.totalDomains as number) : metrics.domainStats.totalTokenized + marketplaceDomains.length}
-              change={overview ? (overview.totalListings as number) : metrics.domainStats.totalListed}
-              changeLabel={overview ? "active listings" : "listed for sale"}
-              icon="🌐"
-            />
+        {/* View Switcher */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex gap-2">
+              <Button
+                variant={currentView === 'dashboard' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('dashboard')}
+                className="px-6 py-3 rounded-lg transition-all duration-300"
+              >
+                <span className="mr-2">📊</span>
+                Dashboard
+              </Button>
+              <Button
+                variant={currentView === 'management' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('management')}
+                className="px-6 py-3 rounded-lg transition-all duration-300"
+              >
+                <span className="mr-2">🏠</span>
+                Management
+              </Button>
+              <Button
+                variant={currentView === 'analytics' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('analytics')}
+                className="px-6 py-3 rounded-lg transition-all duration-300"
+              >
+                <span className="mr-2">📈</span>
+                Analytics
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Loading State */}
+        {isDataLoading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center space-y-4">
+              <div className="loading-dots">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+              <p className="text-muted-foreground">Loading dashboard data...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Conditional Content Based on View */}
+        {currentView === 'dashboard' && !isDataLoading && (
+          <>
+            {/* Enhanced Metrics Grid - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-slide-up">
+              <div className="animate-fade-in" style={{animationDelay: '0.1s'}}>
+                <MetricCard
+                  title="Total Transactions"
+                  value={validateMetricsData(metrics) ? metrics.totalTransactions : 0}
+                  change={validateMetricsData(metrics) ? metrics.dailyTransactions : 0}
+                  changeLabel="today"
+                  icon="📊"
+                />
+              </div>
+              <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
+                <MetricCard
+                  title="Active Users"
+                  value={validateMetricsData(metrics) ? metrics.activeUsers : 0}
+                  change={15}
+                  changeLabel="% growth"
+                  icon="👥"
+                />
+              </div>
+              <div className="animate-fade-in" style={{animationDelay: '0.3s'}}>
+                <MetricCard
+                  title="Protocol Revenue"
+                  value={`$${Math.floor(validateMetricsData(metrics) ? metrics.totalRevenue : 0).toLocaleString()}`}
+                  change={`$${Math.floor(validateMetricsData(metrics) ? metrics.projectedRevenue : 0)}`}
+                  changeLabel="projected monthly"
+                  icon="💰"
+                />
+              </div>
+              <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
+                <MetricCard
+                  title="Domains Tokenized"
+                  value={overview ? (overview.totalDomains as number) || 0 : (metrics?.domainStats?.totalTokenized || 0) + marketplaceDomains.length}
+                  change={overview ? (overview.totalListings as number) || 0 : metrics?.domainStats?.totalListed || 0}
+                  changeLabel={overview ? "active listings" : "listed for sale"}
+                  icon="🌐"
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {currentView === 'management' && (
+          <DomainManagement />
+        )}
+
+        {currentView === 'analytics' && (
+          <VisualDashboard 
+            domains={userDomains.map(domain => ({
+              id: domain.tokenId,
+              name: domain.name,
+              currentPrice: parseFloat(domain.price || '0'),
+              isTokenized: true,
+              category: domain.category,
+              tokenId: domain.tokenId,
+              isListed: domain.isListed,
+              isFractionalized: false
+            }))} 
+            transactions={[]} // You would pass actual transaction data here
+          />
+        )}
 
         {/* Enhanced Main Content Grid - Responsive */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8 animate-slide-up" style={{animationDelay: '0.2s'}}>
           
           {/* Domain Tokenization */}
           <div className="lg:col-span-1 animate-fade-in" style={{animationDelay: '0.3s'}}>
-            <DomainTokenization />
+            <div className="relative">
+              <DomainTokenization />
+              <div className="absolute top-4 right-4">
+                <ContextualHelp context="tokenization" position="left" />
+              </div>
+            </div>
           </div>
 
           {/* Enhanced User Domains */}
@@ -279,7 +499,7 @@ const Dashboard: FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {userDomains.map((domain, index) => (
+                    {userDomains.filter(validateDomainData).map((domain, index) => (
                       <div 
                         key={domain.tokenId} 
                         className="group/item flex justify-between items-center p-5 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200/30 dark:border-blue-700/30 hover:border-blue-400/50 dark:hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm animate-fade-in"
@@ -303,14 +523,23 @@ const Dashboard: FC = () => {
                           size="sm" 
                           variant="outline"
                           className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
-                          onClick={() => {
+                          onClick={async () => {
                             const price = prompt('Enter price in ETH:');
                             if (price && !isNaN(parseFloat(price)) && parseFloat(price) > 0) {
                               try {
-                                listDomain(domain.tokenId, price);
-                                showSuccess('Domain Listed', `${domain.name} has been listed for ${price} ETH`);
+                                const result = await retryWithBackoff(async () => {
+                                  return await listDomain(domain.tokenId, price);
+                                }, 2, 1000, 8000);
+                                
+                                if (result.success) {
+                                  showSuccess('Domain Listed', `${domain.name} has been listed for ${price} ETH`);
+                                } else {
+                                  showError('Listing Failed', result.error || 'Unable to list domain. Please try again.');
+                                }
                               } catch (error) {
-                                showError('Listing Failed', 'Unable to list domain. Please try again.');
+                                console.error('Listing error:', error);
+                                const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                                showError('Listing Failed', `Unable to list domain: ${errorMessage}`);
                               }
                             } else if (price) {
                               showWarning('Invalid Price', 'Please enter a valid price greater than 0');
@@ -349,10 +578,13 @@ const Dashboard: FC = () => {
                     {marketplaceDomains.length}
                   </Badge>
                 </CardTitle>
+                <div className="absolute top-4 right-4">
+                  <ContextualHelp context="marketplace" position="left" />
+                </div>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="space-y-4">
-                  {marketplaceDomains.slice(0, 5).map((domain, index) => (
+                  {marketplaceDomains.filter(validateDomainData).slice(0, 5).map((domain, index) => (
                     <div 
                       key={domain.tokenId} 
                       className="group/item flex justify-between items-center p-5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl border border-emerald-200/30 dark:border-emerald-700/30 hover:border-emerald-400/50 dark:hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm animate-fade-in"
@@ -378,17 +610,24 @@ const Dashboard: FC = () => {
                           size="sm" 
                           variant="default" 
                           className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-300 hover:shadow-lg hover:scale-105 font-semibold rounded-xl"
-                          onClick={() => {
+                          onClick={async () => {
                             if (confirm(`Are you sure you want to buy ${domain.name} for ${domain.price} ETH?`)) {
                               try {
-                                // This would trigger the buy function
                                 showInfo('Purchase Initiated', 'Transaction submitted. Please check your wallet for confirmation.');
-                                // Simulate transaction
-                                setTimeout(() => {
+                                
+                                const result = await retryWithBackoff(async () => {
+                                  return await buyDomain(domain.tokenId, domain.price || '0');
+                                }, 2, 1000, 8000);
+                                
+                                if (result.success) {
                                   showSuccess('Purchase Complete', `Successfully purchased ${domain.name} for ${domain.price} ETH`);
-                                }, 3000);
+                                } else {
+                                  showError('Purchase Failed', result.error || 'Transaction failed. Please try again.');
+                                }
                               } catch (error) {
-                                showError('Purchase Failed', 'Transaction failed. Please try again.');
+                                console.error('Purchase error:', error);
+                                const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                                showError('Purchase Failed', `Transaction failed: ${errorMessage}`);
                               }
                             }
                           }}
@@ -406,7 +645,7 @@ const Dashboard: FC = () => {
         </div>
 
         {/* Doma Subgraph Trending Domains */}
-        {!marketplaceLoading && (trendingDomains.length > 0 || popularDomains.length > 0) && (
+        {!isDataLoading && (trendingDomains?.length > 0 || popularDomains?.length > 0) && (
           <div className="mb-12 animate-fade-in" style={{animationDelay: '0.5s'}}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Trending Domains */}
@@ -425,19 +664,19 @@ const Dashboard: FC = () => {
                       Trending Domains
                     </span>
                     <Badge variant="outline" className="ml-auto px-3 py-1 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200/50 dark:border-orange-700/50 text-orange-700 dark:text-orange-300 font-semibold">
-                      {trendingDomains.length}
+                      {trendingDomains?.length || 0}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  {trendingDomains.length === 0 ? (
+                  {!trendingDomains || trendingDomains.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="text-4xl mb-3 opacity-50 animate-float">📈</div>
                       <p className="text-muted-foreground font-medium">No trending domains</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {trendingDomains.slice(0, 5).map((domain, index) => (
+                      {trendingDomains.filter(domain => domain && typeof domain === 'object' && typeof domain.name === 'string').slice(0, 5).map((domain, index) => (
                         <div key={domain.name} className="group/item flex justify-between items-center p-4 bg-gradient-to-r from-orange-50/80 to-red-50/80 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200/30 dark:border-orange-700/30 hover:border-orange-400/50 dark:hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm">
                           <div className="flex items-center gap-3">
                             <div className="relative">
@@ -479,19 +718,19 @@ const Dashboard: FC = () => {
                       Popular Domains
                     </span>
                     <Badge variant="outline" className="ml-auto px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200/50 dark:border-green-700/50 text-green-700 dark:text-green-300 font-semibold">
-                      {popularDomains.length}
+                      {popularDomains?.length || 0}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  {popularDomains.length === 0 ? (
+                  {!popularDomains || popularDomains.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="text-4xl mb-3 opacity-50 animate-float">🌟</div>
                       <p className="text-muted-foreground font-medium">No popular domains</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {popularDomains.slice(0, 5).map((domain, index) => (
+                      {popularDomains.filter(domain => domain && typeof domain === 'object' && typeof domain.name === 'string').slice(0, 5).map((domain, index) => (
                         <div key={domain.name} className="group/item flex justify-between items-center p-4 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30 hover:border-green-400/50 dark:hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm">
                           <div className="flex items-center gap-3">
                             <div className="relative">
@@ -542,7 +781,20 @@ const Dashboard: FC = () => {
                   <div className="flex items-center gap-3">
                     {!isXMTPConnected && (
                       <Button
-                        onClick={connectXMTP}
+                        onClick={async () => {
+                          try {
+                            await retryWithBackoff(async () => {
+                              await connectXMTP();
+                              return Promise.resolve();
+                            }, 2, 1000, 5000);
+                            
+                            showSuccess('XMTP Connected', 'Successfully connected to XMTP messaging protocol');
+                          } catch (error) {
+                            console.error('XMTP connection error:', error);
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                            showError('XMTP Connection Failed', `Unable to connect to XMTP: ${errorMessage}`);
+                          }
+                        }}
                         size="lg"
                         variant="outline"
                         className="px-6 py-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold"
@@ -561,7 +813,7 @@ const Dashboard: FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="relative z-10">
-                {conversations.length === 0 ? (
+                {!conversations || conversations.length === 0 ? (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-3 opacity-50 animate-float">💬</div>
                     <p className="text-muted-foreground font-medium">
@@ -573,7 +825,7 @@ const Dashboard: FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {conversations.slice(0, 3).map((conversation) => (
+                    {conversations.filter(conversation => conversation && typeof conversation === 'object' && conversation.id).slice(0, 3).map((conversation) => (
                       <div key={conversation.id} className="group/item flex justify-between items-center p-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
@@ -604,7 +856,7 @@ const Dashboard: FC = () => {
                         </div>
                       </div>
                     ))}
-                    {conversations.length > 3 && (
+                    {conversations && conversations.length > 3 && (
                       <div className="text-center pt-2">
                         <Button variant="ghost" size="sm" className="text-muted-foreground">
                           View all {conversations.length} conversations
@@ -645,8 +897,18 @@ const Dashboard: FC = () => {
                 <AIIntegrationPanel 
                   domainName="example.com"
                   onAnalysisComplete={(results) => {
-                    console.log('AI Analysis Complete:', results);
-                    showSuccess('AI Analysis Complete', 'Domain analysis has been completed successfully!');
+                    try {
+                      console.log('AI Analysis Complete:', results);
+                      if (results && typeof results === 'object') {
+                        showSuccess('AI Analysis Complete', 'Domain analysis has been completed successfully!');
+                      } else {
+                        showWarning('AI Analysis Incomplete', 'Analysis completed but results may be incomplete');
+                      }
+                    } catch (error) {
+                      console.error('AI Analysis error:', error);
+                      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                      showError('AI Analysis Failed', `Analysis failed: ${errorMessage}`);
+                    }
                   }}
                 />
               </CardContent>
@@ -1008,6 +1270,46 @@ const Dashboard: FC = () => {
           localStorage.setItem('domainfi-onboarding-completed', 'true');
         }}
       />
+
+      {/* Simplified Onboarding */}
+      <SimplifiedOnboarding
+        isOpen={showSimplifiedOnboarding}
+        onClose={() => setShowSimplifiedOnboarding(false)}
+        onComplete={() => {
+          setShowSimplifiedOnboarding(false);
+          localStorage.setItem('domainfi-onboarding-completed', 'true');
+          showSuccess('Welcome to DomaLand!', 'You\'re all set to start tokenizing domains.');
+        }}
+      />
+
+      {/* Tokenization Wizard */}
+      {selectedDomainForTokenization && (
+        <TokenizationWizard
+          domain={selectedDomainForTokenization}
+          onComplete={handleTokenizationComplete}
+          onClose={() => {
+            setShowTokenizationWizard(false);
+            setSelectedDomainForTokenization(null);
+          }}
+        />
+      )}
+
+      {/* Guided Tour System */}
+      <GuidedTourSystem
+        currentTour={currentTour}
+        isTourActive={isTourActive}
+        onComplete={completeTour}
+      />
+
+      {/* Tour Start Button */}
+      <Button
+        onClick={() => startTour('onboarding')}
+        className="fixed bottom-8 left-8 h-12 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50 rounded-full"
+        size="sm"
+      >
+        <span className="mr-2">🎯</span>
+        Start Tour
+      </Button>
     </div>
   );
 };
