@@ -158,3 +158,4 @@ class DomainTransaction(db.Model):
     def __repr__(self):
         return f'<DomainTransaction {self.transaction_type} for domain {self.domain_id}>'
 
+

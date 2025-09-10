@@ -266,3 +266,4 @@ async function syncContent() {
   // For example, update cached domain data, sync analytics, etc.
 }
 
+

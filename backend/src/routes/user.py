@@ -255,3 +255,4 @@ def get_user_stats(user_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
