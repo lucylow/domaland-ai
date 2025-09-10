@@ -225,8 +225,8 @@ const Dashboard: FC = () => {
           <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
             <MetricCard
               title="Domains Tokenized"
-              value={overview ? overview.totalDomains : metrics.domainStats.totalTokenized + marketplaceDomains.length}
-              change={overview ? overview.totalListings : metrics.domainStats.totalListed}
+              value={overview ? (overview.totalDomains as number) : metrics.domainStats.totalTokenized + marketplaceDomains.length}
+              change={overview ? (overview.totalListings as number) : metrics.domainStats.totalListed}
               changeLabel={overview ? "active listings" : "listed for sale"}
               icon="🌐"
             />

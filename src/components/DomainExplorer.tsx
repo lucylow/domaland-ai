@@ -1,5 +1,5 @@
 // Comprehensive Domain Explorer Component using Doma Subgraph
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDomaSubgraph, useDomainSearch, useDomainMarketplace } from '../hooks/useDomaSubgraph';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -92,10 +92,10 @@ const DomainExplorer: React.FC = () => {
         getDomainOffers({ name: domainName, take: 10 })
       ]);
 
-      setDomainDetails(info);
-      setDomainActivities(activities.items);
-      setDomainListings(listings.items);
-      setDomainOffers(offers.items);
+      setDomainDetails(info as unknown as Record<string, unknown>);
+      setDomainActivities(activities.items as unknown as Record<string, unknown>[]);
+      setDomainListings(listings.items as unknown as Record<string, unknown>[]);
+      setDomainOffers(offers.items as unknown as Record<string, unknown>[]);
     } catch (error) {
       console.error('Failed to load domain details:', error);
     }
@@ -138,7 +138,7 @@ const DomainExplorer: React.FC = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">{domain.name as string}</CardTitle>
             <Badge variant="outline" className={`bg-${statusColor}-50 text-${statusColor}-700 border-${statusColor}-200`}>
-              {statusText}
+              {statusText as string}
             </Badge>
           </div>
         </CardHeader>
@@ -212,25 +212,25 @@ const DomainExplorer: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {domainDetails.name}
-              <Badge variant="outline" className={`bg-${getDomainStatusColor(domainDetails)}-50 text-${getDomainStatusColor(domainDetails)}-700`}>
-                {getDomainStatusText(domainDetails)}
-              </Badge>
+              {domainDetails.name as string}
+            <Badge variant="outline" className={`bg-${getDomainStatusColor(domainDetails)}-50 text-${getDomainStatusColor(domainDetails)}-700`}>
+              {getDomainStatusText(domainDetails) as string}
+            </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Expires:</span>
-                <p className="font-medium">{new Date(domainDetails.expiresAt).toLocaleDateString()}</p>
+                <p className="font-medium">{new Date(domainDetails.expiresAt as string).toLocaleDateString()}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Registrar:</span>
-                <p className="font-medium">{domainDetails.registrar.name}</p>
+                <p className="font-medium">{(domainDetails.registrar as Record<string, unknown>).name as string}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">IANA ID:</span>
-                <p className="font-medium">{domainDetails.registrar.ianaId}</p>
+                <p className="font-medium">{(domainDetails.registrar as Record<string, unknown>).ianaId as string}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">EOI:</span>
@@ -238,7 +238,7 @@ const DomainExplorer: React.FC = () => {
               </div>
             </div>
 
-            {domainDetails.tokens && domainDetails.tokens.length > 0 && (
+            {domainDetails.tokens && (domainDetails.tokens as unknown[]).length > 0 && (
               <div>
                 <h4 className="font-semibold mb-3">Token Information</h4>
                 <div className="space-y-3">
@@ -247,19 +247,19 @@ const DomainExplorer: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <span className="text-muted-foreground">Token ID:</span>
-                          <p className="font-mono">{token.tokenId}</p>
+                          <p className="font-mono">{token.tokenId as string}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Network:</span>
-                          <p>{getNetworkName(token.networkId)}</p>
+                          <p>{getNetworkName(token.networkId as string)}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Owner:</span>
-                          <p className="font-mono text-xs">{token.ownerAddress}</p>
+                          <p className="font-mono text-xs">{token.ownerAddress as string}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Type:</span>
-                          <p>{token.type}</p>
+                          <p>{token.type as string}</p>
                         </div>
                       </div>
                     </div>
@@ -569,10 +569,10 @@ const DomainExplorer: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {trendingDomains.map((domain, index) => (
+                    {(trendingDomains as Record<string, unknown>[]).map((domain, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium">{domain.name}</p>
+                          <p className="font-medium">{domain.name as string}</p>
                           <p className="text-sm text-muted-foreground">
                             Score: {(domain as Record<string, unknown>).trendScore as number || 0}
                           </p>
@@ -601,10 +601,10 @@ const DomainExplorer: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {popularDomains.map((domain, index) => (
+                    {(popularDomains as Record<string, unknown>[]).map((domain, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="font-medium">{domain.name}</p>
+                          <p className="font-medium">{domain.name as string}</p>
                           <p className="text-sm text-muted-foreground">
                             {(domain as Record<string, unknown>).activeOffers as number || 0} offers
                           </p>
@@ -643,19 +643,19 @@ const DomainExplorer: React.FC = () => {
               ) : overview ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">{overview.totalDomains}</p>
+                    <p className="text-2xl font-bold text-blue-600">{overview.totalDomains as string}</p>
                     <p className="text-sm text-muted-foreground">Total Domains</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{overview.totalListings}</p>
+                    <p className="text-2xl font-bold text-green-600">{overview.totalListings as string}</p>
                     <p className="text-sm text-muted-foreground">Active Listings</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-purple-600">{overview.totalOffers}</p>
+                    <p className="text-2xl font-bold text-purple-600">{overview.totalOffers as string}</p>
                     <p className="text-sm text-muted-foreground">Active Offers</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-600">{overview.averagePrice.toFixed(4)}</p>
+                    <p className="text-2xl font-bold text-orange-600">{(overview.averagePrice as number).toFixed(4)}</p>
                     <p className="text-sm text-muted-foreground">Avg Price (ETH)</p>
                   </div>
                 </div>

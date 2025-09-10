@@ -269,7 +269,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         return true;
       } catch (switchError: unknown) {
         // If the chain is not added to the wallet, add it
-        if (switchError.code === 4902) {
+        if ((switchError as Record<string, unknown>).code === 4902) {
           try {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -287,18 +287,18 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
           } catch (addError: unknown) {
             console.error('Failed to add chain:', addError);
             let errorMsg = `Failed to add ${chainConfig.name} to your wallet`;
-            if (addError.code === 4001) {
+            if ((addError as Record<string, unknown>).code === 4001) {
               errorMsg = `User rejected adding ${chainConfig.name} to wallet`;
-            } else if (addError.code === -32602) {
+            } else if ((addError as Record<string, unknown>).code === -32602) {
               errorMsg = `Invalid parameters for adding ${chainConfig.name}`;
             }
             setError(errorMsg);
             return false;
           }
-        } else if (switchError.code === 4001) {
+        } else if ((switchError as Record<string, unknown>).code === 4001) {
           setError(`User rejected switching to ${chainConfig.name}`);
           return false;
-        } else if (switchError.code === -32002) {
+        } else if ((switchError as Record<string, unknown>).code === -32002) {
           setError(`Request to switch to ${chainConfig.name} is already pending`);
           return false;
         }
