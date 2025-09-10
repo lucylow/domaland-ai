@@ -1,271 +1,329 @@
-// React component for domain tokenization interface
+// Example Usage Component for Doma Protocol Integration
+import React, { useState, useEffect } from 'react';
+import { useDomaProtocol } from '../hooks/useDomaProtocol';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Alert, AlertDescription } from './ui/alert';
+import { Badge } from './ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-import React, { useState } from 'react';
-import { useDomainOperations } from '../hooks/useDomainOperations';
-import { TokenizationParams } from '../types/domain';
-
-interface DomainTokenizationProps {
-  onSuccess?: (domainAsset: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
-
-export const DomainTokenization: React.FC<DomainTokenizationProps> = ({
-  onSuccess,
-  onCancel
-}) => {
-  const { tokenizeDomain, loading, error, clearError } = useDomainOperations();
+const DomainTokenization: React.FC = () => {
+  const [domainName, setDomainName] = useState('');
+  const [tokenId, setTokenId] = useState('');
+  const [targetChainId, setTargetChainId] = useState('');
+  const [supportedChains, setSupportedChains] = useState<Array<{
+    chainId: string;
+    name: string;
+    isActive: boolean;
+  }>>([]);
+  const [costEstimate, setCostEstimate] = useState<{
+    protocolFee: string;
+    gasEstimate: string;
+    totalCost: string;
+  } | null>(null);
   
-  const [formData, setFormData] = useState({
-    domainName: '',
-    description: '',
-    category: 'technology',
-    keywords: '',
-    royaltyPercentage: 5
-  });
+  const {
+    isConnected,
+    account,
+    loading,
+    error,
+    connectWallet,
+    tokenizeDomains,
+    claimOwnership,
+    bridgeDomain,
+    getTokenMetadata,
+    calculateTokenizationCost,
+    calculateBridgeCost,
+    getSupportedChains,
+    setupEventListeners,
+    clearError
+  } = useDomaProtocol('polygon'); // Use Polygon network
 
-  const [validation, setValidation] = useState({
-    domainName: '',
-    royaltyPercentage: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Clear validation error when user starts typing
-    if (validation[name as keyof typeof validation]) {
-      setValidation(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newValidation = {
-      domainName: '',
-      royaltyPercentage: ''
+  // Load supported chains on mount
+  useEffect(() => {
+    const loadSupportedChains = async () => {
+      try {
+        const chains = await getSupportedChains();
+        setSupportedChains(chains);
+      } catch (err) {
+        console.error('Failed to load supported chains:', err);
+      }
     };
 
-    let isValid = true;
-
-    // Validate domain name
-    if (!formData.domainName) {
-      newValidation.domainName = 'Domain name is required';
-      isValid = false;
-    } else if (!/^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}$/.test(formData.domainName)) {
-      newValidation.domainName = 'Please enter a valid domain name (e.g., example.com)';
-      isValid = false;
+    if (isConnected) {
+      loadSupportedChains();
     }
+  }, [isConnected, getSupportedChains]);
 
-    // Validate royalty percentage
-    const royalty = parseFloat(formData.royaltyPercentage.toString());
-    if (isNaN(royalty) || royalty < 0 || royalty > 100) {
-      newValidation.royaltyPercentage = 'Royalty percentage must be between 0 and 100';
-      isValid = false;
+  // Setup event listeners
+  useEffect(() => {
+    if (isConnected) {
+      setupEventListeners({
+        onTokenMinted: (event) => {
+          console.log('Token minted:', event);
+          setTokenId(event.tokenId);
+        },
+        onTokenRenewed: (event) => {
+          console.log('Token renewed:', event);
+        },
+        onTokenBurned: (event) => {
+          console.log('Token burned:', event);
+        }
+      });
     }
+  }, [isConnected, setupEventListeners]);
 
-    setValidation(newValidation);
-    return isValid;
-  };
+  // Calculate cost when domain name changes
+  useEffect(() => {
+    const calculateCost = async () => {
+      if (domainName && isConnected) {
+        try {
+          const cost = await calculateTokenizationCost([domainName]);
+          setCostEstimate(cost);
+        } catch (err) {
+          console.error('Failed to calculate cost:', err);
+          setCostEstimate(null);
+        }
+      } else {
+        setCostEstimate(null);
+      }
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
+    const timeoutId = setTimeout(calculateCost, 500); // Debounce
+    return () => clearTimeout(timeoutId);
+  }, [domainName, isConnected, calculateTokenizationCost]);
+
+  const handleTokenize = async () => {
+    if (!domainName.trim()) {
+      alert('Please enter a domain name');
       return;
     }
 
-    clearError();
-
-    const tokenizationParams: TokenizationParams = {
-      domainName: formData.domainName,
-      valuation: {
-        estimatedValue: 0, // Will be generated by AI
-        confidence: 0,
-        factors: [],
-        lastUpdated: Date.now(),
-        aiModel: 'domaland-ai-v1.0'
-      },
-      metadata: {
-        description: formData.description,
-        category: formData.category,
-        keywords: formData.keywords.split(',').map(k => k.trim()).filter(k => k),
-        traffic: {
-          monthlyVisitors: 0,
-          bounceRate: 0,
-          avgSessionDuration: 0,
-          topCountries: [],
-          topReferrers: []
-        }
-      },
-      royaltyPercentage: parseFloat(formData.royaltyPercentage.toString())
-    };
-
-    const result = await tokenizeDomain(tokenizationParams);
-    
-    if (result) {
-      onSuccess?.(result as unknown as Record<string, unknown>);
+    try {
+      const result = await tokenizeDomains([domainName]);
+      console.log('Tokenization successful:', result);
+      alert(`Domain tokenization initiated successfully! Transaction: ${result.transactionHash}`);
+    } catch (err) {
+      console.error('Tokenization failed:', err);
     }
   };
 
-  return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Tokenize Your Domain
-        </h2>
-        <p className="text-gray-600">
-          Convert your domain into a tradeable NFT and unlock liquidity. 
-          Our AI will automatically generate a valuation and create a marketplace listing.
-        </p>
-      </div>
+  const handleClaimOwnership = async () => {
+    if (!tokenId) {
+      alert('Please enter a token ID');
+      return;
+    }
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Domain Name */}
-        <div>
-          <label htmlFor="domainName" className="block text-sm font-medium text-gray-700 mb-2">
-            Domain Name *
-          </label>
-          <input
-            type="text"
-            id="domainName"
-            name="domainName"
-            value={formData.domainName}
-            onChange={handleInputChange}
-            placeholder="e.g., web3hub.com"
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              validation.domainName ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {validation.domainName && (
-            <p className="mt-1 text-sm text-red-600">{validation.domainName}</p>
-          )}
-        </div>
+    try {
+      const result = await claimOwnership(parseInt(tokenId));
+      console.log('Ownership claim successful:', result);
+      alert(`Domain ownership claimed successfully! Transaction: ${result.transactionHash}`);
+    } catch (err) {
+      console.error('Ownership claim failed:', err);
+    }
+  };
 
-        {/* Category */}
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="technology">Technology</option>
-            <option value="finance">Finance</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="education">Education</option>
-            <option value="entertainment">Entertainment</option>
-            <option value="ecommerce">E-commerce</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
+  const handleBridgeDomain = async () => {
+    if (!tokenId || !targetChainId) {
+      alert('Please enter token ID and select target chain');
+      return;
+    }
 
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={3}
-            placeholder="Describe your domain and its potential uses..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+    try {
+      const result = await bridgeDomain(parseInt(tokenId), targetChainId, account || '');
+      console.log('Domain bridging successful:', result);
+      alert(`Domain bridged successfully! Transaction: ${result.transactionHash}`);
+    } catch (err) {
+      console.error('Domain bridging failed:', err);
+    }
+  };
 
-        {/* Keywords */}
-        <div>
-          <label htmlFor="keywords" className="block text-sm font-medium text-gray-700 mb-2">
-            Keywords
-          </label>
-          <input
-            type="text"
-            id="keywords"
-            name="keywords"
-            value={formData.keywords}
-            onChange={handleInputChange}
-            placeholder="web3, blockchain, crypto (comma-separated)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+  const handleGetMetadata = async () => {
+    if (!tokenId) {
+      alert('Please enter a token ID');
+      return;
+    }
 
-        {/* Royalty Percentage */}
-        <div>
-          <label htmlFor="royaltyPercentage" className="block text-sm font-medium text-gray-700 mb-2">
-            Royalty Percentage *
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              id="royaltyPercentage"
-              name="royaltyPercentage"
-              value={formData.royaltyPercentage}
-              onChange={handleInputChange}
-              min="0"
-              max="100"
-              step="0.1"
-              className={`w-full px-3 py-2 pr-8 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                validation.royaltyPercentage ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            <span className="absolute right-3 top-2 text-gray-500">%</span>
-          </div>
-          {validation.royaltyPercentage && (
-            <p className="mt-1 text-sm text-red-600">{validation.royaltyPercentage}</p>
-          )}
-          <p className="mt-1 text-sm text-gray-500">
-            Percentage of future sales that will be paid as royalties (0-100%)
+    try {
+      const metadata = await getTokenMetadata(parseInt(tokenId));
+      console.log('Token metadata:', metadata);
+      alert(`Token Metadata:\nOwner: ${metadata.owner}\nExpiration: ${metadata.expiration}\nLocked: ${metadata.isTransferLocked}`);
+    } catch (err) {
+      console.error('Failed to get metadata:', err);
+    }
+  };
+
+  if (!isConnected) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-center">Connect Wallet to Continue</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center space-y-4">
+          <p className="text-muted-foreground">
+            Connect your wallet to start tokenizing domains and managing ownership tokens.
           </p>
-        </div>
+          <Button onClick={connectWallet} disabled={loading} size="lg">
+            {loading ? 'Connecting...' : 'Connect Wallet'}
+          </Button>
+          {error && (
+            <Alert className="mt-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-600">{error}</p>
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Connection Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              Connected
+            </Badge>
+            Wallet Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            <strong>Address:</strong> {account}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <strong>Network:</strong> Polygon
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Domain Tokenization */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Tokenize Domain</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="domain-name">Domain Name</Label>
+            <Input
+              id="domain-name"
+              type="text"
+              placeholder="Enter domain name (e.g., example.com)"
+              value={domainName}
+              onChange={(e) => setDomainName(e.target.value)}
+            />
           </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          
+          {costEstimate && (
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">Cost Estimate</h4>
+              <div className="space-y-1 text-sm text-blue-800">
+                <p>Protocol Fee: {costEstimate.protocolFee} ETH</p>
+                <p>Gas Estimate: {costEstimate.gasEstimate} ETH</p>
+                <p className="font-semibold">Total Cost: {costEstimate.totalCost} ETH</p>
+              </div>
+            </div>
+          )}
+          
+          <Button 
+            onClick={handleTokenize} 
+            disabled={loading || !domainName.trim()}
+            className="w-full"
           >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Tokenizing...' : 'Tokenize Domain'}
-          </button>
-        </div>
-      </form>
+            {loading ? 'Processing...' : 'Tokenize Domain'}
+          </Button>
+        </CardContent>
+      </Card>
 
-      {/* Information Panel */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">What happens when you tokenize?</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• AI-powered valuation will be generated automatically</li>
-          <li>• Your domain becomes a tradeable NFT</li>
-          <li>• A marketplace listing is created with 24/7 availability</li>
-          <li>• Automated landing page is generated for sales</li>
-          <li>• You retain full ownership until sold</li>
-        </ul>
-      </div>
+      {/* Ownership Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Ownership Management</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="token-id">Token ID</Label>
+            <Input
+              id="token-id"
+              type="text"
+              placeholder="Enter token ID"
+              value={tokenId}
+              onChange={(e) => setTokenId(e.target.value)}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button 
+              onClick={handleClaimOwnership} 
+              disabled={loading || !tokenId}
+              variant="outline"
+            >
+              {loading ? 'Processing...' : 'Claim Ownership'}
+            </Button>
+            
+            <Button 
+              onClick={handleGetMetadata} 
+              disabled={loading || !tokenId}
+              variant="outline"
+            >
+              Get Metadata
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Domain Bridging */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Bridge Domain</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="target-chain">Target Chain</Label>
+            <Select value={targetChainId} onValueChange={setTargetChainId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select target chain" />
+              </SelectTrigger>
+              <SelectContent>
+                {supportedChains.map((chain) => (
+                  <SelectItem 
+                    key={chain.chainId} 
+                    value={chain.chainId}
+                    disabled={!chain.isActive}
+                  >
+                    {chain.name} {!chain.isActive && '(Inactive)'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button 
+            onClick={handleBridgeDomain} 
+            disabled={loading || !tokenId || !targetChainId}
+            className="w-full"
+          >
+            {loading ? 'Processing...' : 'Bridge Domain'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Error Display */}
+      {error && (
+        <Alert>
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="ghost" size="sm" onClick={clearError}>
+              ✕
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
+
+export default DomainTokenization;

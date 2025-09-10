@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
 import { useWeb3 } from './Web3Context';
 import { ethers } from 'ethers';
+import { useDomaProtocol } from '../hooks/useDomaProtocol';
+import { handleDomaError, getErrorMessage } from '../utils/domaErrorHandler';
 
 interface Domain {
   tokenId: string;
@@ -48,28 +50,30 @@ const DOMA_ABI = [
 
 export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
   const { signer, account, isMockMode } = useWeb3();
+  const domaProtocol = useDomaProtocol('polygon'); // Use Polygon network
   const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [marketplaceDomains, setMarketplaceDomains] = useState<Domain[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock tokenize domain function
+  // Tokenize domain using Doma Protocol
   const tokenizeDomain = async (domainName: string) => {
     if (!account) throw new Error('Wallet not connected');
     
     try {
       setIsLoading(true);
       
-      // Simulate transaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Use Doma Protocol for tokenization
+      const result = await domaProtocol.tokenizeDomains([domainName]);
       
-      // Mock successful tokenization
+      // Create domain object
       const newDomain: Domain = {
-        tokenId: Math.random().toString(36).substring(7),
+        tokenId: result.tokenId || result.transactionHash,
         name: domainName,
         owner: account!,
         metadata: {
           description: `Tokenized domain: ${domainName}`,
-          image: `https://api.doma.xyz/thumbnail/${domainName}`
+          image: `https://api.doma.xyz/thumbnail/${domainName}`,
+          transactionHash: result.transactionHash
         }
       };
       
@@ -77,11 +81,12 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
       
       return { 
         success: true,
-        tokenId: '0x' + Math.random().toString(16).substring(2)
+        tokenId: result.tokenId || result.transactionHash
       };
     } catch (error) {
-      console.error('Tokenization failed:', error);
-      throw error;
+      const domaError = handleDomaError(error);
+      console.error('Tokenization failed:', domaError);
+      throw domaError;
     } finally {
       setIsLoading(false);
     }
