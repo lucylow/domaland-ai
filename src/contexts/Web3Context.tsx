@@ -190,6 +190,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   const [isMockMode, setIsMockMode] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isManualConnection, setIsManualConnection] = useState(false);
 
   // Event listener references for cleanup
   const [eventListeners, setEventListeners] = useState<{
@@ -213,6 +214,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   }, []);
 
   const disconnectWallet = useCallback(() => {
+    console.log('🔌 Disconnecting wallet...');
     // Clean up event listeners
     if (window.ethereum && eventListeners.accountsChanged) {
       window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
@@ -231,7 +233,8 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     setIsMockMode(false);
     setError(null);
     setEventListeners({});
-  }, [eventListeners]);
+    console.log('✅ Wallet disconnected');
+  }, []); // Removed eventListeners dependency to prevent circular deps
 
   const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
     if (!window.ethereum) {
@@ -312,7 +315,9 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
   }, []);
 
   const connectWallet = useCallback(async (chain: SupportedChain = SupportedChain.POLYGON): Promise<boolean> => {
+    console.log('🔄 Starting wallet connection...');
     setIsConnecting(true);
+    setIsManualConnection(true);
     setError(null);
     
     try {
@@ -376,6 +381,11 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
           throw new Error('No accounts found. Please unlock your wallet.');
         }
         
+        console.log('✅ Wallet connected successfully!');
+        console.log('📍 Account:', accounts[0].address);
+        console.log('🌐 Network:', network.name);
+        console.log('⛓️ Chain:', chain);
+        
         setProvider(web3Provider);
         setSigner(signer);
         setAccount(accounts[0].address);
@@ -386,14 +396,35 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         
         // Set up event listeners with proper cleanup
         const accountsChangedHandler = (accounts: string[]) => {
+          console.log('👤 Accounts changed:', accounts);
           if (accounts.length === 0) {
-            disconnectWallet();
+            console.log('❌ No accounts found, disconnecting...');
+            // Clean up event listeners
+            if (window.ethereum && eventListeners.accountsChanged) {
+              window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
+            }
+            if (window.ethereum && eventListeners.chainChanged) {
+              window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
+            }
+            
+            setAccount(null);
+            setProvider(null);
+            setSigner(null);
+            setIsConnected(false);
+            setNetwork(null);
+            setCurrentChain(SupportedChain.POLYGON);
+            setChainId(null);
+            setIsMockMode(false);
+            setError(null);
+            setEventListeners({});
           } else {
+            console.log('✅ Account updated:', accounts[0]);
             setAccount(accounts[0]);
           }
         };
 
         const chainChangedHandler = () => {
+          console.log('🔗 Chain changed, reloading in 1 second...');
           // Instead of reloading, try to reconnect gracefully
           setTimeout(() => {
             window.location.reload();
@@ -467,8 +498,9 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       return false;
     } finally {
       setIsConnecting(false);
+      setIsManualConnection(false);
     }
-  }, [switchChain, connectMockWallet, eventListeners, disconnectWallet]);
+  }, [switchChain, connectMockWallet]); // Removed eventListeners and disconnectWallet to prevent circular deps
 
   const connectSolanaWallet = async (): Promise<boolean> => {
     try {
@@ -523,11 +555,16 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     const checkConnection = async () => {
       if (typeof window !== 'undefined' && window.ethereum) {
         try {
+          console.log('🔍 Checking existing wallet connection...');
           const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+          console.log('👥 Found accounts:', accounts);
+          
           if (accounts.length > 0 && !isConnected) {
+            console.log('🔄 Auto-reconnecting to previously connected wallet...');
             // Auto-reconnect if wallet was previously connected
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
             const chainIdNumber = parseInt(chainId as string, 16);
+            console.log('⛓️ Current chain ID:', chainIdNumber);
             
             // Determine which chain we're on
             let detectedChain = SupportedChain.POLYGON;
@@ -538,17 +575,20 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
             // Only auto-reconnect if we're on a supported chain
             const supportedChainIds = Object.values(CHAIN_CONFIGS).map(config => config.chainId);
             if (supportedChainIds.includes(chainIdNumber)) {
+              console.log('✅ Supported chain detected, auto-reconnecting...');
               await connectWallet(detectedChain);
+            } else {
+              console.log('❌ Unsupported chain, skipping auto-reconnect');
             }
           }
         } catch (error) {
-          console.error('Failed to check wallet connection:', error);
+          console.error('❌ Failed to check wallet connection:', error);
         }
       }
     };
 
-    // Only check connection on mount, not on every render
-    if (!isConnected) {
+    // Only check connection on mount, not on every render and not during manual connection
+    if (!isConnected && !isManualConnection) {
       checkConnection();
     }
 
