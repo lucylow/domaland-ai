@@ -65,7 +65,7 @@ export const useDomaProtocol = (network: keyof typeof DOMA_CONFIG.networks = 'et
       }
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = provider.getSigner();
       const address = await signer.getAddress();
 

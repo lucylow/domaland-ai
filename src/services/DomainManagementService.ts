@@ -1,5 +1,5 @@
 // Domain Management Service for Doma Protocol
-import { ethers } from 'ethers';
+import { ethers, parseEther, formatEther } from 'ethers';
 import { DomaContractService } from './DomaContractService';
 import { DOMA_CONFIG, ProofOfContactsVoucher } from '../config/domaConfig';
 
@@ -73,7 +73,7 @@ export class DomainManagementService extends DomaContractService {
         voucherData.voucher,
         voucherData.signature,
         {
-          value: ethers.utils.parseEther(voucherData.protocolFee),
+          value: parseEther(voucherData.protocolFee),
           gasLimit: gasEstimate.mul(12).div(10)
         }
       );
@@ -136,7 +136,7 @@ export class DomainManagementService extends DomaContractService {
         targetChainId,
         targetOwnerAddress,
         {
-          value: ethers.utils.parseEther(fees.protocolFee || DOMA_CONFIG.protocolFees.bridge),
+          value: parseEther(fees.protocolFee || DOMA_CONFIG.protocolFees.bridge),
           gasLimit: gasEstimate.mul(12).div(10)
         }
       );
@@ -242,13 +242,13 @@ export class DomainManagementService extends DomaContractService {
 
       const gasPrice = await this.provider.getGasPrice();
       const gasCost = gasEstimate.mul(gasPrice);
-      const protocolFeeWei = ethers.utils.parseEther(protocolFee);
+      const protocolFeeWei = parseEther(protocolFee);
       const totalCost = gasCost.add(protocolFeeWei);
 
       return {
         protocolFee,
-        gasEstimate: ethers.utils.formatEther(gasCost),
-        totalCost: ethers.utils.formatEther(totalCost)
+        gasEstimate: formatEther(gasCost),
+        totalCost: formatEther(totalCost)
       };
     } catch (error) {
       console.error('Error calculating bridge cost:', error);

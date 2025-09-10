@@ -1,9 +1,9 @@
 // Base Contract Interaction Class for Doma Protocol
-import { ethers, Contract, Signer } from 'ethers';
+import { ethers, Contract, Signer, JsonRpcProvider, parseEther } from 'ethers';
 import { DOMA_CONFIG, CONTRACT_ABIS } from '../config/domaConfig';
 
 export class DomaContractService {
-  protected provider: ethers.providers.JsonRpcProvider;
+  protected provider: JsonRpcProvider;
   protected signer: Signer | null = null;
   protected proxyDomaRecord: Contract;
   protected ownershipToken: Contract;
@@ -11,7 +11,7 @@ export class DomaContractService {
 
   constructor(network: keyof typeof DOMA_CONFIG.networks = 'ethereum') {
     this.networkConfig = DOMA_CONFIG.networks[network];
-    this.provider = new ethers.providers.JsonRpcProvider(this.networkConfig.rpcUrl);
+    this.provider = new JsonRpcProvider(this.networkConfig.rpcUrl);
     
     // Initialize contracts
     this.proxyDomaRecord = new ethers.Contract(
@@ -47,7 +47,7 @@ export class DomaContractService {
     try {
       return await this.proxyDomaRecord.estimateGas[method](
         ...params,
-        { value: ethers.utils.parseEther(value) }
+        { value: parseEther(value) }
       );
     } catch (error) {
       console.error(`Gas estimation failed for ${method}:`, error);

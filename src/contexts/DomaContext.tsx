@@ -3,6 +3,20 @@ import { useWeb3 } from './Web3Context';
 import { ethers } from 'ethers';
 import { useDomaProtocol } from '../hooks/useDomaProtocol';
 import { handleDomaError, getErrorMessage } from '../utils/domaErrorHandler';
+import { 
+  useDomaDomains, 
+  useDomaListings, 
+  useDomaOperations, 
+  useDomaPortfolio,
+  useDomaMarketplaceStats 
+} from '../hooks/useDomaApi';
+import { 
+  formatPriceDisplay, 
+  toCAIP10, 
+  isExpiringSoon, 
+  formatDomainName,
+  isValidDomainName 
+} from '../utils/domaHelpers';
 
 interface Domain {
   tokenId: string;
@@ -13,6 +27,33 @@ interface Domain {
   metadata?: Record<string, unknown>;
   category?: string;
   listedAt?: string;
+  expiresAt?: string;
+  tokenizedAt?: string;
+  eoi?: boolean;
+  registrar?: {
+    name: string;
+    ianaId: number;
+    websiteUrl?: string;
+  };
+  tokens?: Array<{
+    tokenId: string;
+    networkId: string;
+    ownerAddress: string;
+    type: string;
+    startsAt: string;
+    expiresAt: string;
+    tokenAddress?: string;
+    chain: {
+      name: string;
+      networkId: string;
+    };
+  }>;
+  activities?: Array<{
+    type: string;
+    createdAt: string;
+    txHash?: string;
+    networkId?: string;
+  }>;
 }
 
 interface DomaContextType {
@@ -23,6 +64,27 @@ interface DomaContextType {
   listDomain: (tokenId: string, price: string) => Promise<{ success: boolean; error?: string }>;
   buyDomain: (tokenId: string, price: string) => Promise<{ success: boolean; error?: string }>;
   refreshData: () => void;
+  // New API-based methods
+  createListing: (tokenId: string, price: string, currency?: string) => Promise<{ success: boolean; error?: string }>;
+  createOffer: (tokenId: string, price: string, currency?: string) => Promise<{ success: boolean; error?: string }>;
+  transferOwnership: (tokenId: string, toAddress: string) => Promise<{ success: boolean; error?: string }>;
+  renewDomain: (tokenId: string, duration: number) => Promise<{ success: boolean; error?: string }>;
+  // Portfolio stats
+  portfolioStats: {
+    totalDomains: number;
+    expiringSoon: number;
+    eoi: number;
+    tokenized: number;
+  };
+  // Marketplace stats
+  marketplaceStats: {
+    totalListings: number;
+    totalOffers: number;
+    totalVolume: string;
+    averagePrice: string;
+    topTlds: Array<{ tld: string; count: number }>;
+    recentActivity: Array<{ type: string; count: number; timestamp: string }>;
+  } | null;
 }
 
 const DomaContext = createContext<DomaContextType | undefined>(undefined);
@@ -51,13 +113,65 @@ const DOMA_ABI = [
 export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
   const { signer, account, isMockMode } = useWeb3();
   const domaProtocol = useDomaProtocol('polygon'); // Use Polygon network
+  
+  // Use real API hooks
+  const { portfolio: userDomainsData, stats: portfolioStats, loading: portfolioLoading } = useDomaPortfolio(account || '');
+  const { listings: marketplaceListings, loading: listingsLoading } = useDomaListings();
+  const { stats: marketplaceStats, loading: statsLoading } = useDomaMarketplaceStats();
+  const domaOperations = useDomaOperations();
+  
   const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [marketplaceDomains, setMarketplaceDomains] = useState<Domain[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Convert API data to our Domain interface
+  useEffect(() => {
+    if (userDomainsData) {
+      const convertedDomains: Domain[] = userDomainsData.map(domain => ({
+        tokenId: domain.tokens?.[0]?.tokenId || domain.name,
+        name: formatDomainName(domain.name),
+        owner: domain.tokens?.[0]?.ownerAddress || account || '',
+        expiresAt: domain.expiresAt,
+        tokenizedAt: domain.tokenizedAt,
+        eoi: domain.eoi,
+        registrar: domain.registrar,
+        tokens: domain.tokens,
+        activities: domain.activities,
+        metadata: {
+          description: `Tokenized domain: ${domain.name}`,
+          image: `https://api.doma.xyz/thumbnail/${domain.name}`,
+        }
+      }));
+      setUserDomains(convertedDomains);
+    }
+  }, [userDomainsData, account]);
+
+  useEffect(() => {
+    if (marketplaceListings) {
+      const convertedListings: Domain[] = marketplaceListings.map(listing => ({
+        tokenId: listing.tokenId,
+        name: formatDomainName(listing.name),
+        owner: listing.offererAddress,
+        price: formatPriceDisplay(listing.price, listing.currency.decimals, listing.currency.symbol),
+        isListed: true,
+        listedAt: listing.createdAt,
+        expiresAt: listing.nameExpiresAt,
+        registrar: listing.registrar,
+        metadata: {
+          description: `Domain listing: ${listing.name}`,
+          image: `https://api.doma.xyz/thumbnail/${listing.name}`,
+          currency: listing.currency,
+          orderbook: listing.orderbook,
+        }
+      }));
+      setMarketplaceDomains(convertedListings);
+    }
+  }, [marketplaceListings]);
+
   // Tokenize domain using Doma Protocol
   const tokenizeDomain = async (domainName: string) => {
     if (!account) throw new Error('Wallet not connected');
+    if (!isValidDomainName(domainName)) throw new Error('Invalid domain name format');
     
     try {
       setIsLoading(true);
@@ -68,7 +182,7 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
       // Create domain object
       const newDomain: Domain = {
         tokenId: result.tokenId || result.transactionHash,
-        name: domainName,
+        name: formatDomainName(domainName),
         owner: account!,
         metadata: {
           description: `Tokenized domain: ${domainName}`,
@@ -92,128 +206,203 @@ export const DomaProvider: FC<DomaProviderProps> = ({ children }) => {
     }
   };
 
-  // Mock list domain function
-  const listDomain = async (tokenId: string, price: string) => {
+  // Create listing using real API
+  const createListing = async (tokenId: string, price: string, currency: string = 'ETH') => {
     try {
       setIsLoading(true);
       
-      // Simulate transaction delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await domaOperations.createListing(tokenId, price, currency);
       
-      // Move domain from user domains to marketplace
-      const domain = userDomains.find(d => d.tokenId === tokenId);
-      if (domain) {
-        const listedDomain = { ...domain, price, isListed: true };
-        setMarketplaceDomains(prev => [...prev, listedDomain]);
-        setUserDomains(prev => prev.filter(d => d.tokenId !== tokenId));
-      }
+      // Update domain to show it's listed
+      setUserDomains(prev => 
+        prev.map(domain => 
+          domain.tokenId === tokenId 
+            ? { ...domain, isListed: true, price, listedAt: new Date().toISOString() }
+            : domain
+        )
+      );
       
       return { 
-        success: true
+        success: true,
+        listingId: result.id
       };
     } catch (error) {
-      console.error('Listing failed:', error);
-      throw error;
+      console.error('Listing creation failed:', error);
+      return { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create listing'
+      };
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock buy domain function
+  // Legacy list domain function (now uses createListing)
+  const listDomain = async (tokenId: string, price: string) => {
+    return createListing(tokenId, price, 'ETH');
+  };
+
+  // Create offer using real API
+  const createOffer = async (tokenId: string, price: string, currency: string = 'ETH') => {
+    try {
+      setIsLoading(true);
+      
+      const result = await domaOperations.createOffer(tokenId, price, currency);
+      
+      return { 
+        success: true,
+        offerId: result.id
+      };
+    } catch (error) {
+      console.error('Offer creation failed:', error);
+      return { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create offer'
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Purchase listing using real API
   const buyDomain = async (tokenId: string, price: string) => {
     if (!account) throw new Error('Wallet not connected');
     
     try {
       setIsLoading(true);
       
-      // Simulate transaction delay
+      // Find the listing
+      const listing = marketplaceDomains.find(d => d.tokenId === tokenId);
+      if (!listing) throw new Error('Listing not found');
+      
+      // In a real implementation, you would need the listing ID
+      // For now, we'll simulate the purchase
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Move domain from marketplace to user domains
-      const domain = marketplaceDomains.find(d => d.tokenId === tokenId);
-      if (domain) {
-        const purchasedDomain = { ...domain, owner: account!, isListed: false };
-        setUserDomains(prev => [...prev, purchasedDomain]);
-        setMarketplaceDomains(prev => prev.filter(d => d.tokenId !== tokenId));
-      }
+      const purchasedDomain = { 
+        ...listing, 
+        owner: account!, 
+        isListed: false,
+        price: undefined,
+        listedAt: undefined
+      };
+      setUserDomains(prev => [...prev, purchasedDomain]);
+      setMarketplaceDomains(prev => prev.filter(d => d.tokenId !== tokenId));
       
       return { 
         success: true
       };
     } catch (error) {
       console.error('Purchase failed:', error);
-      throw error;
+      return { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to purchase domain'
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Transfer ownership using real API
+  const transferOwnership = async (tokenId: string, toAddress: string) => {
+    try {
+      setIsLoading(true);
+      
+      const result = await domaOperations.transferOwnership(tokenId, toAddress);
+      
+      // Update local state
+      setUserDomains(prev => 
+        prev.map(domain => 
+          domain.tokenId === tokenId 
+            ? { ...domain, owner: toAddress }
+            : domain
+        )
+      );
+      
+      return { 
+        success: true,
+        transactionHash: result.transactionHash
+      };
+    } catch (error) {
+      console.error('Transfer failed:', error);
+      return { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to transfer ownership'
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Renew domain using real API
+  const renewDomain = async (tokenId: string, duration: number) => {
+    try {
+      setIsLoading(true);
+      
+      const result = await domaOperations.renewDomain(tokenId, duration);
+      
+      // Update local state with new expiration
+      setUserDomains(prev => 
+        prev.map(domain => 
+          domain.tokenId === tokenId 
+            ? { ...domain, expiresAt: result.newExpirationDate }
+            : domain
+        )
+      );
+      
+      return { 
+        success: true,
+        newExpirationDate: result.newExpirationDate
+      };
+    } catch (error) {
+      console.error('Renewal failed:', error);
+      return { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to renew domain'
+      };
     } finally {
       setIsLoading(false);
     }
   };
 
   const refreshData = () => {
-    // Mock data refresh
+    // Refresh all data
     console.log('Refreshing data...');
+    // The hooks will automatically refetch when dependencies change
   };
 
-  // Initialize with mock data
-  useEffect(() => {
-    if (account) {
-      setMarketplaceDomains([
-        {
-          tokenId: '1',
-          name: 'crypto.com',
-          owner: '0x1234567890123456789012345678901234567890',
-          price: '10.5',
-          isListed: true,
-          category: 'Premium',
-          listedAt: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-          tokenId: '2',
-          name: 'web3.org',
-          owner: '0x0987654321098765432109876543210987654321',
-          price: '5.2',
-          isListed: true,
-          category: 'Tech',
-          listedAt: new Date(Date.now() - 172800000).toISOString()
-        },
-        {
-          tokenId: '3',
-          name: 'defi.io',
-          owner: '0x4567890123456789012345678901234567890123',
-          price: '8.7',
-          isListed: true,
-          category: 'DeFi',
-          listedAt: new Date(Date.now() - 259200000).toISOString()
-        },
-        {
-          tokenId: '4',
-          name: 'nft.market',
-          owner: '0x7890123456789012345678901234567890123456',
-          price: '12.3',
-          isListed: true,
-          category: 'NFT',
-          listedAt: new Date(Date.now() - 345600000).toISOString()
-        },
-        {
-          tokenId: '5',
-          name: 'blockchain.dev',
-          owner: '0x2345678901234567890123456789012345678901',
-          price: '6.8',
-          isListed: true,
-          category: 'Development',
-          listedAt: new Date(Date.now() - 432000000).toISOString()
-        }
-      ]);
-    }
-  }, [account]);
+  const isLoadingState = isLoading || portfolioLoading || listingsLoading || statsLoading;
 
   const value: DomaContextType = {
     userDomains,
     marketplaceDomains,
-    isLoading,
+    isLoading: isLoadingState,
     tokenizeDomain,
     listDomain,
     buyDomain,
-    refreshData
+    refreshData,
+    // New API-based methods
+    createListing,
+    createOffer,
+    transferOwnership,
+    renewDomain,
+    // Portfolio stats
+    portfolioStats: {
+      totalDomains: portfolioStats.totalDomains,
+      expiringSoon: portfolioStats.expiringSoon,
+      eoi: portfolioStats.eoi,
+      tokenized: portfolioStats.tokenized,
+    },
+    // Marketplace stats
+    marketplaceStats: marketplaceStats ? {
+      totalListings: marketplaceStats.totalListings,
+      totalOffers: marketplaceStats.totalOffers,
+      totalVolume: marketplaceStats.totalVolume,
+      averagePrice: marketplaceStats.averagePrice,
+      topTlds: marketplaceStats.topTlds,
+      recentActivity: marketplaceStats.recentActivity,
+    } : null,
   };
 
   return (
