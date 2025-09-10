@@ -1,8 +1,8 @@
 // Mock contract deployment service for development
 export interface DeploymentConfig {
-  contractABI: any;
+  contractABI: Record<string, unknown>;
   contractBytecode: string;
-  constructorArgs: any[];
+  constructorArgs: unknown[];
   gasLimit?: number;
 }
 
@@ -12,7 +12,7 @@ export interface DeploymentResult {
 }
 
 export const deployContract = async (
-  signer: any,
+  signer: unknown,
   config: DeploymentConfig
 ): Promise<DeploymentResult> => {
   // Mock deployment for development
@@ -24,7 +24,7 @@ export const deployContract = async (
 };
 
 export const estimateDeploymentGas = async (
-  signer: any,
+  signer: unknown,
   config: DeploymentConfig
 ): Promise<number> => {
   // Mock gas estimation

@@ -166,13 +166,13 @@ class AIContentGenerator {
 
   async generateDomainContent(
     domainName: string, 
-    developmentStrategy: any, 
+    developmentStrategy: Record<string, unknown>, 
     targetAudience: string
   ): Promise<{
     contentPlan: ContentPlan;
     generatedContent: GeneratedContent[];
-    seoAnalysis: any;
-    engagementPredictions: any;
+    seoAnalysis: Record<string, unknown>;
+    engagementPredictions: Record<string, unknown>;
   }> {
     if (!this.initialized) {
       this.initialize();
@@ -199,7 +199,7 @@ class AIContentGenerator {
     };
   }
 
-  private async createContentPlan(domainName: string, developmentStrategy: any): Promise<ContentPlan> {
+  private async createContentPlan(domainName: string, developmentStrategy: Record<string, unknown>): Promise<ContentPlan> {
     const industryKeywords = this.extractIndustryKeywords(domainName);
     const primaryIndustry = industryKeywords[0] || 'general';
     
@@ -325,7 +325,7 @@ class AIContentGenerator {
     domainName: string, 
     contentType: string, 
     targetAudience: string, 
-    developmentStrategy: any
+    developmentStrategy: Record<string, unknown>
   ): Promise<GeneratedContent> {
     const context = this.buildContentContext(domainName, contentType, targetAudience, developmentStrategy);
     const content = await this.generateContent(context);
@@ -348,7 +348,7 @@ class AIContentGenerator {
     domainName: string, 
     contentType: string, 
     targetAudience: string, 
-    developmentStrategy: any
+    developmentStrategy: Record<string, unknown>
   ): ContentContext {
     const industryKeywords = this.extractIndustryKeywords(domainName);
     
@@ -373,7 +373,7 @@ class AIContentGenerator {
     }
   }
 
-  private extractObjectives(developmentStrategy: any): string[] {
+  private extractObjectives(developmentStrategy: Record<string, unknown>): string[] {
     const objectives = [];
     
     if (developmentStrategy.primaryObjective) {
@@ -862,7 +862,7 @@ class AIContentGenerator {
     return content;
   }
 
-  private async analyzeSEOEffectiveness(content: GeneratedContent[]): Promise<any> {
+  private async analyzeSEOEffectiveness(content: GeneratedContent[]): Promise<Record<string, unknown>> {
     const analysis = {
       overallSEOScore: 0,
       keywordDensity: 0,
@@ -906,8 +906,8 @@ class AIContentGenerator {
     return keywords.length / words.length;
   }
 
-  private async predictEngagement(content: GeneratedContent[]): Promise<any> {
-    const predictions: { [key: string]: any } = {};
+  private async predictEngagement(content: GeneratedContent[]): Promise<Record<string, unknown>> {
+    const predictions: { [key: string]: unknown } = {};
     
     content.forEach(section => {
       if (section.optimizationReport) {

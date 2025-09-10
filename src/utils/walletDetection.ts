@@ -13,43 +13,43 @@ export const detectWallets = (): WalletInfo[] => {
   const wallets: WalletInfo[] = [
     {
       name: 'MetaMask',
-      detected: !!(window as any).ethereum?.isMetaMask,
+      detected: !!(window as unknown as { ethereum?: { isMetaMask?: boolean } }).ethereum?.isMetaMask,
       installUrl: 'https://metamask.io/',
       icon: '🦊'
     },
     {
       name: 'Coinbase Wallet',
-      detected: !!(window as any).ethereum?.isCoinbaseWallet,
+      detected: !!(window as unknown as { ethereum?: { isCoinbaseWallet?: boolean } }).ethereum?.isCoinbaseWallet,
       installUrl: 'https://wallet.coinbase.com/',
       icon: '🔵'
     },
     {
       name: 'Brave Wallet',
-      detected: !!(window as any).ethereum?.isBraveWallet,
+      detected: !!(window as unknown as { ethereum?: { isBraveWallet?: boolean } }).ethereum?.isBraveWallet,
       installUrl: 'https://brave.com/wallet/',
       icon: '🦁'
     },
     {
       name: 'Rabby',
-      detected: !!(window as any).ethereum?.isRabby,
+      detected: !!(window as unknown as { ethereum?: { isRabby?: boolean } }).ethereum?.isRabby,
       installUrl: 'https://rabby.io/',
       icon: '🐰'
     },
     {
       name: 'Trust Wallet',
-      detected: !!(window as any).ethereum?.isTrust,
+      detected: !!(window as unknown as { ethereum?: { isTrust?: boolean } }).ethereum?.isTrust,
       installUrl: 'https://trustwallet.com/',
       icon: '🔒'
     },
     {
       name: 'Frame',
-      detected: !!(window as any).ethereum?.isFrame,
+      detected: !!(window as unknown as { ethereum?: { isFrame?: boolean } }).ethereum?.isFrame,
       installUrl: 'https://frame.sh/',
       icon: '🖼️'
     },
     {
       name: 'Opera Wallet',
-      detected: !!(window as any).ethereum?.isOpera,
+      detected: !!(window as unknown as { ethereum?: { isOpera?: boolean } }).ethereum?.isOpera,
       installUrl: 'https://www.opera.com/crypto',
       icon: '🎭'
     }
@@ -79,7 +79,7 @@ export const getWalletInstallInstructions = (): string => {
   return 'Please install a Web3 wallet to continue. We recommend MetaMask for the best experience.';
 };
 
-export const getWalletConnectionError = (error: any): string => {
+export const getWalletConnectionError = (error: unknown): string => {
   if (!error) return 'Unknown error occurred';
   
   // Handle specific error codes

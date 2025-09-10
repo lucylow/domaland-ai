@@ -405,39 +405,39 @@ class ApiService {
     });
   }
 
-  async executeFractionalization(domainId: number, data: any): Promise<ApiResponse<any>> {
+  async executeFractionalization(domainId: number, data: Record<string, unknown>): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/fractionalize/execute`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async purchaseShares(domainId: number, data: SharePurchaseData): Promise<ApiResponse<any>> {
+  async purchaseShares(domainId: number, data: SharePurchaseData): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/shares/purchase`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async createGovernanceProposal(domainId: number, data: Partial<GovernanceProposal>): Promise<ApiResponse<any>> {
+  async createGovernanceProposal(domainId: number, data: Partial<GovernanceProposal>): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/governance/propose`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async voteOnProposal(proposalId: string, vote: 'for' | 'against'): Promise<ApiResponse<any>> {
+  async voteOnProposal(proposalId: string, vote: 'for' | 'against'): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/governance/${proposalId}/vote`, {
       method: 'POST',
       body: JSON.stringify({ vote }),
     });
   }
 
-  async getDomainShareholders(domainId: number): Promise<ApiResponse<any[]>> {
+  async getDomainShareholders(domainId: number): Promise<ApiResponse<Record<string, unknown>[]>> {
     return this.request(`/domains/${domainId}/shareholders`);
   }
 
-  async distributeRevenue(domainId: number, totalRevenue: number): Promise<ApiResponse<any>> {
+  async distributeRevenue(domainId: number, totalRevenue: number): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/domains/${domainId}/revenue/distribute`, {
       method: 'POST',
       body: JSON.stringify({ total_revenue: totalRevenue }),
@@ -460,7 +460,7 @@ class ApiService {
   async addLiquidity(poolId: string, data: {
     domain_amount: number;
     base_amount: number;
-  }): Promise<ApiResponse<any>> {
+  }): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/amm/pools/${poolId}/add-liquidity`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -469,7 +469,7 @@ class ApiService {
 
   async removeLiquidity(poolId: string, data: {
     liquidity_tokens: number;
-  }): Promise<ApiResponse<any>> {
+  }): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/amm/pools/${poolId}/remove-liquidity`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -487,14 +487,14 @@ class ApiService {
     });
   }
 
-  async executeTrade(poolId: string, quote: TradeQuote): Promise<ApiResponse<any>> {
+  async executeTrade(poolId: string, quote: TradeQuote): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/amm/pools/${poolId}/swap`, {
       method: 'POST',
       body: JSON.stringify(quote),
     });
   }
 
-  async getPoolAnalytics(poolId: string): Promise<ApiResponse<any>> {
+  async getPoolAnalytics(poolId: string): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/amm/pools/${poolId}/analytics`);
   }
 
@@ -512,24 +512,24 @@ class ApiService {
     return this.request<DashboardData>(endpoint);
   }
 
-  async getDomainMetrics(domainId: number): Promise<ApiResponse<any>> {
+  async getDomainMetrics(domainId: number): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/analytics/domains/${domainId}/metrics`);
   }
 
-  async getTrendingDomains(limit?: number): Promise<ApiResponse<any[]>> {
+  async getTrendingDomains(limit?: number): Promise<ApiResponse<Record<string, unknown>[]>> {
     const endpoint = limit ? `/analytics/trending?limit=${limit}` : '/analytics/trending';
     return this.request(endpoint);
   }
 
-  async getMarketTrends(): Promise<ApiResponse<any[]>> {
+  async getMarketTrends(): Promise<ApiResponse<Record<string, unknown>[]>> {
     return this.request('/analytics/market-trends');
   }
 
-  async getNetworkHealth(): Promise<ApiResponse<any>> {
+  async getNetworkHealth(): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request('/analytics/network-health');
   }
 
-  async getPortfolioAnalysis(userId: number): Promise<ApiResponse<any>> {
+  async getPortfolioAnalysis(userId: number): Promise<ApiResponse<Record<string, unknown>>> {
     return this.request(`/users/${userId}/portfolio/analysis`);
   }
 }

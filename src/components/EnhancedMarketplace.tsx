@@ -214,7 +214,7 @@ const EnhancedMarketplace: React.FC = () => {
 
     // Sort
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: unknown, bValue: unknown;
       
       switch (filters.sortBy) {
         case 'price':
@@ -286,7 +286,7 @@ const EnhancedMarketplace: React.FC = () => {
       setShowOfferModal(false);
       setOfferAmount('');
       await loadDomains(); // Refresh offers
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError('Offer Failed', error.message || 'Failed to create offer');
     } finally {
       setSubmittingOffer(false);
@@ -425,7 +425,7 @@ const EnhancedMarketplace: React.FC = () => {
               <Label>Sort By</Label>
               <Select value={`${filters.sortBy}-${filters.sortOrder}`} onValueChange={(value) => {
                 const [sortBy, sortOrder] = value.split('-');
-                setFilters(prev => ({ ...prev, sortBy: sortBy as any, sortOrder: sortOrder as any }));
+                setFilters(prev => ({ ...prev, sortBy: sortBy as string, sortOrder: sortOrder as string }));
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sort by" />

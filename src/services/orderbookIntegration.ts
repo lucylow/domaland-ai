@@ -10,7 +10,7 @@ export interface OrderbookListing {
   isActive: boolean;
   expiresAt?: string;
   createdAt: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface OrderbookOffer {
@@ -53,12 +53,12 @@ export class OrderbookIntegration {
   private provider: JsonRpcProvider | BrowserProvider | null = null;
   private signer: ethers.Signer | null = null;
   private contractAddress: string;
-  private contractABI: any[];
+  private contractABI: Record<string, unknown>[];
   private contract: ethers.Contract | null = null;
 
   constructor(
     contractAddress: string = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-    contractABI?: any[]
+    contractABI?: Record<string, unknown>[]
   ) {
     this.contractAddress = contractAddress;
     this.contractABI = contractABI || this.getDefaultABI();
@@ -458,7 +458,7 @@ export class OrderbookIntegration {
   /**
    * Get default contract ABI
    */
-  private getDefaultABI(): any[] {
+  private getDefaultABI(): Record<string, unknown>[] {
     return [
       'function createListing(uint256 tokenId, uint256 price, uint256 expiresAt) external',
       'function updateListing(uint256 tokenId, uint256 newPrice) external',

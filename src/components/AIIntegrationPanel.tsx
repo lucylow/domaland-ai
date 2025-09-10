@@ -255,7 +255,7 @@ const AIIntegrationPanel: React.FC<AIIntegrationPanelProps> = ({
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as string)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
               activeTab === tab.id
                 ? 'bg-white shadow-sm text-blue-600'

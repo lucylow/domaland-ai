@@ -36,7 +36,7 @@ export interface BridgeQuote {
 class CrossChainBridgeService {
   private bridgeConfigs: Map<string, BridgeConfig> = new Map();
   private pendingTransactions: Map<string, BridgeTransaction> = new Map();
-  private eventListeners: Map<string, (event: any) => void> = new Map();
+  private eventListeners: Map<string, (event: unknown) => void> = new Map();
 
   constructor() {
     this.initializeBridgeConfigs();
@@ -344,11 +344,11 @@ class CrossChainBridgeService {
   /**
    * Event system for bridge status updates
    */
-  on(event: string, callback: (data: any) => void) {
+  on(event: string, callback: (data: unknown) => void) {
     this.eventListeners.set(event, callback);
   }
 
-  private emitEvent(event: string, data: any) {
+  private emitEvent(event: string, data: unknown) {
     const callback = this.eventListeners.get(event);
     if (callback) {
       callback(data);

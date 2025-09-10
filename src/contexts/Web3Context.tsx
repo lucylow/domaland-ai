@@ -267,7 +267,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         setCurrentChain(chain);
         setChainId(chainConfig.chainId);
         return true;
-      } catch (switchError: any) {
+      } catch (switchError: unknown) {
         // If the chain is not added to the wallet, add it
         if (switchError.code === 4902) {
           try {
@@ -284,7 +284,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
             setCurrentChain(chain);
             setChainId(chainConfig.chainId);
             return true;
-          } catch (addError: any) {
+          } catch (addError: unknown) {
             console.error('Failed to add chain:', addError);
             let errorMsg = `Failed to add ${chainConfig.name} to your wallet`;
             if (addError.code === 4001) {
@@ -601,7 +601,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
       }
     };
-  }, []); // Remove dependencies to prevent infinite loops
+  }, [connectWallet, eventListeners.accountsChanged, eventListeners.chainChanged, isConnected, isManualConnection]);
 
   const value: Web3ContextType = {
     // EVM chains

@@ -130,7 +130,7 @@ export interface AIGeneratedContent {
     model: string;
     version: string;
     generationDate: string;
-    parameters: Record<string, any>;
+    parameters: Record<string, unknown>;
   };
   optimization: {
     seoScore: number;
@@ -325,7 +325,7 @@ class IPFSService {
    * @param hash IPFS hash (CID)
    * @returns Retrieved data
    */
-  async retrieveFromIPFS(hash: string): Promise<any> {
+  async retrieveFromIPFS(hash: string): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(`${this.config.gateway}${hash}`);
       
@@ -414,7 +414,7 @@ class IPFSService {
    * Get pinned content list
    * @returns List of pinned content
    */
-  async getPinnedContent(): Promise<any[]> {
+  async getPinnedContent(): Promise<Record<string, unknown>[]> {
     try {
       const response = await fetch(`${this.config.apiEndpoint}/data/pinList`, {
         headers: {
@@ -454,7 +454,7 @@ class IPFSService {
    */
   createDomainMetadata(
     domainName: string,
-    aiValuation: any,
+    aiValuation: Record<string, unknown>,
     additionalData: Partial<DomainMetadata> = {}
   ): DomainMetadata {
     const [sld, tld] = domainName.split('.');

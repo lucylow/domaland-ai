@@ -44,7 +44,7 @@ const WalletConnectionHelper: React.FC = () => {
       
       // Check if wallet is locked
       window.ethereum.request({ method: 'eth_accounts' })
-        .then((accounts: any) => {
+        .then((accounts: string[]) => {
           if (accounts.length > 0) {
             results.push('✅ Wallet is unlocked');
           } else {

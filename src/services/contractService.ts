@@ -1,8 +1,8 @@
 // Mock contract service for development
 
 export interface ContractServiceConfig {
-  provider?: any;
-  signer?: any;
+  provider?: unknown;
+  signer?: unknown;
 }
 
 export interface Offer {
@@ -15,25 +15,25 @@ export interface Offer {
 }
 
 export class ContractService {
-  private provider: any;
-  private signer: any;
+  private provider: unknown;
+  private signer: unknown;
 
   constructor(config: ContractServiceConfig = {}) {
     this.provider = config.provider;
     this.signer = config.signer;
   }
 
-  async tokenizeDomain(params: any) {
+  async tokenizeDomain(params: Record<string, unknown>) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return { success: true, tokenId: '123' };
   }
 
-  async listForSale(params: any) {
+  async listForSale(params: Record<string, unknown>) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return { success: true };
   }
 
-  async buyDomain(params: any) {
+  async buyDomain(params: Record<string, unknown>) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return { success: true };
   }
@@ -52,7 +52,7 @@ export class ContractService {
     ];
   }
 
-  async createOffer(params: any): Promise<{ hash: string }> {
+  async createOffer(params: Record<string, unknown>): Promise<{ hash: string }> {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return { hash: '0x1234567890abcdef' };
   }

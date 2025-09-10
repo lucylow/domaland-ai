@@ -60,7 +60,7 @@ export function DomainMarketplace() {
     }
 
     loadMarketplace()
-  }, [])
+  }, [syncedDomains])
 
   // Set up domain synchronization
   const setupDomainSync = (domainName: string) => {

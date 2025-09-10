@@ -176,7 +176,7 @@ class AIValuationService {
       }
 
       const result = await response.json();
-      return result.valuations.map((val: any) => this.formatValuationResponse(val));
+      return result.valuations.map((val: Record<string, unknown>) => this.formatValuationResponse(val));
     } catch (error) {
       console.error('Error getting batch valuation:', error);
       // Return fallback valuations
@@ -326,14 +326,14 @@ class AIValuationService {
   async generateContent(
     domainName: string,
     contentType: 'landing_page' | 'seo_content' | 'marketing_copy' | 'technical_analysis',
-    parameters: Record<string, any> = {}
+    parameters: Record<string, unknown> = {}
   ): Promise<{
     content: string;
     metadata: {
       model: string;
       version: string;
       generationDate: string;
-      parameters: Record<string, any>;
+      parameters: Record<string, unknown>;
     };
     optimization: {
       seoScore: number;
@@ -391,7 +391,7 @@ class AIValuationService {
    * @param apiResponse Raw API response
    * @returns Formatted valuation response
    */
-  private formatValuationResponse(apiResponse: any): ValuationResponse {
+  private formatValuationResponse(apiResponse: Record<string, unknown>): ValuationResponse {
     return {
       domainName: apiResponse.domain_name,
       estimatedValue: apiResponse.estimated_value,

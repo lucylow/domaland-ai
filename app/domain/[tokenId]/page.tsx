@@ -29,6 +29,7 @@ async function getDomainData(tokenId: string) {
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export async function generateMetadata({ params }: PageProps) {
   const domainData = await getDomainData(params.tokenId)
   

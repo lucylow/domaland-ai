@@ -412,7 +412,7 @@ class NLPDomainAnalyzer {
     };
   }
 
-  private calculateLinguisticScore(analysis: any[]): number {
+  private calculateLinguisticScore(analysis: Record<string, unknown>[]): number {
     const weights = {
       semantic: 0.3,
       keyword: 0.25,

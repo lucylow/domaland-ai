@@ -1,6 +1,7 @@
 // Optional TensorFlow.js import - will use fallback if not available
-let tf: any = null;
+let tf: unknown = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   tf = require('@tensorflow/tfjs');
 } catch (error) {
   console.warn('TensorFlow.js not available, using fallback models');
@@ -61,9 +62,9 @@ interface ValuationResult {
 }
 
 class AIValuationEngine {
-  private valuationModel: any = null;
-  private keywordModel: any = null;
-  private trendModel: any = null;
+  private valuationModel: unknown = null;
+  private keywordModel: unknown = null;
+  private trendModel: unknown = null;
   private initialized = false;
 
   constructor() {
@@ -95,7 +96,7 @@ class AIValuationEngine {
     }
   }
 
-  private async loadKeywordAnalysisModel(): Promise<any> {
+  private async loadKeywordAnalysisModel(): Promise<unknown> {
     if (!tf) return null;
     
     // Fallback keyword analysis model
@@ -109,7 +110,7 @@ class AIValuationEngine {
     return model;
   }
 
-  private async loadMarketTrendModel(): Promise<any> {
+  private async loadMarketTrendModel(): Promise<unknown> {
     if (!tf) return null;
     
     // Fallback trend analysis model
@@ -376,7 +377,7 @@ class AIValuationEngine {
     if (this.valuationModel) {
       try {
         const inputTensor = this.featuresToTensor(features);
-        const prediction = this.valuationModel.predict(inputTensor) as any;
+        const prediction = this.valuationModel.predict(inputTensor) as unknown;
         const value = await prediction.data();
         prediction.dispose();
         inputTensor.dispose();
@@ -390,7 +391,7 @@ class AIValuationEngine {
     return this.calculateFallbackValue(features);
   }
 
-  private featuresToTensor(features: ValuationFeatures): any {
+  private featuresToTensor(features: ValuationFeatures): unknown {
     if (!tf) return null;
     
     const featureArray = [

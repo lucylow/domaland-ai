@@ -11,7 +11,7 @@ export interface SEOData {
   twitterTitle: string;
   twitterDescription: string;
   twitterImage: string;
-  structuredData: any;
+  structuredData: Record<string, unknown>;
   canonicalUrl: string;
   robots: string;
   language: string;
@@ -26,7 +26,7 @@ export interface DomainData {
   image?: string;
   listedAt: string;
   tokenId: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class SEOOptimizer {
@@ -183,7 +183,7 @@ export class SEOOptimizer {
   /**
    * Generate structured data (Schema.org) for better search engine understanding
    */
-  private generateStructuredData(domainData: DomainData): any {
+  private generateStructuredData(domainData: DomainData): Record<string, unknown> {
     const domainName = domainData.name;
     const price = parseFloat(domainData.price);
     

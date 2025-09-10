@@ -1,12 +1,12 @@
 import React, { Suspense, ComponentType } from 'react';
 
-interface LazyWrapperProps<P = Record<string, any>> {
+interface LazyWrapperProps<P = Record<string, unknown>> {
   component: ComponentType<P>;
   fallback?: React.ReactNode;
   props?: P;
 }
 
-const LazyWrapper = <P extends Record<string, any>>({ 
+const LazyWrapper = <P extends Record<string, unknown>>({ 
   component: Component, 
   fallback = <div>Loading...</div>, 
   props 

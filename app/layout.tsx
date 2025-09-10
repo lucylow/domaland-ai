@@ -5,6 +5,7 @@ import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: 'DomaLand.AI - Dynamic Digital Assets',
   description: 'Transform static domains into dynamic, monetizable digital storefronts with Web3 infrastructure',

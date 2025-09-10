@@ -13,7 +13,7 @@ export interface DomainMetadata {
     value: string | number;
   }>;
   properties?: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   animation_url?: string;
   background_color?: string;

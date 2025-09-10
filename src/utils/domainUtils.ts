@@ -47,7 +47,7 @@ export const calculateDomainValuation = (domainName: string, metadata: Record<st
   baseValue += brandabilityScore * 800;
 
   // Traffic factor (if available)
-  const traffic = (metadata as any)?.traffic;
+  const traffic = (metadata as Record<string, unknown>)?.traffic;
   if (traffic?.monthlyVisitors) {
     const trafficScore = Math.min(100, Math.log10(traffic.monthlyVisitors) * 20);
     factors.push({
@@ -114,7 +114,7 @@ const calculateBrandabilityScore = (domainName: string): number => {
 /**
  * Calculate confidence score based on available data
  */
-const calculateConfidence = (factors: ValuationFactor[], metadata: any): number => {
+const calculateConfidence = (factors: ValuationFactor[], metadata: Record<string, unknown>): number => {
   let confidence = 70; // Base confidence
   
   // Increase confidence based on data availability
