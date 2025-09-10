@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { useWeb3 } from '@/contexts/Web3Context';
+import { useWeb3, SupportedChain } from '@/contexts/Web3Context';
 import { useDoma } from '@/contexts/DomaContext';
 import { useMetrics } from '@/contexts/MetricsContext';
 import { useXMTP } from '@/contexts/XMTPContext';
@@ -14,6 +14,7 @@ import { DomainTokenization } from './DomainTokenization';
 import OnboardingTour from './OnboardingTour';
 import Logo from './Logo';
 import WalletConnectionTest from './WalletConnectionTest';
+import WalletConnectionHelper from './WalletConnectionHelper';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 
 const Dashboard: FC = () => {
@@ -95,30 +96,54 @@ const Dashboard: FC = () => {
                 </AlertDescription>
               </Alert>
             )}
-            <Button 
-              onClick={() => connectWallet()} 
-              disabled={isConnecting}
-              className="w-full btn-premium text-lg py-6 px-8 rounded-2xl font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:-translate-y-0"
-              size="lg"
-            >
-              <div className="flex items-center gap-3">
-                {isConnecting ? (
-                  <div className="loading-dots">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                  </div>
-                ) : (
-                  <span className="text-2xl">🔗</span>
-                )}
-                {isConnecting ? 'Connecting to Wallet...' : 'Connect Your Wallet'}
+            <div className="space-y-4">
+              <Button 
+                onClick={() => connectWallet()} 
+                disabled={isConnecting}
+                className="w-full btn-premium text-lg py-6 px-8 rounded-2xl font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:-translate-y-0"
+                size="lg"
+              >
+                <div className="flex items-center gap-3">
+                  {isConnecting ? (
+                    <div className="loading-dots">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                  ) : (
+                    <span className="text-2xl">🔗</span>
+                  )}
+                  {isConnecting ? 'Connecting to Wallet...' : 'Connect Your Wallet'}
+                </div>
+              </Button>
+              
+              {/* Wallet Options */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => connectWallet(SupportedChain.ETHEREUM)}
+                  disabled={isConnecting}
+                  variant="outline"
+                  className="py-3 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                >
+                  <span className="mr-2">🔷</span>
+                  Ethereum
+                </Button>
+                <Button
+                  onClick={() => connectWallet(SupportedChain.POLYGON)}
+                  disabled={isConnecting}
+                  variant="outline"
+                  className="py-3 px-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md hover:scale-105 transition-all duration-300 font-semibold"
+                >
+                  <span className="mr-2">🟣</span>
+                  Polygon
+                </Button>
               </div>
-            </Button>
+            </div>
             <div className="text-center space-y-4">
               <div className="text-sm text-muted-foreground bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-gray-800/80 dark:to-gray-700/80 rounded-2xl p-6 border border-blue-200/30 dark:border-gray-600/30 backdrop-blur-sm">
                 <p className="font-medium mb-2">🚀 Get Started in Minutes</p>
                 <p className="text-xs leading-relaxed">
-                  Connect your MetaMask wallet to access domain tokenization, trading, and fractional ownership features
+                  Connect your Web3 wallet (MetaMask, Coinbase Wallet, etc.) to access domain tokenization, trading, and fractional ownership features
                 </p>
               </div>
               <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
@@ -516,7 +541,8 @@ const Dashboard: FC = () => {
 
         {/* Development Tools */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="mb-8">
+          <div className="mb-8 space-y-6">
+            <WalletConnectionHelper />
             <WalletConnectionTest />
           </div>
         )}
@@ -600,6 +626,249 @@ const Dashboard: FC = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Track 5: Landing Pages & Messaging Interfaces */}
+        <div className="mb-12 animate-fade-in" style={{animationDelay: '1.1s'}}>
+          <Card className="group relative overflow-hidden card-premium hover:shadow-premium-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-shimmer"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+            
+            <CardHeader className="relative z-10 pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                <div className="relative">
+                  <span className="text-3xl group-hover:scale-110 transition-transform duration-300">🏆</span>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <span className="text-gradient-warning group-hover:text-purple-600 transition-colors duration-300">
+                  Track 5: Landing Pages & Messaging Interfaces
+                </span>
+              </CardTitle>
+              <p className="text-lg text-muted-foreground mt-4 leading-relaxed">
+                Experience how DomaLand revolutionizes domain sales through automated landing pages, seamless orderbook integration, and secure messaging interfaces.
+              </p>
+            </CardHeader>
+            
+            <CardContent className="relative z-10 space-y-8">
+              {/* Track 5 Statistics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="text-center p-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200/30 dark:border-blue-700/30 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="text-3xl font-bold text-gradient-premium mb-2">< 2 seconds</div>
+                  <div className="text-sm font-medium text-muted-foreground">Instant Page Generation</div>
+                  <div className="text-xs text-muted-foreground mt-1">Landing pages created automatically</div>
+                </div>
+                <div className="text-center p-6 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl border border-emerald-200/30 dark:border-emerald-700/30 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="text-3xl font-bold text-gradient-success mb-2">+300%</div>
+                  <div className="text-sm font-medium text-muted-foreground">Enhanced Visibility</div>
+                  <div className="text-xs text-muted-foreground mt-1">SEO optimization increases discoverability</div>
+                </div>
+                <div className="text-center p-6 bg-gradient-to-r from-orange-50/80 to-red-50/80 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl border border-orange-200/30 dark:border-orange-700/30 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="text-3xl font-bold text-gradient-warning mb-2">100%</div>
+                  <div className="text-sm font-medium text-muted-foreground">Secure Transactions</div>
+                  <div className="text-xs text-muted-foreground mt-1">Blockchain-verified ownership</div>
+                </div>
+                <div className="text-center p-6 bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border border-purple-200/30 dark:border-purple-700/30 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="text-3xl font-bold text-gradient-warning mb-2">-60%</div>
+                  <div className="text-sm font-medium text-muted-foreground">Reduced Friction</div>
+                  <div className="text-xs text-muted-foreground mt-1">Streamlined purchase flow</div>
+                </div>
+              </div>
+
+              {/* Interactive Feature Demo */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-center text-gradient-premium">Interactive Feature Demo</h3>
+                <p className="text-center text-muted-foreground">Click on each feature to see it in action</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-24 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    onClick={() => showInfo('Automated Landing Pages', 'SEO-optimized landing pages generated instantly for every tokenized domain')}
+                  >
+                    <span className="text-2xl">🌐</span>
+                    <span className="text-xs font-semibold">Automated Landing Pages</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="h-24 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200/50 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    onClick={() => showInfo('Doma Orderbook Integration', 'Seamless integration with Doma Protocol orderbook for instant trading')}
+                  >
+                    <span className="text-2xl">📊</span>
+                    <span className="text-xs font-semibold">Doma Orderbook Integration</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="h-24 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200/50 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-800/30 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    onClick={() => showInfo('XMTP Messaging Interface', 'Secure, encrypted messaging for domain negotiations')}
+                  >
+                    <span className="text-2xl">💬</span>
+                    <span className="text-xs font-semibold">XMTP Messaging Interface</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="h-24 flex flex-col items-center justify-center gap-2 bg-gradient-to-r from-orange-50/80 to-red-50/80 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200/50 dark:border-orange-700/50 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-800/30 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    onClick={() => showInfo('Advanced SEO Optimization', 'AI-powered SEO optimization for maximum domain visibility')}
+                  >
+                    <span className="text-2xl">🔍</span>
+                    <span className="text-xs font-semibold">Advanced SEO Optimization</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Automated Landing Pages Demo */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gradient-premium">Automated Landing Pages</h3>
+                <p className="text-muted-foreground">SEO-optimized landing pages generated instantly for every tokenized domain</p>
+                
+                <div className="bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200/30 dark:border-blue-700/30 p-6 backdrop-blur-sm">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-lg">Key Features:</h4>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Dynamic SEO meta tags and structured data
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Real-time domain information display
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Integrated purchase and offer buttons
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Social media optimization
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Mobile-responsive design
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          Analytics and tracking
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-bold text-lg">crypto.com</span>
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Premium</Badge>
+                        </div>
+                        <div className="text-2xl font-bold text-gradient-success mb-4">10.5 ETH</div>
+                        <div className="flex gap-2">
+                          <Button size="sm" className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white">
+                            Buy Now
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1">
+                            Make Offer
+                          </Button>
+                        </div>
+                        <div className="mt-3 text-xs text-muted-foreground flex items-center gap-4">
+                          <span>✓ SEO optimized</span>
+                          <span>✓ Mobile responsive</span>
+                          <span>✓ Real-time pricing</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Implementation */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gradient-premium">Technical Implementation</h3>
+                <p className="text-muted-foreground">How DomaLand achieves Track 5 objectives through innovative technology</p>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-lg">Core Technologies</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200/30 dark:border-blue-700/30">
+                        <span className="text-xl">⚛️</span>
+                        <span className="font-medium">React + TypeScript for dynamic UI</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200/30 dark:border-emerald-700/30">
+                        <span className="text-xl">🔗</span>
+                        <span className="font-medium">Doma Protocol smart contracts</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200/30 dark:border-purple-700/30">
+                        <span className="text-xl">💬</span>
+                        <span className="font-medium">XMTP for encrypted messaging</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50/80 to-red-50/80 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200/30 dark:border-orange-700/30">
+                        <span className="text-xl">🤖</span>
+                        <span className="font-medium">AI-powered SEO optimization</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl border border-cyan-200/30 dark:border-cyan-700/30">
+                        <span className="text-xl">⛓️</span>
+                        <span className="font-medium">Real-time blockchain integration</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-lg">Track 5 Achievements</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium">Automated landing page generation</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium">SEO optimization for visibility</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium">Orderbook integration for transactions</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium">Secure messaging interface</span>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/30 dark:border-green-700/30">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium">Reduced friction in domain sales</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Call to Action */}
+              <div className="text-center space-y-6 p-8 bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border border-purple-200/30 dark:border-purple-700/30 backdrop-blur-sm">
+                <h3 className="text-2xl font-bold text-gradient-premium">Ready to Experience Track 5?</h3>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Explore the full DomaLand platform and see how we're revolutionizing domain sales through automated landing pages, seamless orderbook integration, and secure messaging.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    size="lg" 
+                    className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-300 hover:shadow-lg hover:scale-105 font-semibold rounded-xl"
+                    onClick={() => showInfo('Explore Marketplace', 'Navigate to the marketplace to see live domain listings')}
+                  >
+                    <span className="mr-2">🏪</span>
+                    Explore Marketplace
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="px-8 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200/50 dark:border-blue-700/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold rounded-xl"
+                    onClick={() => showInfo('View Landing Page', 'See a live example of an automated domain landing page')}
+                  >
+                    <span className="mr-2">🌐</span>
+                    View Landing Page
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

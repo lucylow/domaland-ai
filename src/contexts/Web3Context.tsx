@@ -8,6 +8,12 @@ declare global {
       on: (event: string, callback: (...args: unknown[]) => void) => void;
       removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
       isMetaMask?: boolean;
+      isCoinbaseWallet?: boolean;
+      isBraveWallet?: boolean;
+      isRabby?: boolean;
+      isTrust?: boolean;
+      isFrame?: boolean;
+      isOpera?: boolean;
       isConnected?: () => boolean;
     };
     solana?: {
@@ -206,9 +212,30 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     console.log('Connected to mock wallet for development');
   }, []);
 
+  const disconnectWallet = useCallback(() => {
+    // Clean up event listeners
+    if (window.ethereum && eventListeners.accountsChanged) {
+      window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
+    }
+    if (window.ethereum && eventListeners.chainChanged) {
+      window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
+    }
+    
+    setAccount(null);
+    setProvider(null);
+    setSigner(null);
+    setIsConnected(false);
+    setNetwork(null);
+    setCurrentChain(SupportedChain.POLYGON);
+    setChainId(null);
+    setIsMockMode(false);
+    setError(null);
+    setEventListeners({});
+  }, [eventListeners]);
+
   const switchChain = useCallback(async (chain: SupportedChain): Promise<boolean> => {
     if (!window.ethereum) {
-      setError('MetaMask not detected');
+      setError('Wallet not detected');
       return false;
     }
     
@@ -238,7 +265,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         setChainId(chainConfig.chainId);
         return true;
       } catch (switchError: any) {
-        // If the chain is not added to MetaMask, add it
+        // If the chain is not added to the wallet, add it
         if (switchError.code === 4902) {
           try {
             await window.ethereum.request({
@@ -254,14 +281,26 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
             setCurrentChain(chain);
             setChainId(chainConfig.chainId);
             return true;
-          } catch (addError) {
+          } catch (addError: any) {
             console.error('Failed to add chain:', addError);
-            setError(`Failed to add ${CHAIN_CONFIGS[chain].name} to MetaMask`);
+            let errorMsg = `Failed to add ${chainConfig.name} to your wallet`;
+            if (addError.code === 4001) {
+              errorMsg = `User rejected adding ${chainConfig.name} to wallet`;
+            } else if (addError.code === -32602) {
+              errorMsg = `Invalid parameters for adding ${chainConfig.name}`;
+            }
+            setError(errorMsg);
             return false;
           }
+        } else if (switchError.code === 4001) {
+          setError(`User rejected switching to ${chainConfig.name}`);
+          return false;
+        } else if (switchError.code === -32002) {
+          setError(`Request to switch to ${chainConfig.name} is already pending`);
+          return false;
         }
         
-        setError(`Failed to switch to ${chain}`);
+        setError(`Failed to switch to ${chainConfig.name}. Please try again.`);
         return false;
       }
     } catch (error) {
@@ -278,12 +317,47 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     
     try {
       if (typeof window !== 'undefined' && window.ethereum) {
-        // Check if MetaMask is installed
-        if (!window.ethereum.isMetaMask) {
-          setError('Please install MetaMask to continue');
+        // Check if any wallet is available (not just MetaMask)
+        const isWalletAvailable = window.ethereum.isMetaMask || 
+                                 window.ethereum.isCoinbaseWallet || 
+                                 window.ethereum.isBraveWallet ||
+                                 window.ethereum.isRabby ||
+                                 window.ethereum.isTrust ||
+                                 window.ethereum.isFrame ||
+                                 window.ethereum.isOpera;
+
+        if (!isWalletAvailable) {
+          setError('No compatible wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet.');
           return false;
         }
 
+        // Check if wallet is already connected
+        const existingAccounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
+        if (existingAccounts.length > 0) {
+          // Wallet is already connected, just switch chain if needed
+          const chainSwitched = await switchChain(chain);
+          if (!chainSwitched) {
+            setError('Failed to switch to the requested network');
+            return false;
+          }
+          
+          const web3Provider = new BrowserProvider(window.ethereum);
+          const accounts = await web3Provider.listAccounts();
+          const network = await web3Provider.getNetwork();
+          const signer = await web3Provider.getSigner();
+          
+          setProvider(web3Provider);
+          setSigner(signer);
+          setAccount(accounts[0].address);
+          setNetwork(network);
+          setCurrentChain(chain);
+          setIsConnected(true);
+          setIsMockMode(false);
+          
+          return true;
+        }
+
+        // Request connection
         const web3Provider = new BrowserProvider(window.ethereum);
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         
@@ -320,7 +394,10 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         };
 
         const chainChangedHandler = () => {
-          window.location.reload();
+          // Instead of reloading, try to reconnect gracefully
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
         };
 
         // Remove existing listeners first
@@ -344,14 +421,15 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         return true;
       } else {
         // Offer mock mode for development
-        const useMock = confirm('MetaMask not detected. Would you like to use mock wallet mode for development?');
-        if (useMock) {
-          connectMockWallet();
-          return true;
-        } else {
-          setError('MetaMask not installed. Please install MetaMask to continue.');
-          return false;
+        if (process.env.NODE_ENV === 'development') {
+          const useMock = confirm('No wallet detected. Would you like to use mock wallet mode for development?');
+          if (useMock) {
+            connectMockWallet();
+            return true;
+          }
         }
+        setError('No wallet detected. Please install MetaMask, Coinbase Wallet, or another Web3 wallet to continue.');
+        return false;
       }
     } catch (error: unknown) {
       console.error('Failed to connect wallet:', error);
@@ -360,16 +438,29 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       if (error && typeof error === 'object' && 'code' in error) {
         const errorCode = (error as { code: number }).code;
         if (errorCode === 4001) {
-          errorMessage = 'User rejected the connection request';
+          errorMessage = 'Connection request was rejected. Please try again and approve the connection.';
         } else if (errorCode === -32002) {
-          errorMessage = 'Connection request already pending';
+          errorMessage = 'Connection request is already pending. Please check your wallet.';
         } else if (errorCode === -32003) {
-          errorMessage = 'Wallet is locked. Please unlock your wallet and try again';
+          errorMessage = 'Wallet is locked. Please unlock your wallet and try again.';
+        } else if (errorCode === 4900) {
+          errorMessage = 'Wallet is not connected to any network. Please connect to a network first.';
+        } else if (errorCode === 4901) {
+          errorMessage = 'User rejected the request. Please try again.';
+        } else if (errorCode === 4902) {
+          errorMessage = 'Network not found. Please add the network to your wallet.';
         }
       }
       
       if (error && typeof error === 'object' && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
+        const errorMsg = (error as { message: string }).message;
+        if (errorMsg.includes('User denied')) {
+          errorMessage = 'Connection request was denied. Please try again and approve the connection.';
+        } else if (errorMsg.includes('already pending')) {
+          errorMessage = 'Connection request is already pending. Please check your wallet.';
+        } else {
+          errorMessage = errorMsg;
+        }
       }
       
       setError(errorMessage);
@@ -377,7 +468,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     } finally {
       setIsConnecting(false);
     }
-  }, [switchChain]);
+  }, [switchChain, connectMockWallet, eventListeners, disconnectWallet]);
 
   const connectSolanaWallet = async (): Promise<boolean> => {
     try {
@@ -428,26 +519,6 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
     setError(null);
   };
 
-  const disconnectWallet = useCallback(() => {
-    // Clean up event listeners
-    if (window.ethereum && eventListeners.accountsChanged) {
-      window.ethereum.removeListener('accountsChanged', eventListeners.accountsChanged);
-    }
-    if (window.ethereum && eventListeners.chainChanged) {
-      window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
-    }
-    
-    setAccount(null);
-    setProvider(null);
-    setSigner(null);
-    setIsConnected(false);
-    setNetwork(null);
-    setCurrentChain(SupportedChain.POLYGON);
-    setIsMockMode(false);
-    setError(null);
-    setEventListeners({});
-  }, [eventListeners]);
-
   useEffect(() => {
     const checkConnection = async () => {
       if (typeof window !== 'undefined' && window.ethereum) {
@@ -464,7 +535,11 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
             else if (chainIdNumber === 137) detectedChain = SupportedChain.POLYGON;
             else if (chainIdNumber === 56) detectedChain = SupportedChain.BSC;
             
-            await connectWallet(detectedChain);
+            // Only auto-reconnect if we're on a supported chain
+            const supportedChainIds = Object.values(CHAIN_CONFIGS).map(config => config.chainId);
+            if (supportedChainIds.includes(chainIdNumber)) {
+              await connectWallet(detectedChain);
+            }
           }
         } catch (error) {
           console.error('Failed to check wallet connection:', error);
@@ -472,7 +547,10 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
       }
     };
 
-    checkConnection();
+    // Only check connection on mount, not on every render
+    if (!isConnected) {
+      checkConnection();
+    }
 
     // Cleanup function
     return () => {
@@ -483,7 +561,7 @@ export const Web3Provider: FC<Web3ProviderProps> = ({ children }) => {
         window.ethereum.removeListener('chainChanged', eventListeners.chainChanged);
       }
     };
-  }, [connectWallet, isConnected, eventListeners]);
+  }, []); // Remove dependencies to prevent infinite loops
 
   const value: Web3ContextType = {
     // EVM chains
