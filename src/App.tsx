@@ -13,7 +13,6 @@ import FractionalOwnership from "./pages/FractionalOwnership";
 import Help from "./pages/Help";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
-import Track5Demo from "./pages/Track5Demo";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DomainLandingPage from "./components/DomainLandingPage";
 import DomainNegotiationPage from "./pages/DomainNegotiationPage";
@@ -50,7 +49,6 @@ const App = () => (
                           <Route path="/help" element={<Help />} />
                           <Route path="/chat" element={<Chat />} />
                           <Route path="/welcome" element={<Landing />} />
-                          <Route path="/track5-demo" element={<Track5Demo />} />
                           <Route path="/domain/:domain" element={<DomainLandingPage />} />
                           <Route path="/negotiate/:domainId" element={<DomainNegotiationPage />} />
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
