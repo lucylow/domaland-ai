@@ -228,14 +228,14 @@ interface DashboardData {
 }
 
 // API Service Class
-class ApiService {
+export class ApiService {
   private baseUrl: string;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(
+  protected async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
