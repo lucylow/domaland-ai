@@ -422,15 +422,15 @@ class NLPDomainAnalyzer {
     };
 
     const scores = {
-      semantic: 1 - analysis[0].ambiguityScore, // Lower ambiguity = higher score
-      keyword: analysis[1].semanticRichness,
-      sentiment: analysis[2].score,
-      cultural: analysis[3].score,
-      industry: analysis[4].score
+      semantic: 1 - (analysis[0]?.ambiguityScore || 0), // Lower ambiguity = higher score
+      keyword: analysis[1]?.semanticRichness || 0,
+      sentiment: analysis[2]?.score || 0,
+      cultural: analysis[3]?.score || 0,
+      industry: analysis[4]?.score || 0
     };
 
     return Object.keys(weights).reduce((score, key) => {
-      return score + (scores[key as keyof typeof scores] || 0) * weights[key as keyof typeof weights];
+      return score + (Number(scores[key as keyof typeof scores]) || 0) * Number(weights[key as keyof typeof weights]);
     }, 0);
   }
 }

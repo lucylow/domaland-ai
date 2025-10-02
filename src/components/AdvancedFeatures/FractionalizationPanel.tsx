@@ -1,7 +1,7 @@
 // Domain Fractionalization Panel Component
 import React, { useState, useEffect } from 'react';
 import { useDomainFractionalization } from '../../hooks/useAdvancedFeatures';
-import { useNotificationHelpers } from '../../contexts/NotificationContext';
+import { useToast } from '../../hooks/use-toast';
 import { Domain } from '../../types';
 
 interface FractionalizationPanelProps {
@@ -23,7 +23,7 @@ export const FractionalizationPanel: React.FC<FractionalizationPanelProps> = ({ 
     shareholders,
   } = useDomainFractionalization();
 
-  const { showSuccess, showError } = useNotificationHelpers();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'propose' | 'governance' | 'shares' | 'revenue'>('propose');
   const [proposalData, setProposalData] = useState({
     total_shares: 1000,
@@ -53,7 +53,7 @@ export const FractionalizationPanel: React.FC<FractionalizationPanelProps> = ({ 
 
   const loadShareholders = async () => {
     try {
-      await getShareholders(domain.id);
+      await getShareholders(Number(domain.tokenId || 0));
     } catch (err) {
       console.error('Failed to load shareholders:', err);
     }
@@ -62,40 +62,40 @@ export const FractionalizationPanel: React.FC<FractionalizationPanelProps> = ({ 
   const handleProposeFractionalization = async () => {
     try {
       const result = await proposeFractionalization({
-        domain_id: domain.id,
+        domain_id: Number(domain.tokenId || 0),
         proposer_id: 1, // In real app, get from user context
         ...proposalData,
       });
       
       if (result.success) {
-        showSuccess('Proposal Created', 'Fractionalization proposal has been created successfully');
+        toast({ title: 'Proposal Created', description: 'Fractionalization proposal has been created successfully' });
       } else {
-        showError('Proposal Failed', result.error || 'Failed to create fractionalization proposal');
+        toast({ title: 'Proposal Failed', description: result.error || 'Failed to create fractionalization proposal', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Proposal Failed', 'Unable to create fractionalization proposal');
+      toast({ title: 'Proposal Failed', description: 'Unable to create fractionalization proposal', variant: 'destructive' });
     }
   };
 
   const handleExecuteFractionalization = async () => {
     try {
-      const result = await executeFractionalization(domain.id, 'polygon');
+      const result = await executeFractionalization(Number(domain.tokenId || 0), 'polygon');
       
       if (result.success) {
-        showSuccess('Fractionalization Executed', 'Domain has been successfully fractionalized');
+        toast({ title: 'Fractionalization Executed', description: 'Domain has been successfully fractionalized' });
         loadShareholders();
       } else {
-        showError('Execution Failed', result.error || 'Failed to execute fractionalization');
+        toast({ title: 'Execution Failed', description: result.error || 'Failed to execute fractionalization', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Execution Failed', 'Unable to execute fractionalization');
+      toast({ title: 'Execution Failed', description: 'Unable to execute fractionalization', variant: 'destructive' });
     }
   };
 
   const handlePurchaseShares = async () => {
     try {
       const result = await purchaseShares({
-        domain_id: domain.id,
+        domain_id: Number(domain.tokenId || 0),
         buyer_id: 1, // In real app, get from user context
         share_amount: sharePurchaseData.share_amount,
         payment_details: {
@@ -106,46 +106,46 @@ export const FractionalizationPanel: React.FC<FractionalizationPanelProps> = ({ 
       });
       
       if (result.success) {
-        showSuccess('Shares Purchased', 'Domain shares have been purchased successfully');
+        toast({ title: 'Shares Purchased', description: 'Domain shares have been purchased successfully' });
         loadShareholders();
       } else {
-        showError('Purchase Failed', result.error || 'Failed to purchase shares');
+        toast({ title: 'Purchase Failed', description: result.error || 'Failed to purchase shares', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Purchase Failed', 'Unable to purchase shares');
+      toast({ title: 'Purchase Failed', description: 'Unable to purchase shares', variant: 'destructive' });
     }
   };
 
   const handleCreateGovernanceProposal = async () => {
     try {
       const result = await createGovernanceProposal({
-        domain_id: domain.id,
+        domain_id: Number(domain.tokenId || 0),
         proposer_id: 1, // In real app, get from user context
         ...governanceData,
         execution_data: {},
       });
       
       if (result.success) {
-        showSuccess('Proposal Created', 'Governance proposal has been created successfully');
+        toast({ title: 'Proposal Created', description: 'Governance proposal has been created successfully' });
       } else {
-        showError('Proposal Failed', result.error || 'Failed to create governance proposal');
+        toast({ title: 'Proposal Failed', description: result.error || 'Failed to create governance proposal', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Proposal Failed', 'Unable to create governance proposal');
+      toast({ title: 'Proposal Failed', description: 'Unable to create governance proposal', variant: 'destructive' });
     }
   };
 
   const handleDistributeRevenue = async () => {
     try {
-      const result = await distributeRevenue(domain.id, revenueData.total_revenue);
+      const result = await distributeRevenue(Number(domain.tokenId || 0), revenueData.total_revenue);
       
       if (result.success) {
-        showSuccess('Revenue Distributed', 'Revenue has been distributed among shareholders');
+        toast({ title: 'Revenue Distributed', description: 'Revenue has been distributed among shareholders' });
       } else {
-        showError('Distribution Failed', result.error || 'Failed to distribute revenue');
+        toast({ title: 'Distribution Failed', description: result.error || 'Failed to distribute revenue', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Distribution Failed', 'Unable to distribute revenue');
+      toast({ title: 'Distribution Failed', description: 'Unable to distribute revenue', variant: 'destructive' });
     }
   };
 

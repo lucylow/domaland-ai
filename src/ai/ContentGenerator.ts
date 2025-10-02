@@ -204,10 +204,10 @@ class AIContentGenerator {
     const primaryIndustry = industryKeywords[0] || 'general';
     
     return {
-      contentTypes: this.determineContentTypes(developmentStrategy.primaryObjective || 'monetization'),
+      contentTypes: this.determineContentTypes(String(developmentStrategy.primaryObjective || 'monetization')),
       topics: this.generateContentTopics(domainName, industryKeywords),
-      frequency: this.determineContentFrequency(developmentStrategy.timeline || 'medium-term'),
-      distributionChannels: this.determineDistributionChannels(developmentStrategy.primaryObjective || 'monetization'),
+      frequency: this.determineContentFrequency(String(developmentStrategy.timeline || 'medium-term')),
+      distributionChannels: this.determineDistributionChannels(String(developmentStrategy.primaryObjective || 'monetization')),
       seoStrategy: this.createSEOStrategy(domainName, industryKeywords)
     };
   }
@@ -356,7 +356,7 @@ class AIContentGenerator {
       domainName,
       industry: industryKeywords[0] || 'general',
       targetAudience,
-      tone: this.determineTone(contentType, developmentStrategy.primaryObjective),
+      tone: this.determineTone(contentType, String(developmentStrategy.primaryObjective)),
       objectives: this.extractObjectives(developmentStrategy)
     };
   }

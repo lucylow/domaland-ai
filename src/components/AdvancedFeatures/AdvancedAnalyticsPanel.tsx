@@ -1,7 +1,7 @@
 // Advanced Analytics Panel Component
 import React, { useState, useEffect } from 'react';
 import { useAdvancedAnalytics } from '../../hooks/useAdvancedFeatures';
-import { useNotificationHelpers } from '../../contexts/NotificationContext';
+import { useToast } from '../../hooks/use-toast';
 import { Domain } from '../../types';
 
 interface AdvancedAnalyticsPanelProps {
@@ -27,7 +27,7 @@ export const AdvancedAnalyticsPanel: React.FC<AdvancedAnalyticsPanelProps> = ({ 
     portfolioAnalysis,
   } = useAdvancedAnalytics();
 
-  const { showSuccess, showError } = useNotificationHelpers();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'domain' | 'trending' | 'market' | 'network' | 'portfolio'>('dashboard');
   const [userId, setUserId] = useState(1); // In real app, get from user context
 

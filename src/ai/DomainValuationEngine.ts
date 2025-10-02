@@ -77,7 +77,7 @@ class AIValuationEngine {
       
       if (tf) {
         // Load pre-trained valuation model
-        this.valuationModel = await tf.loadLayersModel(
+        this.valuationModel = await (tf as any).loadLayersModel(
           'https://storage.googleapis.com/domaland-models/valuation/v2/model.json'
         );
         
@@ -100,11 +100,11 @@ class AIValuationEngine {
     if (!tf) return null;
     
     // Fallback keyword analysis model
-    const model = tf.sequential({
+    const model = (tf as any).sequential({
       layers: [
-        tf.layers.dense({ inputShape: [10], units: 32, activation: 'relu' }),
-        tf.layers.dense({ units: 16, activation: 'relu' }),
-        tf.layers.dense({ units: 1, activation: 'sigmoid' })
+        (tf as any).layers.dense({ inputShape: [10], units: 32, activation: 'relu' }),
+        (tf as any).layers.dense({ units: 16, activation: 'relu' }),
+        (tf as any).layers.dense({ units: 1, activation: 'sigmoid' })
       ]
     });
     return model;
@@ -114,11 +114,11 @@ class AIValuationEngine {
     if (!tf) return null;
     
     // Fallback trend analysis model
-    const model = tf.sequential({
+    const model = (tf as any).sequential({
       layers: [
-        tf.layers.dense({ inputShape: [8], units: 24, activation: 'relu' }),
-        tf.layers.dense({ units: 12, activation: 'relu' }),
-        tf.layers.dense({ units: 1, activation: 'linear' })
+        (tf as any).layers.dense({ inputShape: [8], units: 24, activation: 'relu' }),
+        (tf as any).layers.dense({ units: 12, activation: 'relu' }),
+        (tf as any).layers.dense({ units: 1, activation: 'linear' })
       ]
     });
     return model;
@@ -377,7 +377,7 @@ class AIValuationEngine {
     if (this.valuationModel) {
       try {
         const inputTensor = this.featuresToTensor(features);
-        const prediction = this.valuationModel.predict(inputTensor) as unknown;
+        const prediction = (this.valuationModel as any).predict(inputTensor) as any;
         const value = await prediction.data();
         prediction.dispose();
         inputTensor.dispose();
@@ -411,7 +411,7 @@ class AIValuationEngine {
       features.technical.mobileScore
     ];
     
-    return tf.tensor2d([featureArray], [1, featureArray.length]);
+    return (tf as any).tensor2d([featureArray], [1, featureArray.length]);
   }
 
   private calculateFallbackValue(features: ValuationFeatures): number {

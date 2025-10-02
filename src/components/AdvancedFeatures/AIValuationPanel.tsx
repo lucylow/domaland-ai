@@ -1,7 +1,7 @@
 // AI Valuation Panel Component
 import React, { useState, useEffect } from 'react';
 import { useAIValuation } from '../../hooks/useAdvancedFeatures';
-import { useNotificationHelpers } from '../../contexts/NotificationContext';
+import { useToast } from '../../hooks/use-toast';
 import { Domain } from '../../types';
 
 interface AIValuationPanelProps {
@@ -11,12 +11,12 @@ interface AIValuationPanelProps {
 
 export const AIValuationPanel: React.FC<AIValuationPanelProps> = ({ domain, onClose }) => {
   const { getValuation, loading, error, valuation } = useAIValuation();
-  const { showSuccess, showError } = useNotificationHelpers();
+  const { toast } = useToast();
   const [additionalData, setAdditionalData] = useState({
     industry: '',
     business_type: '',
     target_market: '',
-    revenue_potential: '',
+    revenue_potential: Number(domain.price || 0),
   });
 
   useEffect(() => {
@@ -28,12 +28,12 @@ export const AIValuationPanel: React.FC<AIValuationPanelProps> = ({ domain, onCl
   const handleGetValuation = async () => {
     try {
       await getValuation({
-        domain_id: domain.id,
+        domain_id: Number(domain.tokenId || 0),
         additional_data: additionalData,
       });
-      showSuccess('AI Valuation Complete', 'Domain valuation has been calculated successfully');
+      toast({ title: 'AI Valuation Complete', description: 'Domain valuation has been calculated successfully' });
     } catch (err) {
-      showError('Valuation Failed', 'Unable to get AI valuation for this domain');
+      toast({ title: 'Valuation Failed', description: 'Unable to get AI valuation for this domain', variant: 'destructive' });
     }
   };
 
