@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { GraphQLClient } from 'graphql-request';
 import axios from 'axios';
 

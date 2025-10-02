@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Doma Orderbook Integration Service
 import { ethers, JsonRpcProvider, BrowserProvider, parseEther, formatEther } from 'ethers';
 

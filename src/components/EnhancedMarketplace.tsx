@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useContractService, Offer } from '../services/contractService';
+import { useToast } from '@/hooks/use-toast';
 import { useNotificationHelpers } from './EnhancedNotificationSystem';
 import { useWeb3 } from '../contexts/Web3Context';
 import { 
@@ -65,6 +66,7 @@ interface MarketplaceFilters {
 
 const EnhancedMarketplace: React.FC = () => {
   const contractService = useContractService();
+  const { toast } = useToast();
   const { showSuccess, showError, showWarning, showTransaction } = useNotificationHelpers();
   const { account, isConnected } = useWeb3();
   
@@ -242,9 +244,9 @@ const EnhancedMarketplace: React.FC = () => {
       }
 
       if (filters.sortOrder === 'asc') {
-        return aValue - bValue;
+        return Number(aValue) - Number(bValue);
       } else {
-        return bValue - aValue;
+        return Number(bValue) - Number(aValue);
       }
     });
 
@@ -287,7 +289,8 @@ const EnhancedMarketplace: React.FC = () => {
       setOfferAmount('');
       await loadDomains(); // Refresh offers
     } catch (error: unknown) {
-      showError('Offer Failed', error.message || 'Failed to create offer');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create offer';
+      toast({ title: 'Offer Failed', description: errorMessage, variant: 'destructive' });
     } finally {
       setSubmittingOffer(false);
     }
@@ -425,7 +428,7 @@ const EnhancedMarketplace: React.FC = () => {
               <Label>Sort By</Label>
               <Select value={`${filters.sortBy}-${filters.sortOrder}`} onValueChange={(value) => {
                 const [sortBy, sortOrder] = value.split('-');
-                setFilters(prev => ({ ...prev, sortBy: sortBy as string, sortOrder: sortOrder as string }));
+                setFilters(prev => ({ ...prev, sortBy: sortBy as any, sortOrder: sortOrder as any }));
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sort by" />

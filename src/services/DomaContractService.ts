@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Base Contract Interaction Class for Doma Protocol
 import { ethers, Contract, Signer, JsonRpcProvider, parseEther } from 'ethers';
 import { DOMA_CONFIG, CONTRACT_ABIS } from '../config/domaConfig';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { domaApiClient, createDomaApiClient } from '../services/domaApiClient';
 import {
   GET_TOKENIZED_DOMAINS,

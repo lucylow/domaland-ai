@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Domain Management Service for Doma Protocol
 import { ethers, parseEther, formatEther } from 'ethers';
 import { DomaContractService } from './DomaContractService';

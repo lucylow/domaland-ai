@@ -102,8 +102,8 @@ export class ValidationError extends Error implements AppError {
 
 // Error handler function
 export const handleError = (error: unknown): AppError => {
-  if (error instanceof AppError) {
-    return error;
+  if (error && typeof error === 'object' && 'code' in error && 'status' in error) {
+    return error as AppError;
   }
 
   if (error instanceof Error) {

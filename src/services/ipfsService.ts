@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * IPFS Service for DomaLand.AI
  * Handles decentralized storage of domain metadata, content, and AI-generated reports

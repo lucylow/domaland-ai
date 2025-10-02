@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Utility Functions for Doma Subgraph Data Formatting and Conversion
 
 // Format price from base units

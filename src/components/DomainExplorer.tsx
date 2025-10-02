@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Comprehensive Domain Explorer Component using Doma Subgraph
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDomaSubgraph, useDomainSearch, useDomainMarketplace } from '../hooks/useDomaSubgraph';

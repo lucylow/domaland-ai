@@ -32,7 +32,7 @@ export const ContractDeployment: React.FC = () => {
 
     try {
       const config: DeploymentConfig = {
-        contractABI: DomaLandABI as Record<string, unknown>,
+        contractABI: DomaLandABI as unknown as Record<string, unknown>,
         contractBytecode: DomaLandBytecode,
         constructorArgs: []
       };
@@ -59,7 +59,7 @@ export const ContractDeployment: React.FC = () => {
 
     try {
       const config: DeploymentConfig = {
-        contractABI: DomaLandABI as Record<string, unknown>,
+        contractABI: DomaLandABI as unknown as Record<string, unknown>,
         contractBytecode: DomaLandBytecode,
         constructorArgs: [],
         gasLimit: deploymentState.estimatedGas ? parseInt(deploymentState.estimatedGas) * 2 : undefined

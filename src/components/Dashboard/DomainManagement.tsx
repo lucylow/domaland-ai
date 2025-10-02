@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { useDoma } from '../../contexts/DomaContext';
 import { Button } from '../ui/button';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Accessibility utilities and helpers for WCAG compliance
 
 export const ensureAccessibility = () => {

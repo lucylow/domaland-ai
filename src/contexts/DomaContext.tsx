@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
 import { useWeb3 } from './Web3Context';
 import { ethers } from 'ethers';

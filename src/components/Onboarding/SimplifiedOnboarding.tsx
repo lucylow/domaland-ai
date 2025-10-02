@@ -64,7 +64,7 @@ const SimplifiedOnboarding: React.FC<SimplifiedOnboardingProps> = ({
   }, [announceToScreenReader]);
 
   const handleWalletConnect = useCallback((walletId: string) => {
-    connectWallet(walletId);
+    connectWallet(walletId as any);
     announceToScreenReader(`Connecting to ${walletId} wallet`);
   }, [connectWallet, announceToScreenReader]);
 

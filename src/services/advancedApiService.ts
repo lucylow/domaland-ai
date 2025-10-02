@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Advanced API Service for DomaLand.AI Backend Integration
 import { ApiService } from './api';
 

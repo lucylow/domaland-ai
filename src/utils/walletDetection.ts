@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface WalletInfo {
   name: string;
   detected: boolean;

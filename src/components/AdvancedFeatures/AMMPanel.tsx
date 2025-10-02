@@ -69,13 +69,13 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
       });
       
       if (result.success) {
-        showSuccess('Pool Created', 'Liquidity pool has been created successfully');
+        toast({ title: 'Pool Created', description: 'Liquidity pool has been created successfully' });
         loadPools();
       } else {
-        showError('Creation Failed', result.error || 'Failed to create liquidity pool');
+        toast({ title: 'Creation Failed', description: result.error || 'Failed to create liquidity pool', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Creation Failed', 'Unable to create liquidity pool');
+      toast({ title: 'Creation Failed', description: 'Unable to create liquidity pool', variant: 'destructive' });
     }
   };
 
@@ -89,12 +89,12 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
       });
       
       if (result.success) {
-        showSuccess('Liquidity Added', 'Liquidity has been added to the pool successfully');
+        toast({ title: 'Liquidity Added', description: 'Liquidity has been added to the pool successfully' });
       } else {
-        showError('Addition Failed', result.error || 'Failed to add liquidity');
+        toast({ title: 'Addition Failed', description: result.error || 'Failed to add liquidity', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Addition Failed', 'Unable to add liquidity');
+      toast({ title: 'Addition Failed', description: 'Unable to add liquidity', variant: 'destructive' });
     }
   };
 
@@ -108,18 +108,18 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
       });
       
       if (result.success) {
-        showSuccess('Quote Generated', 'Trade quote has been generated successfully');
+        toast({ title: 'Quote Generated', description: 'Trade quote has been generated successfully' });
       } else {
-        showError('Quote Failed', result.error || 'Failed to generate trade quote');
+        toast({ title: 'Quote Failed', description: result.error || 'Failed to generate trade quote', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Quote Failed', 'Unable to generate trade quote');
+      toast({ title: 'Quote Failed', description: 'Unable to generate trade quote', variant: 'destructive' });
     }
   };
 
   const handleExecuteSwap = async () => {
     if (!tradeQuote) {
-      showError('No Quote', 'Please generate a trade quote first');
+      toast({ title: 'No Quote', description: 'Please generate a trade quote first', variant: 'destructive' });
       return;
     }
 
@@ -131,12 +131,12 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
       });
       
       if (result.success) {
-        showSuccess('Swap Executed', 'Token swap has been executed successfully');
+        toast({ title: 'Swap Executed', description: 'Token swap has been executed successfully' });
       } else {
-        showError('Swap Failed', result.error || 'Failed to execute swap');
+        toast({ title: 'Swap Failed', description: result.error || 'Failed to execute swap', variant: 'destructive' });
       }
     } catch (err) {
-      showError('Swap Failed', 'Unable to execute swap');
+      toast({ title: 'Swap Failed', description: 'Unable to execute swap', variant: 'destructive' });
     }
   };
 

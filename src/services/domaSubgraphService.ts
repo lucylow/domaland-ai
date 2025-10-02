@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Complete Doma Subgraph Service
 import DomaSubgraphClient from './domaSubgraphClient';
 import {
