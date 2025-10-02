@@ -112,11 +112,11 @@ export const AIValuationPanel: React.FC<AIValuationPanelProps> = ({ domain, onCl
                 Revenue Potential
               </label>
               <input
-                type="text"
+                type="number"
                 value={additionalData.revenue_potential}
-                onChange={(e) => setAdditionalData(prev => ({ ...prev, revenue_potential: e.target.value }))}
+                onChange={(e) => setAdditionalData(prev => ({ ...prev, revenue_potential: parseFloat(e.target.value) || 0 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., High, Medium, Low"
+                placeholder="e.g., 10000"
               />
             </div>
           </div>

@@ -166,7 +166,7 @@ const AIIntegrationPanel: React.FC<AIIntegrationPanelProps> = ({
 
     const contentResult = await contentGenerator.generateDomainContent(
       domainName,
-      developmentStrategy,
+      developmentStrategy as Record<string, unknown>,
       'Tech-savvy professionals'
     );
 
@@ -255,7 +255,7 @@ const AIIntegrationPanel: React.FC<AIIntegrationPanelProps> = ({
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as string)}
+            onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
               activeTab === tab.id
                 ? 'bg-white shadow-sm text-blue-600'

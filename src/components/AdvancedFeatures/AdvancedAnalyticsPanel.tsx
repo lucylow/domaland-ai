@@ -59,9 +59,9 @@ export const AdvancedAnalyticsPanel: React.FC<AdvancedAnalyticsPanelProps> = ({ 
     if (!domain) return;
     
     try {
-      await getDomainMetrics({ domain_id: domain.id });
+      await getDomainMetrics({ domain_id: Number(domain.tokenId || 0) });
     } catch (err) {
-      showError('Metrics Failed', 'Unable to load domain metrics');
+      toast({ title: 'Metrics Failed', description: 'Unable to load domain metrics', variant: 'destructive' });
     }
   };
 

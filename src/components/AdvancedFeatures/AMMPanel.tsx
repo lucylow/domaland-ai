@@ -1,7 +1,7 @@
 // Automated Market Maker (AMM) Panel Component
 import React, { useState, useEffect } from 'react';
 import { useAMM } from '../../hooks/useAdvancedFeatures';
-import { useNotificationHelpers } from '../../contexts/NotificationContext';
+import { useToast } from '@/hooks/use-toast';
 import { Domain } from '../../types';
 
 interface AMMPanelProps {
@@ -26,7 +26,7 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
     tradeQuote,
   } = useAMM();
 
-  const { showSuccess, showError } = useNotificationHelpers();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'create' | 'add-liquidity' | 'trade' | 'analytics'>('create');
   const [poolData, setPoolData] = useState({
     base_token: 'USDC' as 'USDC' | 'ETH' | 'MATIC',
@@ -61,7 +61,7 @@ export const AMMPanel: React.FC<AMMPanelProps> = ({ domain, onClose }) => {
   const handleCreatePool = async () => {
     try {
       const result = await createLiquidityPool({
-        domain_id: domain.id,
+        domain_id: Number(domain.tokenId || 0),
         base_token: poolData.base_token,
         initial_domain_amount: poolData.initial_domain_amount,
         initial_base_amount: poolData.initial_base_amount,

@@ -380,7 +380,7 @@ class AIValuationEngine {
         const prediction = (this.valuationModel as any).predict(inputTensor) as any;
         const value = await prediction.data();
         prediction.dispose();
-        inputTensor.dispose();
+        (inputTensor as any).dispose();
         return value[0] * 10000; // Scale to USD
       } catch (error) {
         console.warn('Model prediction failed, using fallback:', error);

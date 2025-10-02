@@ -422,11 +422,11 @@ class NLPDomainAnalyzer {
     };
 
     const scores = {
-      semantic: 1 - (analysis[0]?.ambiguityScore || 0), // Lower ambiguity = higher score
-      keyword: analysis[1]?.semanticRichness || 0,
-      sentiment: analysis[2]?.score || 0,
-      cultural: analysis[3]?.score || 0,
-      industry: analysis[4]?.score || 0
+      semantic: 1 - (Number(analysis[0]?.ambiguityScore) || 0), // Lower ambiguity = higher score
+      keyword: Number(analysis[1]?.semanticRichness) || 0,
+      sentiment: Number(analysis[2]?.score) || 0,
+      cultural: Number(analysis[3]?.score) || 0,
+      industry: Number(analysis[4]?.score) || 0
     };
 
     return Object.keys(weights).reduce((score, key) => {
