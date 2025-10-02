@@ -201,20 +201,6 @@ export const lazyImport = <T extends React.ComponentType<any>>(
   return React.lazy(importFunc);
 };
 
-// Code splitting utilities
-export const createLazyComponent = <T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ReactNode
-) => {
-  const LazyComponent = React.lazy(importFunc);
-  
-  return (props: React.ComponentProps<T>) => (
-    <React.Suspense fallback={fallback || <div>Loading...</div>}>
-      <LazyComponent {...props} />
-    </React.Suspense>
-  );
-};
-
 // Memory optimization
 export const useMemoryOptimization = () => {
   const cleanupFunctions = useRef<(() => void)[]>([]);
