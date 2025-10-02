@@ -510,9 +510,9 @@ class IPFSService {
 
 // Export singleton instance
 export const ipfsService = new IPFSService({
-  apiKey: process.env.REACT_APP_PINATA_API_KEY,
-  gateway: process.env.REACT_APP_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
-  apiEndpoint: process.env.REACT_APP_PINATA_API_ENDPOINT || 'https://api.pinata.cloud'
+  apiKey: undefined,
+  gateway: 'https://ipfs.io/ipfs/',
+  apiEndpoint: 'https://api.pinata.cloud'
 });
 
 export default IPFSService;

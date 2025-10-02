@@ -22,7 +22,7 @@ export class DomainService {
   constructor(provider?: JsonRpcProvider | BrowserProvider, signer?: ethers.Signer) {
     this.provider = provider || null;
     this.signer = signer || null;
-    this.apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'https://api.domaland.ai';
+    this.apiBaseUrl = 'https://api.domaland.ai';
   }
 
   // Domain Tokenization (Use Case 8.1.1)

@@ -6,33 +6,33 @@ export const DOMA_CONFIG = {
       proxyDomaRecord: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", // Proxy Doma Record contract address
       ownershipToken: "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",  // Ownership Token contract address
       chainId: "eip155:1",
-      rpcUrl: process.env.ETHEREUM_RPC_URL || "https://mainnet.infura.io/v3/YOUR_PROJECT_ID"
+      rpcUrl: "https://mainnet.infura.io/v3/YOUR_PROJECT_ID"
     },
     polygon: {
       proxyDomaRecord: "0x6fC21092DA55B392b745d0B6c49543c4e30fC2b3",
       ownershipToken: "0x1234567890abcdef1234567890abcdef12345678",
       chainId: "eip155:137",
-      rpcUrl: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
+      rpcUrl: "https://polygon-rpc.com"
     },
     // Testnet addresses
     goerli: {
       proxyDomaRecord: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
       ownershipToken: "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",
       chainId: "eip155:5",
-      rpcUrl: process.env.GOERLI_RPC_URL || "https://goerli.infura.io/v3/YOUR_PROJECT_ID"
+      rpcUrl: "https://goerli.infura.io/v3/YOUR_PROJECT_ID"
     }
   },
   
   // Doma Chain configuration
   domaChain: {
-    rpcUrl: process.env.DOMA_CHAIN_RPC_URL || "https://rpc.doma.xyz",
+    rpcUrl: "https://rpc.doma.xyz",
     chainId: "eip155:123456", // Doma Chain ID - replace with actual
   },
   
   // API endpoints
   api: {
-    voucher: process.env.DOMA_VOUCHER_API_URL || "https://api.doma.xyz/voucher",
-    bridge: process.env.DOMA_BRIDGE_API_URL || "https://api.doma.xyz/bridge",
+    voucher: "https://api.doma.xyz/voucher",
+    bridge: "https://api.doma.xyz/bridge",
     // Other API endpoints
   },
 

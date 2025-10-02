@@ -87,8 +87,8 @@ export const uploadToIPFS = async (
   apiKey?: string,
   secretKey?: string
 ): Promise<string | null> => {
-  const pinataApiKey = apiKey || process.env.REACT_APP_PINATA_API_KEY;
-  const pinataSecretKey = secretKey || process.env.REACT_APP_PINATA_SECRET_KEY;
+  const pinataApiKey = apiKey;
+  const pinataSecretKey = secretKey;
 
   if (!pinataApiKey || !pinataSecretKey) {
     console.error('Pinata API credentials not provided');
@@ -144,8 +144,8 @@ export const uploadImageToIPFS = async (
   apiKey?: string,
   secretKey?: string
 ): Promise<string | null> => {
-  const pinataApiKey = apiKey || process.env.REACT_APP_PINATA_API_KEY;
-  const pinataSecretKey = secretKey || process.env.REACT_APP_PINATA_SECRET_KEY;
+  const pinataApiKey = apiKey;
+  const pinataSecretKey = secretKey;
 
   if (!pinataApiKey || !pinataSecretKey) {
     console.error('Pinata API credentials not provided');

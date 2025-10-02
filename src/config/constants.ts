@@ -94,7 +94,7 @@ export const IPFS_CONFIG = {
 
 // API endpoints
 export const API_ENDPOINTS = {
-  BACKEND_BASE: process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000',
+  BACKEND_BASE: 'http://localhost:5000',
   DOMAIN_METADATA: '/api/domains/metadata',
   DOMAIN_ANALYTICS: '/api/domains/analytics',
   DOMAIN_VALUATION: '/api/domains/valuation',
@@ -160,13 +160,13 @@ export const STORAGE_KEYS = {
 
 // Feature flags
 export const FEATURE_FLAGS = {
-  ENABLE_ANALYTICS: process.env.REACT_APP_ENABLE_ANALYTICS === 'true',
-  ENABLE_NOTIFICATIONS: process.env.REACT_APP_ENABLE_NOTIFICATIONS === 'true',
-  ENABLE_DARK_MODE: process.env.REACT_APP_ENABLE_DARK_MODE === 'true',
-  ENABLE_MULTI_LANGUAGE: process.env.REACT_APP_ENABLE_MULTI_LANGUAGE === 'true',
-  ENABLE_SOCIAL_SHARING: process.env.REACT_APP_ENABLE_SOCIAL_SHARING === 'true',
-  ENABLE_AI_VALUATION: process.env.REACT_APP_ENABLE_AI_VALUATION === 'true',
-  ENABLE_FRACTIONALIZATION: process.env.REACT_APP_ENABLE_FRACTIONALIZATION === 'true'
+  ENABLE_ANALYTICS: true,
+  ENABLE_NOTIFICATIONS: true,
+  ENABLE_DARK_MODE: true,
+  ENABLE_MULTI_LANGUAGE: false,
+  ENABLE_SOCIAL_SHARING: true,
+  ENABLE_AI_VALUATION: true,
+  ENABLE_FRACTIONALIZATION: true
 } as const;
 
 // Social media configurations
@@ -181,10 +181,10 @@ export const SOCIAL_CONFIG = {
 
 // Analytics configurations
 export const ANALYTICS_CONFIG = {
-  GOOGLE_ANALYTICS_ID: process.env.REACT_APP_GA_ID || '',
-  MIXPANEL_TOKEN: process.env.REACT_APP_MIXPANEL_TOKEN || '',
-  HOTJAR_ID: process.env.REACT_APP_HOTJAR_ID || '',
-  SENTRY_DSN: process.env.REACT_APP_SENTRY_DSN || ''
+  GOOGLE_ANALYTICS_ID: '',
+  MIXPANEL_TOKEN: '',
+  HOTJAR_ID: '',
+  SENTRY_DSN: ''
 } as const;
 
 

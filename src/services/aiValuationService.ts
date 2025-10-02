@@ -100,8 +100,8 @@ class AIValuationService {
   private modelVersion: string = '2.1.0';
 
   constructor() {
-    this.apiEndpoint = process.env.REACT_APP_AI_VALUATION_API || 'https://api.domaland.ai/valuation';
-    this.apiKey = process.env.REACT_APP_AI_VALUATION_KEY || '';
+    this.apiEndpoint = 'https://api.domaland.ai/valuation';
+    this.apiKey = '';
   }
 
   /**
