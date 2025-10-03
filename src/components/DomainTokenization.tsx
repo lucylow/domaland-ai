@@ -155,28 +155,8 @@ const DomainTokenization: React.FC = () => {
     }
   };
 
-  if (!isConnected) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center">Connect Wallet to Continue</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-muted-foreground">
-            Connect your wallet to start tokenizing domains and managing ownership tokens.
-          </p>
-          <Button onClick={connectWallet} disabled={loading} size="lg">
-            {loading ? 'Connecting...' : 'Connect Wallet'}
-          </Button>
-          {error && (
-            <Alert className="mt-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
+  // Wallet connection is handled at the Dashboard level
+  // This component should only be rendered when wallet is connected
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
