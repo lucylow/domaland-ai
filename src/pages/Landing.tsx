@@ -6,61 +6,108 @@ import Logo from '@/components/Logo';
 const Landing = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-        {/* Hero Section */}
-        <section className="pt-8 pb-20 bg-background relative overflow-hidden">        
-        <div className="container-padding text-center relative z-10">
-          <div className="mb-8 flex justify-center">
-            <Logo size="xl" showText={true} showTagline={true} variant="full" className="animate-float" />
-          </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient leading-tight">
-            Unlock the $350B Domain Economy
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-8 leading-relaxed">
-            Transform static, parked domains into dynamic, monetizable digital storefronts. 
-            Bridge the gap between the traditional domain industry and Web3 financial infrastructure.
-          </p>
-          <div className="flex flex-wrap justify-center gap-8 mb-12 text-center">
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 px-6 py-3 rounded-full border border-primary/20">
-              <span className="text-2xl font-bold text-primary">$350B+</span>
-              <p className="text-sm text-muted-foreground">Global Domain Market</p>
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        {/* Animated background gradients */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
+        
+        <div className="container-padding relative z-10">
+          <div className="max-w-5xl mx-auto text-center space-y-12 animate-fade-in">
+            {/* Logo */}
+            <div className="flex justify-center animate-slide-up">
+              <Logo size="xl" showText={true} showTagline={true} variant="full" className="hover:scale-105 transition-transform duration-300" />
             </div>
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 px-6 py-3 rounded-full border border-primary/20">
-              <span className="text-2xl font-bold text-primary">362M+</span>
-              <p className="text-sm text-muted-foreground">Registered Domains</p>
+            
+            {/* Main Headline */}
+            <div className="space-y-6 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight">
+                <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                  Transform Domains
+                </span>
+                <br />
+                <span className="text-foreground">Into Liquid Assets</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Unlock the <strong className="text-primary">$350B domain economy</strong> with AI-powered tokenization, 
+                instant landing pages, and DeFi infrastructure.
+              </p>
             </div>
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 px-6 py-3 rounded-full border border-primary/20">
-              <span className="text-2xl font-bold text-primary">95%</span>
-              <p className="text-sm text-muted-foreground">Currently Illiquid</p>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-10 py-6 btn-primary">
-                <div className="flex items-center gap-2">
-                  <span>🚀</span>
-                  Start Tokenizing
+
+            {/* Stats Pills */}
+            <div className="flex flex-wrap justify-center gap-6 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              {[
+                { value: '$350B+', label: 'Global Market', icon: '💰' },
+                { value: '362M+', label: 'Domains', icon: '🌐' },
+                { value: '95%', label: 'Illiquid', icon: '🔒' }
+              ].map((stat, i) => (
+                <div 
+                  key={i}
+                  className="group relative bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 rounded-2xl px-8 py-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl group-hover:scale-125 transition-transform duration-300">{stat.icon}</span>
+                    <div>
+                      <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                      <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    </div>
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up" style={{animationDelay: '0.3s'}}>
+              <Link to="/dashboard">
+                <Button 
+                  size="lg" 
+                  className="group text-lg px-12 py-7 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:scale-105 rounded-full"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-2xl group-hover:rotate-12 transition-transform duration-300">🚀</span>
+                    <span className="font-semibold">Start Tokenizing Now</span>
+                  </span>
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-12 py-7 border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 rounded-full"
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">📚</span>
+                  <span className="font-semibold">Explore Features</span>
+                </span>
               </Button>
-            </Link>
-            <Button variant="outline" size="lg" className="text-lg px-10 py-6 border-2 btn-secondary">
-              <div className="flex items-center gap-2">
-                <span>📚</span>
-                Learn More
+            </div>
+
+            {/* Trust Badge */}
+            <div className="pt-8 animate-fade-in" style={{animationDelay: '0.4s'}}>
+              <p className="text-sm text-muted-foreground mb-4">Powered by</p>
+              <div className="flex flex-wrap justify-center items-center gap-8">
+                <div className="text-muted-foreground/60 font-semibold text-lg hover:text-primary transition-colors duration-300">Doma Protocol</div>
+                <div className="text-muted-foreground/60 font-semibold text-lg hover:text-primary transition-colors duration-300">XMTP</div>
+                <div className="text-muted-foreground/60 font-semibold text-lg hover:text-primary transition-colors duration-300">Ethereum</div>
               </div>
-            </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Problems Section */}
-      <section id="problems" className="py-20 bg-muted/30 relative overflow-hidden">        
+      <section id="problems" className="py-24 bg-muted/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background"></div>
+        
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-black dark:text-white">
-              The Domain Industry's $350B Problem
+          <div className="text-center mb-16 space-y-4">
+            <span className="inline-block px-4 py-2 bg-destructive/10 text-destructive rounded-full text-sm font-semibold">The Challenge</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+              The <span className="text-destructive">$350B Problem</span>
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Despite being a massive asset class, domains remain largely illiquid and underutilized
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Despite massive value, domains remain illiquid and underutilized
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -124,14 +171,17 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-background relative overflow-hidden">        
+      <section id="features" className="py-24 bg-background relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-secondary/5"></div>
+        
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-black dark:text-white">
-              How DomaLand Solves These Problems
+          <div className="text-center mb-16 space-y-4">
+            <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold">The Solution</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+              Your Complete <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">DomainFi Platform</span>
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Transform static domains into dynamic, monetizable digital storefronts with Web3 infrastructure
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Transform static domains into dynamic, revenue-generating Web3 assets
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
