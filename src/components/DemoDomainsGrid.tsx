@@ -2,7 +2,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, TrendingUp, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { DomainDetailsModal } from "./DomainDetailsModal";
 
 interface DemoDomainsGridProps {
   onQuickBuy?: (domain: { name: string; price: string; currency: string }) => void;
@@ -60,27 +61,37 @@ const DEMO_DOMAINS = [
 ];
 
 export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
-  const navigate = useNavigate();
+  const [selectedDomain, setSelectedDomain] = useState<typeof DEMO_DOMAINS[0] | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleViewDomain = (domainName: string) => {
-    navigate(`/domain/${domainName}`);
+  const handleViewDomain = (domain: typeof DEMO_DOMAINS[0]) => {
+    setSelectedDomain(domain);
+    setIsModalOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg border border-primary/20">
-        <Sparkles className="h-5 w-5 text-primary" />
-        <p className="text-sm">
-          <strong>Live Demo:</strong> Click any domain card or "View Details" to explore comprehensive domain information. Use "Quick Buy" to test the payment flow!
-        </p>
-      </div>
+    <>
+      <DomainDetailsModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        domain={selectedDomain}
+        onQuickBuy={onQuickBuy}
+      />
+
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg border border-primary/20">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <p className="text-sm">
+            <strong>Live Demo:</strong> Click any domain card or "View Details" to explore comprehensive domain information. Use "Quick Buy" to test the payment flow!
+          </p>
+        </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {DEMO_DOMAINS.map((domain, index) => (
           <Card 
             key={index} 
             className="hover:shadow-xl transition-all cursor-pointer group"
-            onClick={() => handleViewDomain(domain.name)}
+            onClick={() => handleViewDomain(domain)}
           >
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -123,7 +134,7 @@ export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
                 className="flex-1"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewDomain(domain.name);
+                  handleViewDomain(domain);
                 }}
               >
                 View Details
@@ -140,7 +151,7 @@ export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
                       currency: 'ETH' 
                     });
                   } else {
-                    handleViewDomain(domain.name);
+                    handleViewDomain(domain);
                   }
                 }}
               >
@@ -151,6 +162,7 @@ export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
