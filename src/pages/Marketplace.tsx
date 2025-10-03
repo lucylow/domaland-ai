@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { DemoDomainsGrid } from '@/components/DemoDomainsGrid';
+import { TransactionFeedback, txToast } from '@/components/TransactionFeedback';
+import { Wallet } from 'lucide-react';
 
 const Marketplace: React.FC = () => {
   const { isConnected, connectWallet, account } = useWeb3();
@@ -19,6 +22,9 @@ const Marketplace: React.FC = () => {
   const [sortBy, setSortBy] = useState('price');
   const [filterBy, setFilterBy] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [txStatus, setTxStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [txHash, setTxHash] = useState<string>();
+  const [txError, setTxError] = useState<string>();
 
   const filteredDomains = marketplaceDomains.filter(domain => {
     const matchesSearch = domain.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -57,58 +63,63 @@ const Marketplace: React.FC = () => {
     if (!confirmed) return;
 
     setIsLoading(true);
+    setTxStatus('loading');
+    txToast.pending();
+    
     try {
-      await buyDomain(domain.id, domain.price);
-      toast({
-        title: "Domain Purchased!",
-        description: `Successfully purchased ${domain.name} for ${domain.price} ETH`,
-      });
+      const result = await buyDomain(domain.id, domain.price);
+      if (result.success) {
+        setTxStatus('success');
+        toast({
+          title: "Domain Purchased!",
+          description: `Successfully purchased ${domain.name} for ${domain.price} ETH`,
+        });
+      } else {
+        throw new Error(result.error || "Purchase failed");
+      }
     } catch (error) {
-      toast({
-        title: "Purchase Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      });
+      const errorMsg = error instanceof Error ? error.message : "Unknown error occurred";
+      setTxError(errorMsg);
+      setTxStatus('error');
+      txToast.error(errorMsg);
     } finally {
       setIsLoading(false);
+      setTimeout(() => setTxStatus('idle'), 3000);
     }
   };
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-        
-        <Card className="w-full max-w-md bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-md border border-border/50 shadow-2xl shadow-primary/10 relative z-10">
-          <CardHeader className="text-center pb-6">
-            <div className="mb-4">
-              <span className="text-4xl animate-float">🏪</span>
-            </div>
-            <CardTitle className="text-2xl text-foreground">
-              DomainFi Marketplace
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              Connect your wallet to browse and trade tokenized domains
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">Explore Domain Marketplace</h1>
+            <p className="text-muted-foreground">
+              Discover premium tokenized domains powered by AI valuation
             </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <Button 
-              onClick={() => connectWallet()} 
-              className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-3 transition-all duration-300 hover:shadow-lg"
-              size="lg"
-            >
-              <div className="flex items-center gap-2">
-                <span>🔗</span>
-                Connect Wallet
+          </div>
+
+          <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+            <CardContent className="flex items-center justify-between p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Connect Your Wallet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    List your domains, make offers, and unlock full platform features
+                  </p>
+                </div>
               </div>
-            </Button>
-            <div className="text-sm text-muted-foreground text-center bg-muted/30 rounded-lg p-3">
-              Browse thousands of tokenized domains from around the world
-            </div>
-          </CardContent>
-        </Card>
+              <Button size="lg" className="ml-4" onClick={() => connectWallet()}>
+                Connect Wallet
+              </Button>
+            </CardContent>
+          </Card>
+
+          <DemoDomainsGrid />
+        </div>
       </div>
     );
   }

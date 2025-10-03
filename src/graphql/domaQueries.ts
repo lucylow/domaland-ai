@@ -1,6 +1,97 @@
 // GraphQL Query Definitions for Doma Subgraph
 import { gql } from 'graphql-request';
 
+/**
+ * Enhanced queries for marketplace analytics and user domains
+ * These complement the existing Doma Protocol queries
+ */
+
+// Query user's owned domains with market data
+export const GET_USER_DOMAINS = gql`
+  query GetUserDomains($owner: String!) {
+    names(
+      ownedBy: [$owner]
+      take: 100
+      sortOrder: DESC
+    ) {
+      items {
+        name
+        expiresAt
+        tokenizedAt
+        eoi
+        registrar {
+          name
+          ianaId
+        }
+        tokens {
+          tokenId
+          networkId
+          ownerAddress
+          type
+          startsAt
+          expiresAt
+          tokenAddress
+          chain {
+            name
+            networkId
+          }
+          listings {
+            id
+            price
+            currency {
+              symbol
+              decimals
+            }
+            expiresAt
+            orderbook
+          }
+        }
+        activities {
+          type
+          createdAt
+        }
+      }
+      totalCount
+    }
+  }
+`;
+
+// Query marketplace statistics for dashboard
+export const GET_MARKETPLACE_STATS = gql`
+  query GetMarketplaceStats {
+    listings(take: 100) {
+      items {
+        id
+        price
+        currency {
+          symbol
+          decimals
+        }
+        createdAt
+        name
+      }
+      totalCount
+    }
+  }
+`;
+
+// Real-time subscription for new listings
+export const DOMAIN_LISTED_SUBSCRIPTION = gql`
+  subscription OnDomainListed {
+    tokenListed {
+      tokenId
+      name
+      price
+      currency {
+        symbol
+        decimals
+      }
+      offererAddress
+      expiresAt
+    }
+  }
+`;
+
 // Query to get paginated list of tokenized names
 export const GET_TOKENIZED_DOMAINS = gql`
   query GetTokenizedDomains(

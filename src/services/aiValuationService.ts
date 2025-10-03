@@ -429,16 +429,18 @@ class AIValuationService {
   }
 
   /**
-   * Fallback valuation using local models when API is unavailable
+   * Fallback valuation using enhanced local models when API is unavailable
    * @param request Valuation request
    * @returns Fallback valuation response
    */
   private getFallbackValuation(request: ValuationRequest): ValuationResponse {
-    // Simple heuristic-based valuation as fallback
+    // Enhanced heuristic-based valuation with market data
     const baseValue = this.calculateBaseValue(request.domainName);
     const lengthMultiplier = this.getLengthMultiplier(request.sld.length);
     const tldMultiplier = this.getTLDMultiplier(request.tld);
-    const estimatedValue = baseValue * lengthMultiplier * tldMultiplier;
+    const keywordBonus = this.calculateKeywordBonus(request.sld);
+    const patternMultiplier = this.analyzePatternValue(request.sld);
+    const estimatedValue = baseValue * lengthMultiplier * tldMultiplier * keywordBonus * patternMultiplier;
 
     return {
       domainName: request.domainName,
@@ -605,6 +607,68 @@ class AIValuationService {
     const vowels = (sld.match(/[aeiou]/gi) || []).length;
     const consonants = sld.length - vowels;
     return vowels > 0 && consonants > 0;
+  }
+
+  /**
+   * Calculate keyword bonus based on popular industry terms
+   */
+  private calculateKeywordBonus(sld: string): number {
+    const premiumKeywords = {
+      // Tech & Web3
+      'ai': 1.8, 'web3': 1.7, 'meta': 1.6, 'crypto': 1.5, 'nft': 1.5, 'dao': 1.4,
+      'defi': 1.5, 'blockchain': 1.4, 'token': 1.3, 'smart': 1.3,
+      // Business
+      'shop': 1.4, 'store': 1.3, 'market': 1.4, 'trade': 1.3, 'pay': 1.4,
+      'buy': 1.3, 'sell': 1.3, 'deal': 1.2, 'sale': 1.2,
+      // Media & Content
+      'news': 1.3, 'blog': 1.2, 'media': 1.3, 'tv': 1.4, 'video': 1.2,
+      'stream': 1.2, 'live': 1.2, 'hub': 1.2,
+      // Services
+      'app': 1.4, 'tech': 1.3, 'cloud': 1.3, 'net': 1.2, 'online': 1.2,
+      'digital': 1.2, 'pro': 1.3, 'expert': 1.2
+    };
+
+    let maxBonus = 1.0;
+    for (const [keyword, bonus] of Object.entries(premiumKeywords)) {
+      if (sld.toLowerCase().includes(keyword)) {
+        maxBonus = Math.max(maxBonus, bonus);
+      }
+    }
+    return maxBonus;
+  }
+
+  /**
+   * Analyze character patterns for value
+   */
+  private analyzePatternValue(sld: string): number {
+    let multiplier = 1.0;
+
+    // Repeating characters (premium for doubles like 'aa', 'bb')
+    if (/(.)\1/.test(sld)) {
+      multiplier *= 1.2;
+    }
+
+    // Palindrome bonus
+    if (sld === sld.split('').reverse().join('')) {
+      multiplier *= 1.3;
+    }
+
+    // Single vowel repetition (like 'moon', 'book')
+    if (/([aeiou])\1/.test(sld)) {
+      multiplier *= 1.15;
+    }
+
+    // Alternating consonant-vowel pattern (highly pronounceable)
+    if (/^([^aeiou][aeiou])+[^aeiou]?$/i.test(sld)) {
+      multiplier *= 1.25;
+    }
+
+    // All consonants (penalty)
+    if (!/[aeiou]/i.test(sld)) {
+      multiplier *= 0.7;
+    }
+
+    return multiplier;
   }
 }
 
