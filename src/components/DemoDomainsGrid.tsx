@@ -62,22 +62,32 @@ const DEMO_DOMAINS = [
 export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
   const navigate = useNavigate();
 
+  const handleViewDomain = (domainName: string) => {
+    navigate(`/domain/${domainName}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg border border-primary/20">
         <Sparkles className="h-5 w-5 text-primary" />
         <p className="text-sm">
-          These are example domains to showcase the platform. Connect your wallet to list your own domains!
+          <strong>Live Demo:</strong> Click any domain card or "View Details" to explore comprehensive domain information. Use "Quick Buy" to test the payment flow!
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {DEMO_DOMAINS.map((domain, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={index} 
+            className="hover:shadow-xl transition-all cursor-pointer group"
+            onClick={() => handleViewDomain(domain.name)}
+          >
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl font-bold">{domain.name}</CardTitle>
+                  <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
+                    {domain.name}
+                  </CardTitle>
                   <CardDescription className="mt-2">{domain.description}</CardDescription>
                 </div>
                 <Badge variant="secondary" className="flex items-center gap-1">
@@ -111,13 +121,17 @@ export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
               <Button 
                 variant="outline" 
                 className="flex-1"
-                onClick={() => navigate('/marketplace')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDomain(domain.name);
+                }}
               >
                 View Details
               </Button>
               <Button 
                 className="flex-1"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (onQuickBuy) {
                     const priceValue = domain.price.replace(' ETH', '');
                     onQuickBuy({ 
@@ -126,7 +140,7 @@ export function DemoDomainsGrid({ onQuickBuy }: DemoDomainsGridProps) {
                       currency: 'ETH' 
                     });
                   } else {
-                    navigate('/marketplace');
+                    handleViewDomain(domain.name);
                   }
                 }}
               >
